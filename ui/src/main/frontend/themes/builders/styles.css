@@ -1,0 +1,21 @@
+@import 'components/custom-components.css';
+
+vaadin-context-menu-overlay::part(overlay) {
+    padding: 0;
+    margin: 0;
+}
+
+vaadin-context-menu-overlay::part(content) {
+    padding: 0;
+    margin: 0;
+}
+
+vaadin-context-menu-item::part(checkmark) {
+    display: none;
+}
+
+html, body, #outlet, vaadin-app-layout, #ROOT, #flow-root {
+    height: 100% !important;
+    margin: 0;
+    overflow: hidden;
+}

@@ -1,0 +1,32 @@
+package com.azarenka.evebuilders.rest;
+
+import com.azarenka.evebuilders.domain.dto.RequestOrder;
+import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
+import com.azarenka.evebuilders.service.api.IDistributedOrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@CrossOrigin(origins = "*")
+public class OrderReceiverController {
+
+    @Autowired
+    private IDistributedOrderService distributedOrderService;
+
+    @PostMapping(value = "/api/orders", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DistributedOrder> receiveOrder(@RequestBody RequestOrder requestOrder) {
+        DistributedOrder distributedOrder = distributedOrderService.distributeOrder(requestOrder);
+        return new ResponseEntity<>(distributedOrder, HttpStatus.CREATED);
+    }
+
+    @PostMapping(value = "/api/orders/validator", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> validateOrder(@RequestBody RequestOrder requestOrder) {
+        List<String> errors = distributedOrderService.validateRequest(requestOrder);
+        return new ResponseEntity<>(errors, HttpStatus.CREATED);
+    }
+}

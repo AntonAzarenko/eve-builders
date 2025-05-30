@@ -1,0 +1,39 @@
+databaseChangeLog:
+
+
+  - changeSet:
+      id: 1
+      author: your_name
+      changes:
+        - insert:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_USER
+        - insert:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_ADMIN
+  - changeSet:
+      id: 2
+      author: your_name
+      changes:
+        - insert:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_SUPER_ADMIN
+        - insert:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_VIEWER

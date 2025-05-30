@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: your_name
+      changes:
+        - sql:
+            splitStatements: false
+            sql: CREATE DATABASE IF NOT EXISTS builders;
+  - changeSet:
+      id: 2
+      author: your_name
+      changes:
+        # Выбор базы данных
+        - sql:
+            splitStatements: false
+            sql: USE builders;
