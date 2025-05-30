@@ -39,8 +39,3 @@ deploy-to-pi.bat
 
 ### VS Code ###
 .vscode/
-
-# Maven Wrapper
-.mvn/
-mvnw
-mvnw.cmd
