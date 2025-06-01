@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "9090:9090"
+    env_file:
+      - env/env.prop
+    restart: unless-stopped
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+volumes:
+  jenkins_home:

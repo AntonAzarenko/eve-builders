@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: your_name
+      changes:
+        - sqlFile:
+            path: db/dump/eveIcons.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            endDelimiter: ";"
+      rollback:
+        - sql:
+            sql: DROP TABLE IF EXISTS eveIcons;
