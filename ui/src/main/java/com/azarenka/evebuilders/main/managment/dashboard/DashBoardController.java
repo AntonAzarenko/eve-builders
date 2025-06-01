@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.main.managment.dashboard;
 
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.main.managment.api.IDashBoardController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;

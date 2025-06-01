@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.main.orders;
 
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.mysql.Fit;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;

@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.util;
 
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 

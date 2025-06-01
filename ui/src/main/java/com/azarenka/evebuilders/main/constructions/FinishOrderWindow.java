@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.main.constructions;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.vaadin.flow.component.button.Button;

@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.service.impl;
 
-import com.azarenka.evebuilders.domain.mysql.TokenResponse;
-import com.azarenka.evebuilders.domain.mysql.UserToken;
-import com.azarenka.evebuilders.repository.mysql.IUserTokenRepository;
+import com.azarenka.evebuilders.domain.db.TokenResponse;
+import com.azarenka.evebuilders.domain.db.UserToken;
+import com.azarenka.evebuilders.repository.database.IUserTokenRepository;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

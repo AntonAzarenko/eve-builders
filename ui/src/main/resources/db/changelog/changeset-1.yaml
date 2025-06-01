@@ -1,16 +1,41 @@
 databaseChangeLog:
   - changeSet:
       id: 1
-      author: your_name
+      author: aazarenka
       changes:
         - sql:
             splitStatements: false
-            sql: CREATE DATABASE IF NOT EXISTS builders;
+            sql: |
+              DO $$
+              BEGIN
+                IF NOT EXISTS (
+                  SELECT FROM pg_database WHERE datname = 'builders'
+                ) THEN
+                  CREATE DATABASE builders;
+                END IF;
+              END
+              $$;
   - changeSet:
       id: 2
-      author: your_name
+      author: aazarenka
       changes:
-        # Выбор базы данных
         - sql:
-            splitStatements: false
-            sql: USE builders;
+            sql: CREATE SCHEMA IF NOT EXISTS builders;
+  - changeSet:
+      id: create-roles
+      author: you
+      changes:
+        - createTable:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false

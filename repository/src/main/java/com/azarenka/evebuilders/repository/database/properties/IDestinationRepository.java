@@ -1,6 +1,6 @@
-package com.azarenka.evebuilders.repository.mysql.properties;
+package com.azarenka.evebuilders.repository.database.properties;
 
-import com.azarenka.evebuilders.domain.mysql.Destination;
+import com.azarenka.evebuilders.domain.db.Destination;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

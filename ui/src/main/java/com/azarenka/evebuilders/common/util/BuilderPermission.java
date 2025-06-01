@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.common.util;
 
-import com.azarenka.evebuilders.domain.mysql.Role;
+import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 
 import java.util.Objects;

@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.security;
 
-import com.azarenka.evebuilders.domain.mysql.Role;
-import com.azarenka.evebuilders.domain.mysql.TokenResponse;
-import com.azarenka.evebuilders.domain.mysql.User;
+import com.azarenka.evebuilders.domain.db.Role;
+import com.azarenka.evebuilders.domain.db.TokenResponse;
+import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;

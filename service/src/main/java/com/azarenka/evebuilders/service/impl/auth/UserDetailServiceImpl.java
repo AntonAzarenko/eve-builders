@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.impl.auth;
 
-import com.azarenka.evebuilders.domain.mysql.Role;
-import com.azarenka.evebuilders.repository.mysql.IUserRepository;
+import com.azarenka.evebuilders.domain.db.Role;
+import com.azarenka.evebuilders.repository.database.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

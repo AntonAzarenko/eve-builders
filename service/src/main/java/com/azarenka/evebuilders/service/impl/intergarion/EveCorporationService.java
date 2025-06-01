@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.impl.intergarion;
 
-import com.azarenka.evebuilders.domain.mysql.Corporation;
+import com.azarenka.evebuilders.domain.db.Corporation;
 import com.azarenka.evebuilders.service.api.IEveCorporationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;

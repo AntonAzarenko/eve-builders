@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.impl;
 
-import com.azarenka.evebuilders.domain.mysql.User;
+import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.ISeatIntegrationService;
 import org.springframework.stereotype.Service;
 

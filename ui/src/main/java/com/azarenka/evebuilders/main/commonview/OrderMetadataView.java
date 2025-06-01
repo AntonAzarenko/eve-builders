@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.main.commonview;
 
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.mysql.Fit;
+import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

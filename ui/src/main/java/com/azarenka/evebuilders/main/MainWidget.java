@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.main;
 
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
-import com.azarenka.evebuilders.domain.mysql.Role;
+import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
 import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
 import com.azarenka.evebuilders.main.menu.MenuPersonalView;

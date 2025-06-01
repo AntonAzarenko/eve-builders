@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.domain.mysql;
+package com.azarenka.evebuilders.domain.db;
 
 import com.azarenka.evebuilders.domain.ModuleSlot;
 import jakarta.persistence.*;

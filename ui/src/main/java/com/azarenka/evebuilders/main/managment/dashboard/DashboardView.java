@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.main.managment.dashboard;
 import com.azarenka.evebuilders.component.StatCard;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.main.managment.api.IDashBoardController;
 import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;

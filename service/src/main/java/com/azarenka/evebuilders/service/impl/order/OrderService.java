@@ -2,12 +2,12 @@ package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.mysql.Destination;
-import com.azarenka.evebuilders.domain.mysql.Receiver;
-import com.azarenka.evebuilders.domain.mysql.Order;
-import com.azarenka.evebuilders.repository.mysql.properties.IDestinationRepository;
-import com.azarenka.evebuilders.repository.mysql.IShipOrderRepository;
-import com.azarenka.evebuilders.repository.mysql.properties.IReceiverRepository;
+import com.azarenka.evebuilders.domain.db.Destination;
+import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.repository.database.properties.IDestinationRepository;
+import com.azarenka.evebuilders.repository.database.IShipOrderRepository;
+import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;

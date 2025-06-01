@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.domain.mysql;
+package com.azarenka.evebuilders.domain.db;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

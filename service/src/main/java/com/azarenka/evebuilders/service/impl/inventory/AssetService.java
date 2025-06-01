@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.impl.inventory;
 
 import com.azarenka.evebuilders.domain.dto.ItemDto;
-import com.azarenka.evebuilders.domain.mysql.Asset;
+import com.azarenka.evebuilders.domain.db.Asset;
 import com.azarenka.evebuilders.domain.sqllite.EveIcon;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.repository.litesql.EveIconRepository;

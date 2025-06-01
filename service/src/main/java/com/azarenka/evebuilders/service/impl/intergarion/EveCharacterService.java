@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.azarenka.evebuilders.domain.mysql.Corporation;
+import com.azarenka.evebuilders.domain.db.Corporation;
 import com.azarenka.evebuilders.service.api.IEveCharacterService;
 import com.azarenka.evebuilders.service.api.IEveCorporationService;
 import com.azarenka.evebuilders.service.impl.auth.EveAuthService;

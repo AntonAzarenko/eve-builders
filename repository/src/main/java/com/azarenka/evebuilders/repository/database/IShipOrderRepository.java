@@ -1,7 +1,7 @@
-package com.azarenka.evebuilders.repository.mysql;
+package com.azarenka.evebuilders.repository.database;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

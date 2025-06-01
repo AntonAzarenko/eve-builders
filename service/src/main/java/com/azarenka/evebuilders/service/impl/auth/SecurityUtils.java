@@ -1,12 +1,11 @@
 package com.azarenka.evebuilders.service.impl.auth;
 
-import com.azarenka.evebuilders.domain.mysql.Role;
+import com.azarenka.evebuilders.domain.db.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 public class SecurityUtils {

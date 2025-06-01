@@ -1,9 +1,7 @@
 package com.azarenka.evebuilders.main.commonview;
 
 import com.azarenka.evebuilders.common.util.BuilderPermission;
-import com.azarenka.evebuilders.domain.mysql.Fit;
-import com.azarenka.evebuilders.domain.mysql.Role;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.domain.db.Fit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;

@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.api;
 
-import com.azarenka.evebuilders.domain.mysql.Fit;
+import com.azarenka.evebuilders.domain.db.Fit;
 
 import java.util.List;
 

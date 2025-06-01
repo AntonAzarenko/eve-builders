@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.service.api;
 
 import com.azarenka.evebuilders.domain.dto.RequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
 
 import java.util.List;
 

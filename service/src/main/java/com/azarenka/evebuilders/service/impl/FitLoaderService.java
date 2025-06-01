@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.impl;
 
-import com.azarenka.evebuilders.domain.mysql.Fit;
-import com.azarenka.evebuilders.repository.mysql.IFitRepository;
+import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.repository.database.IFitRepository;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.util.FitConverter;

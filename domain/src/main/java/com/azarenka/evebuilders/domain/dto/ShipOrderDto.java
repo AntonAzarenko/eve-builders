@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.domain.dto;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 
 import java.math.BigDecimal;

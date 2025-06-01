@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.api;
 
-import com.azarenka.evebuilders.domain.mysql.TokenResponse;
-import com.azarenka.evebuilders.domain.mysql.UserToken;
+import com.azarenka.evebuilders.domain.db.TokenResponse;
+import com.azarenka.evebuilders.domain.db.UserToken;
 
 public interface IUserTokenService {
 

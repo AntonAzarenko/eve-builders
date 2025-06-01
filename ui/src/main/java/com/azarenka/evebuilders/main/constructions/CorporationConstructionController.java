@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.main.constructions;
 
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
-import com.azarenka.evebuilders.domain.mysql.Fit;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;

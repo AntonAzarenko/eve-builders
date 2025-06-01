@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.domain.dto;
 
-import com.azarenka.evebuilders.domain.mysql.Asset;
+import com.azarenka.evebuilders.domain.db.Asset;
 import com.azarenka.evebuilders.domain.sqllite.EveIcon;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 

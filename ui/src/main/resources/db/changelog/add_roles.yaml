@@ -1,9 +1,8 @@
 databaseChangeLog:
 
-
   - changeSet:
       id: 1
-      author: your_name
+      author: aazarenka
       changes:
         - insert:
             tableName: roles
@@ -19,10 +18,6 @@ databaseChangeLog:
               - column:
                   name: name
                   value: ROLE_ADMIN
-  - changeSet:
-      id: 2
-      author: your_name
-      changes:
         - insert:
             tableName: roles
             schemaName: builders

@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.impl.auth;
 
-import com.azarenka.evebuilders.domain.mysql.TokenResponse;
+import com.azarenka.evebuilders.domain.db.TokenResponse;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.converter.JsonConverter;

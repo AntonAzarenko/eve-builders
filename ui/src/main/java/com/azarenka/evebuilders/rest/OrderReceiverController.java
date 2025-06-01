@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.rest;
 
 import com.azarenka.evebuilders.domain.dto.RequestOrder;
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

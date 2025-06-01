@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.component;
 
-import com.azarenka.evebuilders.domain.mysql.User;
+import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;

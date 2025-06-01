@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.domain.mysql;
+package com.azarenka.evebuilders.domain.db;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

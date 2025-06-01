@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.api;
 
-import com.azarenka.evebuilders.domain.mysql.Corporation;
+import com.azarenka.evebuilders.domain.db.Corporation;
 
 public interface IEveCorporationService {
 

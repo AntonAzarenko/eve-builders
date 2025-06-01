@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.main.managment.api;
 
-import com.azarenka.evebuilders.domain.mysql.DistributedOrder;
-import com.azarenka.evebuilders.domain.mysql.Order;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Order;
 
 import java.util.List;
 

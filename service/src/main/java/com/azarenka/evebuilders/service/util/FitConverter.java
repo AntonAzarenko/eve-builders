@@ -1,15 +1,13 @@
 package com.azarenka.evebuilders.service.util;
 
 import com.azarenka.evebuilders.domain.ModuleSlot;
-import com.azarenka.evebuilders.domain.mysql.Fit;
-import com.azarenka.evebuilders.domain.mysql.Module;
+import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.Module;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 

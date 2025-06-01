@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.converter;
 
-import com.azarenka.evebuilders.domain.mysql.TokenResponse;
+import com.azarenka.evebuilders.domain.db.TokenResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
