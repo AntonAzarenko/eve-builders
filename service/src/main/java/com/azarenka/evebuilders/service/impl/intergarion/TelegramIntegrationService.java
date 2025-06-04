@@ -17,37 +17,37 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
     private String token;
     @Value("${app.telegram_chat_id}")
     private String chatId;
-    private String threadId = "2";
+
+    private final String threadId = "2";
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
     public void sendMessage(String messageText) {
-        String url = String.format("https://api.telegram.org/bot%s/sendMessage", token);
-        String payloadJson = String.format("""
-                {
-                  "chat_id": "%s",
-                  "message_thread_id": %s,
-                  "text": "%s",
-                  "parse_mode": "MarkdownV2"
-                }
-                """, chatId, threadId, escapeJson(messageText));
+        sendRequest(getPayloadFormatJson(escapeJson(messageText), true));
+    }
 
+    @Override
+    public void sendInfoMessage(String text) {
+        sendRequest(getPayloadFormatJson(text, false));
+    }
+
+    private void sendRequest(String payloadJson) {
+        String url = String.format("https://api.telegram.org/bot%s/sendMessage", token);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payloadJson))
                 .build();
 
-        HttpResponse<String> response = null;
         try {
-            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                System.out.println("Error: " + response.body());
+            } else {
+                System.out.println("Sent: " + response.body());
+            }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
-        }
-
-        if (response.statusCode() != 200) {
-            System.out.println("Error: " + response.body());
-        } else {
-            System.out.println("Sent: " + response.body());
         }
     }
 
@@ -55,5 +55,20 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
         return text
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n");
+    }
+
+    private String getPayloadFormatJson(String messageText, boolean useMarkdownV2) {
+        return String.format("""
+                        {
+                          "chat_id": "%s",
+                          "message_thread_id": %s,
+                          "text": "%s"%s
+                        }
+                        """,
+                chatId,
+                threadId,
+                messageText,
+                useMarkdownV2 ? ",\n  \"parse_mode\": \"MarkdownV2\"" : ""
+        );
     }
 }

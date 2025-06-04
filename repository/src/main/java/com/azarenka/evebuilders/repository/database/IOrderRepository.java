@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
-public interface IShipOrderRepository extends JpaRepository<Order, String> {
+public interface IOrderRepository extends JpaRepository<Order, String> {
 
     @Query("SELECT count(i) FROM Order i WHERE i.createdDate = :today")
     int findTodayOrdersCount(@Param("today") LocalDate today);
@@ -23,4 +23,5 @@ public interface IShipOrderRepository extends JpaRepository<Order, String> {
 
     Optional<Order> findByOrderNumber(String orderNumber);
 
+    void deleteByOrderNumber(String orderNumber);
 }

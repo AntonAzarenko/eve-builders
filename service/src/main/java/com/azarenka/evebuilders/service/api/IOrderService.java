@@ -31,4 +31,6 @@ public interface IOrderService {
     void addNewReceiver(String value);
 
     List<Order> getOriginalOrderList();
+
+    void removeOrder(String orderNumber);
 }

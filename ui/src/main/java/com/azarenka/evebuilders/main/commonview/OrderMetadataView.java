@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
@@ -62,11 +63,12 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
         HorizontalLayout fitLayout = new HorizontalLayout();
         fitLayout.setWidthFull();
         Button showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
-            Fit fitById = controller.getFitById(orderDto.getFitId());
-            if (Objects.nonNull(fitById)) {
+            String fitId = orderDto.getFitId();
+            if (StringUtils.isNotBlank(fitId)) {
+                Fit fitById = controller.getFitById(orderDto.getFitId());
                 new FitView(fitById).open();
             } else {
-                Notification.show("Для этого заказа фита не существует");
+                Notification.show("Для этого заказа фита не существует", 3000, Notification.Position.MIDDLE);
             }
         });
         showFitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
@@ -132,6 +134,6 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
                 String.format(MENU_LINE_FORMAT, READY, orderDto.getCountReady()) +
                 String.format(MENU_LINE_PROGRESS_FORMAT, PROGRESS, orderDto.getCount() == 0
                         || orderDto.getCountReady() == 0 ? 0 :
-                         100 / (((double)orderDto.getCount() / orderDto.getCountReady())), "%");
+                        100 / (((double) orderDto.getCount() / orderDto.getCountReady())), "%");
     }
 }

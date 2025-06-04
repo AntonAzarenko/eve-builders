@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.repository.database.properties.IDestinationRepository;
-import com.azarenka.evebuilders.repository.database.IShipOrderRepository;
+import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
@@ -29,7 +29,7 @@ public class OrderService implements IOrderService {
     @Autowired
     private IReceiverRepository receiverRepository;
     @Autowired
-    private IShipOrderRepository orderRepository;
+    private IOrderRepository orderRepository;
 
     @Override
     public List<Destination> getAllDestination() {
@@ -105,6 +105,12 @@ public class OrderService implements IOrderService {
     @Override
     public List<Order> getOriginalOrderList() {
         return orderRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void removeOrder(String orderNumber) {
+        orderRepository.deleteByOrderNumber(orderNumber);
     }
 
     private String createOrderNumber() {

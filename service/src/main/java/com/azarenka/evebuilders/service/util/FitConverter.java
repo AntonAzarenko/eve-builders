@@ -26,7 +26,9 @@ public class FitConverter {
         if (lines.length == 0) return null;
 
         Fit fit = parseHeaderToFit(lines);
-        fit.setTextFit(text);
+        if (Objects.nonNull(fit)) {
+            fit.setTextFit(text);
+        }
         return fit;
     }
 

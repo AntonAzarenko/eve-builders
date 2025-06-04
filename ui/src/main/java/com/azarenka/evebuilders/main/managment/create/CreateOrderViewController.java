@@ -101,6 +101,11 @@ public class CreateOrderViewController implements ICreateOrderController {
     }
 
     @Override
+    public void sendInfoMessage(String s) {
+        telegramIntegrationService.sendInfoMessage(s);
+    }
+
+    @Override
     public void addNewDestination(String value) {
         orderService.addNewDestination(value);
     }
@@ -113,5 +118,10 @@ public class CreateOrderViewController implements ICreateOrderController {
     @Override
     public List<Order> getOriginalOrders() {
         return orderService.getOriginalOrderList();
+    }
+
+    @Override
+    public void removeOrder(String orderNumber) {
+        orderService.removeOrder(orderNumber);
     }
 }

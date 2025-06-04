@@ -38,9 +38,13 @@ public interface ICreateOrderController {
 
     void sendMessage(String s);
 
+    void sendInfoMessage(String s);
+
     void addNewDestination(String value);
 
     void addNewReceiver(String s);
 
     List<Order> getOriginalOrders();
+
+    void removeOrder(String orderNumber);
 }

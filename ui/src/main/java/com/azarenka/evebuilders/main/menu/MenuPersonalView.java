@@ -15,11 +15,5 @@ import java.util.Arrays;
 public class MenuPersonalView extends View {
 
     public MenuPersonalView() {
-        VaadinIcon[] values = VaadinIcon.values();
-        Arrays.stream(values).forEach(e -> {
-            Button button = new Button(e.name(), e.create());
-            button.addThemeVariants(ButtonVariant.LUMO_SMALL);
-            addAndExpand(button);
-        });
     }
 }
