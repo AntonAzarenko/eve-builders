@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
 import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
-import com.azarenka.evebuilders.main.menu.MenuPersonalView;
+import com.azarenka.evebuilders.main.menu.MenuStaffPageView;
 import com.azarenka.evebuilders.main.menu.page.OrdersPage;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.AttachEvent;
@@ -32,7 +32,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         addView(MenuConstructionPageView.class, getTranslation("menu.tab.construction"), VaadinIcon.FACTORY.create());
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPageView.class, Role.ROLE_ADMIN,
                 VaadinIcon.COG.create());
-        addTabIfAllowed(getTranslation("menu.tab.personal"), MenuPersonalView.class, Role.ROLE_ADMIN,
+        addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPageView.class, Role.ROLE_ADMIN,
                 VaadinIcon.SPECIALIST.create());
     }
 

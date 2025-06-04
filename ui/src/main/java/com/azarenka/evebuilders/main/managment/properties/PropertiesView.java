@@ -2,38 +2,39 @@ package com.azarenka.evebuilders.main.managment.properties;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.domain.dto.UserDto;
+import com.azarenka.evebuilders.domain.db.ApplicationProperties;
+import com.azarenka.evebuilders.domain.db.Destination;
+import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.main.managment.api.IPropertiesController;
 import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 @Route(value = "properties", layout = MenuManagerPageView.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PageTitle("Properties")
 public class PropertiesView extends View {
 
     private final IPropertiesController controller;
-    private final H3 permissionsTitle = new H3("Пользователи и роли");
-    private final TextField searchField = new TextField("Поиск пользователя");
-    private final VerticalLayout userListLayout = VaadinUtils.initCommonVerticalLayout();
-    private final Scroller scroller = new Scroller();
+    private final H3 variablesTitle = new H3("Переменные для создания заказа");
+    private final VerticalLayout variableList = VaadinUtils.initCommonVerticalLayout();
+    private Map<String, List<? extends ApplicationProperties>> variablesMap;
 
     public PropertiesView(@Autowired IPropertiesController controller) {
         this.controller = controller;
@@ -42,71 +43,76 @@ public class PropertiesView extends View {
     }
 
     private void initContent() {
-        add(initPermissionsLayout(), new Hr());
+        variablesMap = Map.of(
+                "Приемщик", controller.getReceivers(),
+                "Доставка", controller.getDestinations()
+        );
+        add(initVariablesLayout());
     }
 
-    private VerticalLayout initPermissionsLayout() {
+    private VerticalLayout initVariablesLayout() {
         VerticalLayout layout = new VerticalLayout();
         layout.setPadding(false);
         layout.setMaxHeight("50%");
         layout.setWidthFull();
-        layout.setSpacing(false);
-        searchField.setPlaceholder("Введите имя");
-        searchField.setClearButtonVisible(true);
-        searchField.setWidth("400px");
-        searchField.addValueChangeListener(e -> updateUserList());
-        scroller.setContent(userListLayout);
-        scroller.setWidthFull();
-        layout.add(permissionsTitle, searchField, scroller);
-        updateUserList();
+        //layout.setSpacing(false);
+        updateVariableList();
+        layout.add(variablesTitle, variableList);
         return layout;
     }
 
-    private void updateUserList() {
-        userListLayout.removeAll();
-        List<UserDto> users = controller.getAllUsers();
-        String filter = searchField.getValue() != null ? searchField.getValue().toLowerCase() : "";
-        boolean isEditPermitted = SecurityUtils.getUserRoles().contains(Role.ROLE_SUPER_ADMIN);
-        users.stream()
-                .filter(u -> u.getUsername().toLowerCase().contains(filter) ||
-                        u.getCharacterId().toLowerCase().contains(filter))
-                .forEach(userDto -> addUserRow(userDto, isEditPermitted));
+    private void updateVariableList() {
+        variableList.removeAll();
+        List<String> variables = variablesMap.keySet().stream().toList();
+        variables.stream()
+                .forEach(variable -> addVariableRow(variable));
     }
 
-    private void addUserRow(UserDto user, boolean isEditPermitted) {
-        VerticalLayout userInfo = VaadinUtils.initCommonVerticalLayout();
-        userInfo.setPadding(false);
-        userInfo.setSpacing(false);
-        Span span = new Span(user.getUsername());
-        span.getStyle().setFontWeight("900");
-        userInfo.add(span, new Span(user.getCharacterId()));
-
+    private void addVariableRow(String variable) {
+        VerticalLayout variableInfo = VaadinUtils.initCommonVerticalLayout();
+        variableInfo.setPadding(false);
+        variableInfo.setSpacing(false);
+        Span span = new Span(variable);
+        span.getStyle().setFontWeight("600");
+        variableInfo.add(span);
         HorizontalLayout rolesLayout = new HorizontalLayout();
         rolesLayout.setSpacing(true);
-        for (Role role : user.getRoles()) {
-            Span badge = new Span(role.name());
+        ApplicationProperties ap = null;
+        for (ApplicationProperties property : variablesMap.get(variable)) {
+            Span badge = new Span(property.getProperty());
             badge.getElement().getThemeList().add("badge");
             rolesLayout.add(badge);
+            ap = property;
         }
 
-        Button editRolesButton = new Button(VaadinIcon.EDIT.create());
-        editRolesButton.setEnabled(isEditPermitted);
-        editRolesButton.addClickListener(e -> openEditRolesDialog(user));
-
+        Button editVariablesButton = new Button(VaadinIcon.EDIT.create());
+        editVariablesButton.addClickListener(e -> {
+        });
+        ApplicationProperties finalAp = ap;
+        Button addVariablesButton = new Button(VaadinIcon.PLUS.create(), event -> {
+            CreatePropertyWindow createPropertyWindow = new CreatePropertyWindow(getTranslation(getHeader(finalAp)),
+                    getTranslation(getHeader(finalAp)), closeEvent ->
+                    UI.getCurrent().refreshCurrentRoute(true));
+            createPropertyWindow.setClickListener(value -> controller.addNewProperty(value, finalAp));
+            createPropertyWindow.open();
+        });
+        editVariablesButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        addVariablesButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         HorizontalLayout row = new HorizontalLayout();
         row.setWidthFull();
         row.setAlignItems(FlexComponent.Alignment.CENTER);
-        row.add(userInfo, rolesLayout, editRolesButton);
-        row.expand(userInfo);
-        userListLayout.add(row, new Hr());
+        row.add(variableInfo, rolesLayout, addVariablesButton, editVariablesButton);
+        row.expand(variableInfo);
+        variableList.add(row, new Hr());
     }
 
-    public void openEditRolesDialog(UserDto user) {
-        EditRolesDialog dialog = new EditRolesDialog(user,  selectedRoles -> {
-            controller.updateUserRoles(user, selectedRoles);
-            Notification.show("Роли обновлены", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().refreshCurrentRoute(true);
-        });
-        dialog.open();
+    private String getHeader(ApplicationProperties property) {
+        if (property instanceof Destination) {
+            return "window.header.add_destination";
+        }
+        if (property instanceof Receiver) {
+            return "window.header.add_receiver";
+        }
+        return StringUtils.EMPTY;
     }
 }

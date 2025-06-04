@@ -7,10 +7,10 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "receivers", schema = "builders")
-public class Receiver {
+public class Receiver extends ApplicationProperties {
 
     @Id
-    @Column(name="res_id",unique = true, nullable = false)
+    @Column(name = "res_id", unique = true, nullable = false)
     private String resId;
     @Column(name = "receiver", nullable = false)
     private String receiver;
@@ -29,5 +29,10 @@ public class Receiver {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    @Override
+    public String getProperty() {
+        return receiver;
     }
 }

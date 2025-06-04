@@ -1,14 +1,16 @@
 package com.azarenka.evebuilders.main.managment.api;
 
-import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.domain.dto.UserDto;
+import com.azarenka.evebuilders.domain.db.ApplicationProperties;
+import com.azarenka.evebuilders.domain.db.Destination;
+import com.azarenka.evebuilders.domain.db.Receiver;
 
 import java.util.List;
-import java.util.Set;
 
 public interface IPropertiesController {
 
-    List<UserDto> getAllUsers();
+    List<Receiver> getReceivers();
 
-    void updateUserRoles(UserDto user, Set<Role> selectedRoles);
+    List<Destination> getDestinations();
+
+    void addNewProperty(String value, ApplicationProperties property);
 }

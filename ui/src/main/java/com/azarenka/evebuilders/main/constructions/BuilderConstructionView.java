@@ -31,6 +31,7 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 
 @Route(value = "build_order", layout = MenuConstructionPageView.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_USER"})
+@PageTitle("Build Order")
 public class BuilderConstructionView extends View implements LocaleChangeObserver {
 
     private static final Pattern PATTERN = Pattern.compile("x(\\d+)$");

@@ -8,7 +8,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
-@Route(value = "default", layout = OrdersPage.class)
+@Route(value = "main", layout = OrdersPage.class)
 @PageTitle("Orders")
 @PermitAll
 public class MenuOrdersView extends View {

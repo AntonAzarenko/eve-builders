@@ -7,10 +7,10 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "destination", schema = "builders")
-public class Destination {
+public class Destination extends ApplicationProperties {
 
     @Id
-    @Column(name="dest_id",unique = true, nullable = false)
+    @Column(name = "dest_id", unique = true, nullable = false)
     private String destId;
 
     @Column(name = "destination", nullable = false)
@@ -30,5 +30,10 @@ public class Destination {
 
     public void setDestination(String destination) {
         this.destination = destination;
+    }
+
+    @Override
+    public String getProperty() {
+        return destination;
     }
 }
