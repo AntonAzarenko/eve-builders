@@ -147,6 +147,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         mainLayout.setSpacing(false);
         HorizontalLayout layout = new HorizontalLayout(categoryComboBox, groupsComboBox, itemsComboBox, imageContainer);
         layout.setWidthFull();
+        layout.getStyle().set("flex-wrap", "wrap");
         mainLayout.add(
                 layout,
                 countShipsField,
@@ -204,7 +205,6 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         categoryComboBox.setLabel("Категория");
         categoryComboBox.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
         categoryComboBox.setItems(GroupTypeEnum.MODULES.getValues());
-        categoryComboBox.setWidthFull();
         categoryComboBox.setClearButtonVisible(true);
         categoryComboBox.addValueChangeListener(event -> {
             String value = event.getValue();

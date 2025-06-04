@@ -1,6 +1,8 @@
 package com.azarenka.evebuilders.service.impl;
 
+import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
@@ -16,7 +18,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService implements IUserService {
@@ -70,6 +74,23 @@ public class UserService implements IUserService {
         Optional<User> userOptional = userRepository.findByUsername(SecurityUtils.getUserName());
         userOptional.ifPresent(user -> {
             user.setLanguage(language);
+            userRepository.save(user);
+        });
+    }
+
+    @Override
+    public List<UserDto> getUsersDto() {
+        List<User> all = userRepository.findAll();
+        return all.stream()
+                .map(user -> new UserDto(user.getUsername(), user.getCharacterId(), user.getRoles()))
+                .toList();
+    }
+
+    @Override
+    public void updateUserRoles(UserDto userDto, Set<Role> selectedRoles) {
+        Optional<User> userOptional = userRepository.findByUsername(userDto.getUsername());
+        userOptional.ifPresent(user -> {
+            user.setRoles(selectedRoles);
             userRepository.save(user);
         });
     }
