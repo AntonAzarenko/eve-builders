@@ -27,6 +27,7 @@ public class ShipOrderDto {
     private String fitId;
     private OrderRights orderRights;
     private String rightsholder;
+    private String category;
     private Integer inProgressCount = 0;
     private Integer countReady;
     private LocalDate finishBy;
@@ -52,7 +53,16 @@ public class ShipOrderDto {
         this.rightsholder = order.getRightsholder();
         this.inProgressCount = order.getInProgressCount();
         this.countReady = order.getCountReady();
-        finishBy = order.getFinishBy();
+        this.category = order.getCategory();
+        this.finishBy = order.getFinishBy();
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public LocalDate getFinishBy() {

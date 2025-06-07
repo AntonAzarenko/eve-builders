@@ -1,16 +1,19 @@
 package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.repository.database.properties.IDestinationRepository;
 import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,8 +56,11 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<ShipOrderDto> getOrderList() {
-        return orderRepository.findAll().stream().map(ShipOrderDto::new).toList();
+    public List<ShipOrderDto> getOrderList(OrderFilter filter) {
+        Specification<Order> spec = OrderSpecification.withFilter(filter);
+        return orderRepository.findAll(spec).stream()
+                .map(ShipOrderDto::new)
+                .toList();
     }
 
     @Override

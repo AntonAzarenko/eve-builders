@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.service.api;
 
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.RequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
@@ -10,7 +11,7 @@ public interface IDistributedOrderService {
 
     DistributedOrder save(ShipOrderDto shipOrderDto, int count, String userName);
 
-    List<DistributedOrder> getAllByUserName();
+    List<DistributedOrder> getAllByUserName(OrderFilter filter);
 
     DistributedOrder getById(String orderId);
 
@@ -23,4 +24,6 @@ public interface IDistributedOrderService {
     void sendMessage(String message);
 
     List<DistributedOrder> getAllOrders();
+
+    List<DistributedOrder> getOrdersByOrderNumber(String orderNumber);
 }

@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.service.api;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Receiver;
@@ -16,7 +17,7 @@ public interface IOrderService {
 
     Order saveOrder(Order order);
 
-    List<ShipOrderDto> getOrderList();
+    List<ShipOrderDto> getOrderList(OrderFilter filter);
 
     void updateStatus(OrderStatusEnum orderStatusEnum, String id);
 

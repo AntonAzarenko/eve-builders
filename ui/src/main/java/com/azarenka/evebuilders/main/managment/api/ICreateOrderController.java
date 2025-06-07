@@ -6,6 +6,7 @@ import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
+import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
 
@@ -47,4 +48,6 @@ public interface ICreateOrderController {
     List<Order> getOriginalOrders();
 
     void removeOrder(String orderNumber);
+
+    IFitLoaderService getFitLoaderService();
 }

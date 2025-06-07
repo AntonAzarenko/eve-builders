@@ -3,6 +3,7 @@ package com.azarenka.evebuilders.main.commonview;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
+import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
@@ -66,9 +67,9 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
             String fitId = orderDto.getFitId();
             if (StringUtils.isNotBlank(fitId)) {
                 Fit fitById = controller.getFitById(orderDto.getFitId());
-                new FitView(fitById).open();
+                new FitView(fitById, controller.getFitLoaderService()).open();
             } else {
-                Notification.show("Для этого заказа фита не существует", 3000, Notification.Position.MIDDLE);
+                Notification.show("Для этого заказа фита не существует", 2000, Notification.Position.MIDDLE);
             }
         });
         showFitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);

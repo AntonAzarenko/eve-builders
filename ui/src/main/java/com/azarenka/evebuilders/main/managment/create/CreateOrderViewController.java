@@ -124,4 +124,8 @@ public class CreateOrderViewController implements ICreateOrderController {
     public void removeOrder(String orderNumber) {
         orderService.removeOrder(orderNumber);
     }
+
+    public IFitLoaderService getFitLoaderService() {
+        return fitLoaderService;
+    }
 }

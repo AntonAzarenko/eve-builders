@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -37,6 +38,26 @@ public class DistributedOrder {
     private LocalDate createdDate = LocalDate.now();
     @Column(name = "finished_date")
     private LocalDate finishedDate;
+    @Column(name = "category")
+    private String category;
+    @Column(name = "price")
+    private BigDecimal price;
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     public LocalDate getFinishedDate() {
         return finishedDate;

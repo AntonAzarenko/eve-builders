@@ -1,11 +1,12 @@
 package com.azarenka.evebuilders.main.constructions;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
+import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
@@ -44,10 +45,11 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private SearchComponent searchField;
     private Button updateStatusOrderButton;
     private Button buildButton;
-    private Button banButton;
+    private Button filterButton;
+    private OrderFilterPopupComponent orderFilterPopupComponent;
     private Button fitButton;
     private Button showFullOrder;
-    private boolean isStatusFilterOn = false;
+    private OrderFilter appliedFilter = new OrderFilter();
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
         this.controller = controller;
@@ -60,26 +62,30 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private HorizontalLayout initFilterLayout() {
-        banButton = new Button(VaadinIcon.FILTER.create(), event -> excludeCompletedStatus());
+        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
+                .withStatusFilter()
+                .withTypeOrderFilter()
+                .build();
+        filterButton = orderFilterPopupComponent.getOpenFilterButton();
         fitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
             Fit fitById = controller.getFitById(grid.getSelectedItems().stream().findFirst().get().getFitId());
             if (Objects.nonNull(fitById)) {
-                new FitView(fitById).open();
+                new FitView(fitById, controller.getFitLoaderService()).open();
             } else {
-                Notification notification = new Notification();
-                notification.setText("Фит для этого заказа не загружен");
-                notification.setDuration(1000);
+                Notification notification = new Notification("Фит для этого заказа не загружен", 3000, Notification.Position.MIDDLE);
                 notification.open();
             }
         });
         showFullOrder = new Button(VaadinIcon.PRESENTATION.create());
-        banButton.setTooltipText(getTranslation("message.button.tooltip.completed_filter"));
+        showFullOrder.addClickListener(event ->
+                new DistributedOrderDetailsWindow(grid.getSelectionModel().getSelectedItems().stream().findFirst().get()).open());
+        filterButton.setTooltipText(getTranslation("message.button.tooltip.filter_window"));
         fitButton.setTooltipText(getTranslation("message.button.tooltip.show_fit"));
         showFullOrder.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
         fitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        banButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        filterButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         showFullOrder.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        return new HorizontalLayout(banButton, fitButton, showFullOrder);
+        return new HorizontalLayout(filterButton, fitButton, showFullOrder);
     }
 
     private HorizontalLayout initToolBarLayout() {
@@ -117,7 +123,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private Grid<DistributedOrder> initGrid() {
-        dataProvider = DataProvider.ofCollection(controller.getOrderList());
+        dataProvider = DataProvider.ofCollection(controller.getOrderList(appliedFilter));
         grid = VaadinUtils.initGrid(dataProvider, "distributed-orders-grid");
         addColumns();
         grid.getColumns().forEach(shipOrderDtoColumn -> {
@@ -143,7 +149,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         } else {
-            dataProvider = DataProvider.ofCollection(controller.getOrderList());
+            dataProvider = DataProvider.ofCollection(controller.getOrderList(appliedFilter));
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         }
@@ -204,24 +210,11 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         showFullOrder.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
     }
 
-    private void excludeCompletedStatus() {
-        if (isStatusFilterOn) {
-            banButton.getStyle().set("color", "blue");
-            dataProvider = DataProvider.ofCollection(controller.getOrderList());
-            grid.setDataProvider(dataProvider);
-            dataProvider.refreshAll();
-            isStatusFilterOn = false;
-        } else {
-            banButton.getStyle().set("color", "red");
-            var orderList = controller.getOrderList();
-            dataProvider = DataProvider.ofCollection(orderList.stream()
-                    .filter(order -> !(order.getOrderStatus() == OrderStatusEnum.COMPLETED))
-                    .toList()
-            );
-            grid.setDataProvider(dataProvider);
-            dataProvider.refreshAll();
-            isStatusFilterOn = true;
-        }
+    private void applyFilter() {
+        appliedFilter = new OrderFilter(orderFilterPopupComponent.getAppliedFilter());
+        dataProvider = DataProvider.ofCollection(controller.getOrderList(appliedFilter));
+        grid.setDataProvider(dataProvider);
+        dataProvider.refreshAll();
     }
 
     private void clearSearch() {

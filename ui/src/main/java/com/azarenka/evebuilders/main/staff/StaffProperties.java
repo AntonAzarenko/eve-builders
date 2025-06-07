@@ -5,7 +5,6 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.main.managment.api.IStaffController;
-import com.azarenka.evebuilders.main.managment.properties.EditRolesDialog;
 import com.azarenka.evebuilders.main.menu.MenuStaffPageView;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.UI;

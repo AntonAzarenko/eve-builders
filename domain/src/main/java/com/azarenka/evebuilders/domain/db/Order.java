@@ -1,7 +1,6 @@
 package com.azarenka.evebuilders.domain.db;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

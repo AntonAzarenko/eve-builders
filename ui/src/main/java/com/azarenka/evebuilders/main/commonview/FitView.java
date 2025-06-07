@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.main.commonview;
 
 import com.azarenka.evebuilders.common.util.BuilderPermission;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -15,8 +16,10 @@ public class FitView extends CommonDialogComponent {
     private Button editButton;
     private Button copyButton;
     private Button revertButton;
+    private IFitLoaderService fitLoaderService;
 
-    public FitView(Fit fit) {
+    public FitView(Fit fit, IFitLoaderService fitLoaderService) {
+        this.fitLoaderService = fitLoaderService;
         super.setHeaderTitle(fit.getId());
         super.applyCommonProperties("fit-window", true);
         this.fit = fit;
@@ -39,6 +42,7 @@ public class FitView extends CommonDialogComponent {
         editButton.addClickListener(event -> {
             fit.setTextFit(fitComponent.getFitTextArea().getValue());
             updateButtonsStatus();
+            fitLoaderService.updateFit(fit);
         });
         TextArea fitTextArea = fitComponent.getFitTextArea();
         fitTextArea.addValueChangeListener(e -> {
@@ -59,10 +63,8 @@ public class FitView extends CommonDialogComponent {
     private void initCopyButton() {
         copyButton = new Button(VaadinIcon.COPY.create());
         copyButton.addClickListener(e -> {
-            copyButton.getElement().executeJs(
-                    "navigator.clipboard.writeText($0);", fit.getTextFit()
-            );
-            Notification.show("Текст скопирован в буфер обмена");
+            copyButton.getElement().executeJs("navigator.clipboard.writeText($0);", fit.getTextFit());
+            Notification.show("Текст скопирован в буфер обмена", 2000, Notification.Position.MIDDLE);
         });
     }
 

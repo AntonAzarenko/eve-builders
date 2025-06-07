@@ -40,4 +40,10 @@ public class FitLoaderService implements IFitLoaderService {
     public Fit getFitById(String id) {
         return fitRepository.findById(id).orElse(null);
     }
+
+    @Override
+    public boolean updateFit(Fit fit) {
+        fitRepository.saveAndFlush(fit);
+        return true;
+    }
 }

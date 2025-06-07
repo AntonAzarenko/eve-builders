@@ -11,4 +11,6 @@ public interface IFitLoaderService {
     List<Fit> getAll();
 
     Fit getFitById(String id);
+
+    boolean updateFit(Fit fit);
 }

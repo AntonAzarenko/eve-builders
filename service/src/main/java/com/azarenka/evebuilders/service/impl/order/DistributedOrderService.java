@@ -1,12 +1,14 @@
 package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.dto.RequestOrder;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.dto.RequestOrder;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
+import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
@@ -56,9 +58,10 @@ public class DistributedOrderService implements IDistributedOrderService {
     }
 
     @Override
-    public List<DistributedOrder> getAllByUserName() {
+    public List<DistributedOrder> getAllByUserName(OrderFilter filter) {
         String userName = SecurityUtils.getUserName();
-        return distributedOrderRepository.findAllByUserName(userName);
+        filter.setUserId(userName);
+        return distributedOrderRepository.findAll(OrderSpecification.withDistributedFilter(filter));
     }
 
     @Override
@@ -96,7 +99,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         }
         Optional<User> byUsername = userService.getByUsername(requestOrder.getUserName());
         if (byUsername.isEmpty()) {
-            errors.add("Юзер под ником " + requestOrder.getUserName() + " не найден.\n");
+            errors.add("Пользователь под ником " + requestOrder.getUserName() + " не найден.\n");
         }
         if (Objects.nonNull(byOrderNumber)) {
             int freeCount = byOrderNumber.getCount() - byOrderNumber.getInProgressCount();
@@ -117,6 +120,11 @@ public class DistributedOrderService implements IDistributedOrderService {
         return distributedOrderRepository.findAll();
     }
 
+    @Override
+    public List<DistributedOrder> getOrdersByOrderNumber(String orderNumber) {
+        return distributedOrderRepository.findAllByOrderNumber(orderNumber);
+    }
+
     private void updateShipOrder(String orderId, int readyCount) {
         Order order = orderService.getByOrderNumber(orderId);
         Integer countReady = order.getCountReady();
@@ -134,6 +142,7 @@ public class DistributedOrderService implements IDistributedOrderService {
 
         DistributedOrder distributedOrder = new DistributedOrder();
         distributedOrder.setId(UUID.randomUUID().toString());
+        distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
         distributedOrder.setOrderNumber(shipOrderDto.getOrderNumber());
         distributedOrder.setCount(count);
         distributedOrder.setFitId(shipOrderDto.getFitId());
@@ -143,6 +152,8 @@ public class DistributedOrderService implements IDistributedOrderService {
         distributedOrder.setOrderRights(shipOrderDto.getOrderRights());
         distributedOrder.setOrderStatus(shipOrderDto.getOrderStatus());
         distributedOrder.setFinishedDate(shipOrderDto.getFinishBy());
+        distributedOrder.setCategory(shipOrderDto.getCategory());
+        distributedOrder.setPrice(shipOrderDto.getPrice());
         return distributedOrder;
     }
 }

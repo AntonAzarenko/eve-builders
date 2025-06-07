@@ -3,10 +3,10 @@ package com.azarenka.evebuilders.main.constructions;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.dto.ProductionNode;
-import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.dto.ProductionNode;
+import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -303,13 +303,13 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
     private HorizontalLayout buildRenderDroppedModuleButtonsLayout(ProductionNode root, HorizontalLayout layout) {
         String tooltip = "Установите улучшение материала на блюпринте для правильного отображения количества материалов";
         efficiencyField = new IntegerField("Экономия материалов %");
-        PopupMenuComponent popupEfficienceyMenu = new PopupMenuComponent(root.getTypeName(), efficiencyField, VaadinIcon.COG, tooltip,
+        PopupMenuComponent popupEfficiencyMenu = new PopupMenuComponent(root.getTypeName(), efficiencyField, VaadinIcon.COG, tooltip,
                 keyPressEvent -> {
                     Integer value = efficiencyField.getValue();
                     addedModulesToEfficiencyMap.put(root, Double.valueOf(value));
                     updateMaterials();
                 });
-        Button bluePrintProperties = popupEfficienceyMenu.getOpenMenuButton();
+        Button bluePrintProperties = popupEfficiencyMenu.getOpenMenuButton();
         countIntegerField = new IntegerField("Количество");
         PopupMenuComponent popupCountMenu = new PopupMenuComponent(root.getTypeName(), countIntegerField, VaadinIcon.DROP,
                 "", event -> {
@@ -317,7 +317,7 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
             addedModulesToCountMap.put(root, value);
             updateMaterials();
         });
-        getUI().ifPresent(ui -> ui.add(popupEfficienceyMenu));
+        getUI().ifPresent(ui -> ui.add(popupEfficiencyMenu));
         getUI().ifPresent(ui -> ui.add(popupCountMenu));
         Button countMenuButton = popupCountMenu.getOpenMenuButton();
         Button deleteButton = new Button(VaadinIcon.CLOSE.create());

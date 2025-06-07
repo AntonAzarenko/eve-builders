@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.managment.properties;
+package com.azarenka.evebuilders.main.staff;
 
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.UserDto;

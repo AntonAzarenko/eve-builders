@@ -429,7 +429,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
             Fit fitById = fitField.getValue();
             if (Objects.nonNull(fitById)) {
-                new FitView(fitById).open();
+                new FitView(fitById, controller.getFitLoaderService()).open();
             }
         });
     }

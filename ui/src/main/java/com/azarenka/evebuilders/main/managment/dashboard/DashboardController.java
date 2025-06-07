@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 @Controller
-public class DashBoardController implements IDashBoardController {
+public class DashboardController implements IDashBoardController {
 
     @Autowired
     private IOrderService orderService;

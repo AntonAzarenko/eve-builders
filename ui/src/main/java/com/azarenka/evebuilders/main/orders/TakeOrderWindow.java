@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.main.orders;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
@@ -90,7 +90,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
         Button showFitButton = new Button(VaadinIcon.EYE.create(), event -> {
             Fit fitById = controller.getFitById(shipOrderDto.getFitId());
             if (Objects.nonNull(fitById)) {
-                new FitView(fitById).open();
+                new FitView(fitById, controller.getFitLoaderService()).open();
             }
         });
         layout.add(

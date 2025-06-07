@@ -1,8 +1,10 @@
 package com.azarenka.evebuilders.main.orders;
 
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
@@ -31,8 +33,8 @@ public class OrdersViewController implements IOrderViewController {
     private IDistributedOrderService distributedOrderService;
 
     @Override
-    public List<ShipOrderDto> getOrderList() {
-        return orderService.getOrderList();
+    public List<ShipOrderDto> getOrderList(OrderFilter filter) {
+        return orderService.getOrderList(filter);
     }
 
     @Override
@@ -57,5 +59,14 @@ public class OrdersViewController implements IOrderViewController {
     @Override
     public Order getOriginalOrderByOrderNumber(String orderNumber) {
         return orderService.getByOrderNumber(orderNumber);
+    }
+
+    public IFitLoaderService getFitLoaderService() {
+        return fitLoaderService;
+    }
+
+    @Override
+    public List<DistributedOrder> getDistributedOrdersByOrderNumber(String orderNumber) {
+        return distributedOrderService.getOrdersByOrderNumber(orderNumber);
     }
 }

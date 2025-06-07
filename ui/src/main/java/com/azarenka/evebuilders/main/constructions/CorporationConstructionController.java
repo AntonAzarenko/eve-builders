@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.main.constructions;
 
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
@@ -22,8 +23,8 @@ public class CorporationConstructionController implements ICorporationConstructi
     private IDistributedOrderService distributedOrderService;
 
     @Override
-    public List<DistributedOrder> getOrderList() {
-        return distributedOrderService.getAllByUserName();
+    public List<DistributedOrder> getOrderList(OrderFilter filter) {
+        return distributedOrderService.getAllByUserName(filter);
     }
 
     @Override
@@ -39,5 +40,9 @@ public class CorporationConstructionController implements ICorporationConstructi
     @Override
     public void saveOrder(DistributedOrder distributedOrder, Integer value) {
         distributedOrderService.update(distributedOrder, value);
+    }
+
+    public IFitLoaderService getFitLoaderService() {
+        return fitLoaderService;
     }
 }
