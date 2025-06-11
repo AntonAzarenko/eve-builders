@@ -38,15 +38,17 @@ public class LoginView extends AppLayout {
         authButton.addClickListener(event -> UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
         authButton.setWidthFull();
         Span description = new Span("""
-                Hold My Probs application for managing construction.
+                Application for managing construction.
                 """);
         Image image = new Image("/themes/builders/img/holdmyprobs_logo.jpg", "asd");
         image.setWidth("64px");
         VerticalLayout div = new VerticalLayout();
         div.setWidth("400px");
         div.setHeight("300px");
+        Span header = new Span("Hold My Probs");
+        header.getStyle().setFontWeight(900);
         VerticalLayout layout = new VerticalLayout();
-        layout.add(image, description, authButton);
+        layout.add(header, image, description, authButton);
         layout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
         layout.getStyle().set("background", "white");

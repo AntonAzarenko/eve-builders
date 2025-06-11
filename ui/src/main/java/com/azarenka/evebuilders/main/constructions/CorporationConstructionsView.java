@@ -58,6 +58,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private void initMainLayout() {
+        super.getStyle().set("padding", "0px 5px 0px 5px");
         add(initToolBarLayout(), initFilterLayout(), initGrid());
     }
 
@@ -93,10 +94,8 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 event -> {
                     List<DistributedOrder> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
                     if (selectedItems.size() == 1) {
-                        FinishOrderWindow finishOrderWindow = new FinishOrderWindow(selectedItems.get(0), controller);
-                        finishOrderWindow.addDialogCloseActionListener(actionEvent -> {
-                            grid.getDataProvider().refreshItem(selectedItems.get(0));
-                        });
+                        FinishOrderWindow finishOrderWindow = new FinishOrderWindow(selectedItems.get(0), controller,
+                                save -> UI.getCurrent().refreshCurrentRoute(true));
                         finishOrderWindow.open();
                     }
                 }

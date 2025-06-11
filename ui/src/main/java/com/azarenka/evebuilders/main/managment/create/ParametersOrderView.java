@@ -511,7 +511,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 if (Objects.nonNull(originalOrder)) {
                     VaadinSession.getCurrent().setAttribute("originalOrder", null);
                 }
-                getUI().ifPresent(ui -> ui.navigate(DashboardView.class));
+                getUI().ifPresent(ui -> ui.refreshCurrentRoute(true));
             } catch (ValidationException e) {
                 throw new RuntimeException(e);
             }

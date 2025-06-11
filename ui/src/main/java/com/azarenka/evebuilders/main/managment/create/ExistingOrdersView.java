@@ -107,6 +107,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
         });
         repeatOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        editButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         toolbarLayout.add(recycleButton, repeatOrderButton, editButton);
     }
 
@@ -151,8 +152,12 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
     }
 
     private void updateStatusButtons() {
-        boolean isOrderSelected = grid.getSelectionModel().getFirstSelectedItem().isPresent();
+        Optional<Order> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+        boolean isOrderSelected = firstSelectedItem.isPresent();
+        boolean isEditButtonEnabled =
+                isOrderSelected && firstSelectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED;
         recycleButton.setEnabled(isOrderSelected);
         repeatOrderButton.setEnabled(isOrderSelected);
+        editButton.setEnabled(isEditButtonEnabled);
     }
 }

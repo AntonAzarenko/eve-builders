@@ -34,6 +34,7 @@ ui/src/main/frontend/generated/
 env/**
 env
 deploy-to-pi.bat
+deploy-to-contabi.bat
 **/frontend/generated/
 **/*.sqlite
 

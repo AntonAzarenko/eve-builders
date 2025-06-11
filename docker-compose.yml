@@ -1,10 +1,17 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  eve-ui:
+    image: eve-ui
+    container_name: eve-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "9090:9090"
+      - "9191:9191"
+    volumes:
+      - ./env/env.prop:/app/env.prop
+      - ./db/sqlite-latest.sqlite:/db/sqlite-latest.sqlite
     env_file:
       - env/env.prop
     restart: unless-stopped

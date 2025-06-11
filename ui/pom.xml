@@ -6,12 +6,13 @@
     <parent>
         <groupId>com.azarenka</groupId>
         <artifactId>eve-builders</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${project.version}</version>
     </parent>
 
     <artifactId>ui</artifactId>
 
     <properties>
+        <project.version>1.0.0-SNAPSHOT</project.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,12 +21,12 @@
         <dependency>
             <groupId>com.azarenka</groupId>
             <artifactId>service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.azarenka</groupId>
             <artifactId>domain</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

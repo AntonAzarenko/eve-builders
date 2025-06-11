@@ -16,7 +16,7 @@ public class User {
     private String username;
     @Column(name="character_id",nullable = false)
     private String characterId;
-    @Column(name="character_info", length = 900)
+    @Column(name="character_info", length = 10000)
     private String characterInfo;
     @Column(name = "password")
     private String password;

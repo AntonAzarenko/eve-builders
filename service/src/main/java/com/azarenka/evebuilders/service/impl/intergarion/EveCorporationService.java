@@ -11,23 +11,10 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 
 @Service
-public class EveCorporationService implements IEveCorporationService {
-
-    private WebClient webClient;
+public class EveCorporationService extends EveAbstractIntegrationConnection implements IEveCorporationService {
 
     @Value("${eve.corporation.info}")
     private String corpInfoUrl;
-    @Value("${eve.webclient.baseUrl}")
-    private String baseUrl;
-
-    public EveCorporationService() {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://esi.evetech.net")
-                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
-                        .responseTimeout(Duration.ofMinutes(2))
-                ))
-                .build();
-    }
 
     @Override
     public Corporation getCorporation(String corpId) {

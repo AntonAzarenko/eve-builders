@@ -17,8 +17,9 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
     private String token;
     @Value("${app.telegram_chat_id}")
     private String chatId;
+    @Value("${app.telegram_thread_id}")
+    private  String threadId;
 
-    private final String threadId = "6";
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override

@@ -75,6 +75,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
                                 closeActionEvent -> {
                                     grid.getDataProvider().refreshAll();
                                     updateMetaDataPanel(shipOrderDto);
+                                    UI.getCurrent().refreshCurrentRoute(true);
                                 });
                         boolean hasFreeShipsInOrder = shipOrderDto.getCount() - shipOrderDto.getInProgressCount() > 0;
                         if (hasFreeShipsInOrder) {

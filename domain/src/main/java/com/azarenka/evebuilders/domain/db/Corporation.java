@@ -8,43 +8,30 @@ public class Corporation {
 
     @JsonProperty("alliance_id")
     private Integer allianceId;
-
     @JsonProperty("ceo_id")
     private Integer ceoId;
-
     @JsonProperty("creator_id")
     private Integer creatorId;
-
     @JsonProperty("date_founded")
     private LocalDateTime dateFounded;
-
     @JsonProperty("description")
     private String description;
-
     @JsonProperty("faction_id")
     private Integer factionId;
-
     @JsonProperty("home_station_id")
     private Integer homeStationId;
-
     @JsonProperty("member_count")
     private Integer memberCount;
-
     @JsonProperty("name")
     private String name;
-
     @JsonProperty("shares")
     private Long shares;
-
     @JsonProperty("tax_rate")
     private Float taxRate;
-
     @JsonProperty("ticker")
     private String ticker;
-
     @JsonProperty("url")
     private String url;
-
     @JsonProperty("war_eligible")
     private Boolean warEligible;
 

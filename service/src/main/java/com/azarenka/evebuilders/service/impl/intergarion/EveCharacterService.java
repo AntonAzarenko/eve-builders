@@ -2,7 +2,9 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.azarenka.evebuilders.domain.db.Alliance;
 import com.azarenka.evebuilders.domain.db.Corporation;
+import com.azarenka.evebuilders.service.api.IEveAllianceService;
 import com.azarenka.evebuilders.service.api.IEveCharacterService;
 import com.azarenka.evebuilders.service.api.IEveCorporationService;
 import com.azarenka.evebuilders.service.impl.auth.EveAuthService;
@@ -28,6 +30,8 @@ public class EveCharacterService implements IEveCharacterService {
     private EvePortraitService portraitService;
     @Autowired
     private IEveCorporationService corporationService;
+    @Autowired
+    private IEveAllianceService allianceService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -75,7 +79,11 @@ public class EveCharacterService implements IEveCharacterService {
 
     @Override
     public String getCharacterAllianceName(String accessToken) {
-        return null;
+        String characterId = getCharacterIdFromToken(accessToken);
+        String allianceId = getParameter(getCharacterInfo(accessToken, characterId), "alliance_id",
+                String.class);
+        Alliance alliance = allianceService.getAlliance(allianceId);
+        return alliance.getName();
     }
 
     public <T> T getParameter(String json, String parameterName, Class<T> type) {

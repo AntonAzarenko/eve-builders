@@ -33,7 +33,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
                 String.format(FORMAT, "Количество", order.getCount()) +
                 String.format(FORMAT, "Цена за единицу", DecimalFormatter.formatIsk(order.getPrice())) +
                 String.format(FORMAT, "Приоритет", order.getPriority()) +
-                String.format(FORMAT, "Оснастка", "[Открыть заказ](https://www.google.com)") +
+                String.format(FORMAT, "Оснастка", "[Открыть заказ](https://industry.scan-stakan.com/)") +
                 String.format(FORMAT, "Срок сдачи до", order.getFinishBy()));
 
     }

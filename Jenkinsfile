@@ -30,7 +30,7 @@ pipeline {
                 sh '''
                     docker stop $DOCKER_IMAGE || true
                     docker rm $DOCKER_IMAGE || true
-                    docker run -d --name $DOCKER_IMAGE -p 9090:9090 \
+                    docker run -d --name $DOCKER_IMAGE -p 9191:9191 \
                       -e SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE $DOCKER_IMAGE
                 '''
             }

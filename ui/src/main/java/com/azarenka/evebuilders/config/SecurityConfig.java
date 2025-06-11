@@ -2,12 +2,9 @@ package com.azarenka.evebuilders.config;
 
 import com.azarenka.evebuilders.main.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -19,8 +16,9 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/auth/eve/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/**", "POST")).permitAll())
+                        .requestMatchers(new AntPathRequestMatcher("/auth/eve/**"),
+                                new AntPathRequestMatcher("/unauthorized"),
+                                new AntPathRequestMatcher("/api/**", "POST")).permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 );
@@ -29,10 +27,12 @@ public class SecurityConfig extends VaadinWebSecurity {
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/logout"));
         http.csrf(csrf -> csrf
-                .ignoringRequestMatchers(new AntPathRequestMatcher("/api/**"))
+                .ignoringRequestMatchers(
+                        new AntPathRequestMatcher("/api/**"),
+                        new AntPathRequestMatcher("/unauthorized")
+                )
         );
         super.configure(http);
         setLoginView(http, LoginView.class);
     }
-
 }

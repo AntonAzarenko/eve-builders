@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.constructions;
 
+import com.azarenka.evebuilders.common.util.ISaveListener;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
@@ -21,9 +22,12 @@ public class FinishOrderWindow extends CommonDialogComponent implements LocaleCh
 
     private final DistributedOrder order;
     private final ICorporationConstructionController controller;
+    private final ISaveListener listener;
 
-    public FinishOrderWindow(DistributedOrder order, ICorporationConstructionController controller) {
+    public FinishOrderWindow(DistributedOrder order, ICorporationConstructionController controller,
+                             ISaveListener listener) {
         this.order = order;
+        this.listener = listener;
         this.controller = controller;
         setWidth("300px");
         setHeaderTitle(headerTitle);
@@ -55,11 +59,13 @@ public class FinishOrderWindow extends CommonDialogComponent implements LocaleCh
     }
 
     private Button iniButtonsLayout() {
-        return new Button(VaadinIcon.PACKAGE.create(), event -> {
+        Button button = new Button(VaadinIcon.PACKAGE.create(), event -> {
             if (binder.validate().isOk()) {
                 controller.saveOrder(order, countReadyShips.getValue());
                 this.close();
             }
         });
+        button.addClickListener(listener);
+        return button;
     }
 }
