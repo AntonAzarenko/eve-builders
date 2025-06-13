@@ -17,19 +17,17 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
     private String token;
     @Value("${app.telegram_chat_id}")
     private String chatId;
-    @Value("${app.telegram_thread_id}")
-    private  String threadId;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
-    public void sendMessage(String messageText) {
-        sendRequest(getPayloadFormatJson(escapeJson(messageText), true));
+    public void sendMessage(String messageText, String threadId) {
+        sendRequest(getPayloadFormatJson(escapeJson(messageText), true, threadId));
     }
 
     @Override
-    public void sendInfoMessage(String text) {
-        sendRequest(getPayloadFormatJson(text, false));
+    public void sendInfoMessage(String text, String threadId) {
+        sendRequest(getPayloadFormatJson(text, false, threadId));
     }
 
     private void sendRequest(String payloadJson) {
@@ -39,7 +37,6 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payloadJson))
                 .build();
-
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
@@ -58,7 +55,7 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
                 .replace("\n", "\\n");
     }
 
-    private String getPayloadFormatJson(String messageText, boolean useMarkdownV2) {
+    private String getPayloadFormatJson(String messageText, boolean useMarkdownV2, String threadId) {
         return String.format("""
                         {
                           "chat_id": "%s",

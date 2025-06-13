@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 public class OrderService implements IOrderService {
 
-    private static final String ORDER_NUMBER_FORMAT = "N-%s-%d";
+    private static final String ORDER_NUMBER_FORMAT = "N%s%d";
 
     @Autowired
     private IDestinationRepository destinationRepository;
@@ -120,8 +120,9 @@ public class OrderService implements IOrderService {
     }
 
     private String createOrderNumber() {
-        var today = LocalDate.now();
-        int seqNum = orderRepository.findTodayOrdersCount(today);
-        return String.format(ORDER_NUMBER_FORMAT, today, seqNum + 1);
+        var date = LocalDate.now();
+        int seqNum = orderRepository.findTodayOrdersCount(date);
+        var number = date.toString().replace("-", "");
+        return String.format(ORDER_NUMBER_FORMAT, number, seqNum + 1);
     }
 }

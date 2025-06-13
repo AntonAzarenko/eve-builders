@@ -4,6 +4,18 @@
 
 # Release notes
 
+## Version 1.2.0
+Release Date: 2025-06-14
+
+## Header
+- Added an info button that displays application developer information.
+- Includes links to the Git repository and donation page.
+## Order Management
+- Added logic allowing staff to cancel an accepted order, but only within the first half of the time between the order's publication and its due date.
+- Added a warning message when accepting an order if less than half of the time between publication and due date remains.
+## Bug Fixes
+- Fixed a bug where the notification about staff taking an order was sent to the wrong Telegram channel.
+
 ## Version 1.1.0 
 Release Date: 2025-06-13
 

@@ -162,3 +162,13 @@
     white-space: nowrap;
     max-width: max-content;
 }
+
+.circle-button {
+    border-radius: 50% !important;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

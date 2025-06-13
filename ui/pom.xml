@@ -12,7 +12,7 @@
     <artifactId>ui</artifactId>
 
     <properties>
-        <project.version>1.1.0</project.version>
+        <project.version>1.2.0</project.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

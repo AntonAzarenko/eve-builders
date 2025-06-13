@@ -16,6 +16,7 @@ import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,9 @@ import java.util.*;
 
 @Service
 public class DistributedOrderService implements IDistributedOrderService {
+
+    @Value("${app.telegram_thread_request_id}")
+    private String threadRequestId;
 
     @Autowired
     private IDistributedOrderRepository distributedOrderRepository;
@@ -112,7 +116,7 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     @Override
     public void sendMessage(String message) {
-        telegramIntegrationService.sendMessage(message);
+        telegramIntegrationService.sendMessage(message, threadRequestId);
     }
 
     @Override

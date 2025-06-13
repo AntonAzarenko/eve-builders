@@ -36,6 +36,9 @@ public class EveAuthService implements IEveAuthService {
     private  String authorizationEndpoint;
     @Value("${eve.token.uri}")
     private  String tokenEndpoint;
+    @Value("${app.version}")
+    private  String appVersion;
+
     @Autowired
     private EvePortraitService evePortraitService;
     @Autowired
@@ -86,5 +89,10 @@ public class EveAuthService implements IEveAuthService {
             return VaadinImageConverter.createImageFromBytes(portrait);
         }
         return new Image();
+    }
+
+    @Override
+    public String getAppVersion() {
+        return appVersion;
     }
 }

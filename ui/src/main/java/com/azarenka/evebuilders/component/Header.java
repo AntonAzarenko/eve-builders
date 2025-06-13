@@ -7,9 +7,11 @@ import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -32,11 +34,12 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
     private Span title;
     private Image avatar;
     private Button addCharacterButton;
+    private Button aboutButton;
     private Button logoutButton;
     private Div userNameDiv;
     private Image largeAvatar;
-    private IEveAuthService eveAuthService;
-    private IUserService userService;
+    private final IEveAuthService eveAuthService;
+    private final IUserService userService;
 
     public Header(IEveAuthService eveAuthService, IUserService userService) {
         this.eveAuthService = eveAuthService;
@@ -54,15 +57,22 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         initAddCharacterButton();
         initLargeAvatar();
         initUserName();
+        initAboutLayout();
         createContextMenu();
 
         var layout = new HorizontalLayout();
-        layout.add(avatar);
+        layout.add(aboutButton, avatar);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         setDefaultVerticalComponentAlignment(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.BETWEEN);
-
         add(layout);
+    }
+
+    private void initAboutLayout() {
+        aboutButton = new Button(VaadinIcon.INFO.create());
+        aboutButton.addClickListener(e -> new AppDevelopmentInformationWindow(eveAuthService.getAppVersion()).open());
+        aboutButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        aboutButton.addClassName("circle-button");
     }
 
     private void initAddCharacterButton() {

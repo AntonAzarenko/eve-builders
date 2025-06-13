@@ -14,6 +14,7 @@ import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,11 @@ import java.util.Objects;
 
 @Controller
 public class CreateOrderViewController implements ICreateOrderController {
+
+    @Value("${app.telegram_thread_ping_id}")
+    private String threadPingId;
+    @Value("${app.telegram_thread_request_id}")
+    private String threadRequestId;
 
     @Autowired
     private IEveMaterialDataService dataService;
@@ -97,12 +103,12 @@ public class CreateOrderViewController implements ICreateOrderController {
 
     @Override
     public void sendMessage(String s) {
-        telegramIntegrationService.sendMessage(s);
+        telegramIntegrationService.sendMessage(s, threadRequestId);
     }
 
     @Override
     public void sendInfoMessage(String s) {
-        telegramIntegrationService.sendInfoMessage(s);
+        telegramIntegrationService.sendInfoMessage(s, threadPingId);
     }
 
     @Override

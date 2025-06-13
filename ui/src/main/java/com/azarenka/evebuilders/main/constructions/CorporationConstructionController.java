@@ -11,12 +11,16 @@ import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class CorporationConstructionController implements ICorporationConstructionController {
+
+    @Value("${app.telegram_thread_request_id}")
+    private String threadRequestId;
 
     @Autowired
     private IFitLoaderService fitLoaderService;
@@ -47,7 +51,7 @@ public class CorporationConstructionController implements ICorporationConstructi
         distributedOrderService.update(distributedOrder, value);
         telegramIntegrationService.sendMessage(
                 TelegramMessageCreatorService.createFinishOrderMessage(
-                        distributedOrder, value, SecurityUtils.getUserName()));
+                        distributedOrder, value, SecurityUtils.getUserName()), threadRequestId);
     }
 
     public IFitLoaderService getFitLoaderService() {
