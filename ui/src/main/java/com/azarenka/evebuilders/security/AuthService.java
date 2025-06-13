@@ -6,6 +6,8 @@ import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class AuthService {
 
     private static final String ALLIANCE_NAME = "HOLD MY PROBS";
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private IUserService userService;
@@ -39,6 +42,7 @@ public class AuthService {
         if (checkAuth(user)) {
             return userService.saveUser(user);
         }
+        LOGGER.info("User {} didn't got authorisation", characterName);
         return null;
     }
 

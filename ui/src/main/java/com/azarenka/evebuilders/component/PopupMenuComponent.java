@@ -26,6 +26,7 @@ public class PopupMenuComponent extends Div {
     public PopupMenuComponent(String moduleName, IntegerField integerField, VaadinIcon openIcon, String tooltip,
                               ComponentEventListener<ClickEvent<Button>> clickListener) {
         this.listener = clickListener;
+        this.tooltip = tooltip;
         openMenuButton = new Button(openIcon.create());
         this.moduleName = moduleName;
         this.integerField = integerField;

@@ -105,7 +105,7 @@ public class ShipOrderDto {
         this.orderNumber = orderNumber;
     }
 
-    public String getShipName() {
+    public String getItemName() {
         return shipName;
     }
 

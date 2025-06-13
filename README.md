@@ -5,9 +5,14 @@
 
 # Development plan
 
-- v.0.2.0
-    * Add functionality to permit Super admin user provide roles for other users
-    * Add functionality to permit for admin user remove destination and receiver
-    * Add simple window to be able to show information regarding the staff
-- v 0.3.0
-    * 
+## Version 1.1.0 
+
+### Orders Tab
+- Add **order delivery date** field.
+### "Take Order" Window
+- Add **number of available ships** indicator.
+### Assembly Tab
+- Added **fit preview** during order assembly.
+- Fixed **material calculation** when changing material efficiency or number of root components.
+### General
+- Fixed **translation issues** in the UI.

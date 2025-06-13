@@ -5,13 +5,11 @@ import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
-import com.azarenka.evebuilders.main.commonview.OrderMetadataView;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
@@ -106,7 +104,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
             List<ShipOrderDto> list = items.stream()
                     .filter(item ->
                             (item.getOrderNumber() != null && item.getOrderNumber().toLowerCase().contains(lowerCaseValue)) ||
-                                    (item.getShipName() != null && item.getShipName().toLowerCase().contains(lowerCaseValue)) ||
+                                    (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
                                     (item.getOrderStatus() != null && item.getOrderStatus().name().toLowerCase().contains(lowerCaseValue))
                     )
                     .toList();
@@ -156,6 +154,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
         editOrderButton.setTooltipText(getTranslation("message.button.tooltip.edit_order"));
         orderInfoButton = new Button(VaadinIcon.INFO.create(), event -> openOrderInfo());
         orderInfoButton.setVisible(editPermit);
+        orderInfoButton.setTooltipText(getTranslation("message.button.tooltip.order_info"));
         return new HorizontalLayout(filterButton, editOrderButton, orderInfoButton);
     }
 
@@ -224,7 +223,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
     private void addColumns() {
         addColumn(ShipOrderDto::getOrderNumber);
         addColumn(value -> value.getOrderStatus().name());
-        addColumn(ShipOrderDto::getShipName);
+        addColumn(ShipOrderDto::getItemName);
         addNumberColumn(ShipOrderDto::getCount);
         addAmountColumn(order -> formatIsk(order.getPrice()));
     }
@@ -252,6 +251,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
                 && !(selectedItems.get(0).getOrderStatus() == OrderStatusEnum.COMPLETED);
         takeAnOrderButton.setEnabled(isOrderSelected);
         editOrderButton.setEnabled(isOrderSelected);
+        orderInfoButton.setEnabled(isOrderSelected);
     }
 
     @Override

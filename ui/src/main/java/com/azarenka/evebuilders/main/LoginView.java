@@ -11,6 +11,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 
 @Route("login")
 @PageTitle("Login")
@@ -38,7 +40,7 @@ public class LoginView extends AppLayout {
         authButton.addClickListener(event -> UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
         authButton.setWidthFull();
         Span description = new Span("""
-                Application for managing construction.
+                Construction Management Application.
                 """);
         Image image = new Image("/themes/builders/img/holdmyprobs_logo.jpg", "asd");
         image.setWidth("64px");

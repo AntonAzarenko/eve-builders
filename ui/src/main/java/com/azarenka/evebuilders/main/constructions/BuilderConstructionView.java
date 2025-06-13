@@ -3,10 +3,13 @@ package com.azarenka.evebuilders.main.constructions;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
+import com.azarenka.evebuilders.domain.ModuleSlot;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.Module;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.ViewMode;
+import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -26,6 +29,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.shared.SelectionPreservationMode;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -35,12 +39,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Route(value = "build_order", layout = MenuConstructionPageView.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_USER"})
@@ -56,14 +62,13 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
     private final TreeGrid<ProductionNode> treeGrid = createTreeGrid();
     private final Grid<ProductionNode> listGrid = createGrid();
     private final List<ProductionNode> rootNodes = new ArrayList<>();
+    private final Set<String> rendererModules = new HashSet<>();
+    private final HorizontalLayout mainLayout = new HorizontalLayout();
+    private final RadioButtonGroup<ViewMode> viewModeSelector = new RadioButtonGroup<>();
 
     private Fit fit;
     private DistributedOrder order;
-    private IntegerField efficiencyField;
-    private IntegerField countIntegerField;
 
-    private final HorizontalLayout mainLayout = new HorizontalLayout();
-    private final RadioButtonGroup<ViewMode> viewModeSelector = new RadioButtonGroup<>();
     private VerticalLayout leftSidePanel;
     private HorizontalLayout leftSideToolbar;
     private VerticalLayout middleSidePanel;
@@ -87,7 +92,7 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
         divider2.addClassName("vertical-divider");
         mainLayout.add(leftSidePanel, divider1, middleSidePanel, divider2, rightSidePanel);
         mainLayout.setFlexGrow(1, leftSidePanel, middleSidePanel, rightSidePanel);
-        mainLayout.setWidthFull();
+        mainLayout.setSizeFull();
         add(mainLayout);
     }
 
@@ -132,8 +137,16 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
         dropTarget.addDropListener(event -> {
             String moduleName = (String) event.getDragData().orElse(null);
             if (moduleName != null) {
-                Component droppedModule = renderDroppedModule(moduleName);
-                middleSidePanel.add(droppedModule);
+                if (!rendererModules.contains(moduleName)) {
+                    rendererModules.add(moduleName);
+                    Component droppedModule = renderDroppedModule(moduleName);
+                    middleSidePanel.add(droppedModule);
+                } else {
+                    Optional<ProductionNode> first = addedModulesToCountMap.keySet().stream()
+                            .filter(e -> e.getTypeName().equals(moduleName))
+                            .findFirst();
+                    first.ifPresent(e -> addedModulesToCountMap.put(e, addedModulesToCountMap.get(e) + 1));
+                }
                 updateMaterials();
             }
         });
@@ -154,7 +167,9 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
 
         rootNodes.clear();
         rootNodes.addAll(addedModulesToCountMap.entrySet().stream().map(Map.Entry::getKey).toList());
-        listGrid.setItems(flattenWithStagesGrouped(rootNodes.get(0)));
+        if (rootNodes.size() > 0) {
+            listGrid.setItems(flattenWithStagesGrouped(rootNodes.get(0)));
+        }
         return listGrid;
         /*VerticalLayout list = VaadinUtils.initCommonVerticalLayout();
         list.setPadding(false);
@@ -216,16 +231,20 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
         rootNodes.clear();
         rootNodes.addAll(addedModulesToCountMap.entrySet().stream().map(Map.Entry::getKey).toList());
         treeGrid.setItems(rootNodes, ProductionNode::getChildren);
+        treeGrid.setSelectionPreservationMode(SelectionPreservationMode.PRESERVE_ALL);
         return treeGrid;
     }
 
     private int recalculateBaseValue(ProductionNode node, Integer value) {
-        Double blueprintBonus = addedModulesToEfficiencyMap.get(node);
-        int count = value - (int) Math.round((double) value / 100 * baseSotiyoBenefitPercentage);
-        if (blueprintBonus != null && blueprintBonus > 0) {
-            count = value - (int) Math.round((double) value / 100 * (blueprintBonus + baseSotiyoBenefitPercentage));
-        }
         ProductionNode root = findRoot(node);
+        Double blueprintBonus = addedModulesToEfficiencyMap.get(node.getParent());
+        int count = value;
+        if (!root.equals(node)) {
+            count = value - (int) Math.round((double) value / 100 * baseSotiyoBenefitPercentage);
+            if (blueprintBonus != null && blueprintBonus > 0) {
+                count = value - (int) Math.round((double) value / 100 * (blueprintBonus + baseSotiyoBenefitPercentage));
+            }
+        }
         Integer rootCount = addedModulesToCountMap.get(root);
         return count * (rootCount != null ? rootCount : 1);
     }
@@ -236,12 +255,39 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
             rightSidePanel.add(createDraggableModule(order.getShipName()));
         }
         if (Objects.nonNull(fit)) {
-           /* List<Module> modules = fit.getModules();
+            List<Module> modules = getModules(fit);
             rightSidePanel.addClassName("scrollable-column");
             rightSidePanel.add(modules.stream()
                     .sorted(Comparator.comparing(Module::getModuleName))
-                    .map(module -> createDraggableModule(module.getModuleName())).toList());*/
+                    .map(module -> createDraggableModule(module.getModuleName())).toList());
         }
+    }
+
+    private List<Module> getModules(Fit fit) {
+        String textFit = fit.getTextFit();
+        String[] lines = textFit.split("\n");
+        final List<Module> modules = new ArrayList<>();
+        if (lines.length > 0) {
+            IntStream.range(0, lines.length).forEach(i -> {
+                String line = lines[i];
+                if (StringUtils.isNotBlank(line)) {
+                    modules.add(createModule(lines[i]));
+                }
+            });
+        }
+        return modules;
+    }
+
+    private Module createModule(String line) {
+        Module module = new Module();
+        module.setId(UUID.randomUUID().toString());
+        module.setModuleName(line);
+        module.setModuleSlot(ModuleSlot.HIGH_SLOT);
+        return module;
+    }
+
+    private InvType getInvTypeForModule(String name) {
+        return controller.getInvTypeByTypeName(name);
     }
 
     @Override
@@ -302,19 +348,20 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
 
     private HorizontalLayout buildRenderDroppedModuleButtonsLayout(ProductionNode root, HorizontalLayout layout) {
         String tooltip = "Установите улучшение материала на блюпринте для правильного отображения количества материалов";
-        efficiencyField = new IntegerField("Экономия материалов %");
+        IntegerField efficiencyField = new IntegerField("Экономия материалов %");
         PopupMenuComponent popupEfficiencyMenu = new PopupMenuComponent(root.getTypeName(), efficiencyField, VaadinIcon.COG, tooltip,
                 keyPressEvent -> {
                     Integer value = efficiencyField.getValue();
-                    addedModulesToEfficiencyMap.put(root, Double.valueOf(value));
+                    addedModulesToEfficiencyMap.put(root, Objects.isNull(value) ? 0 : Double.valueOf(value));
                     updateMaterials();
                 });
         Button bluePrintProperties = popupEfficiencyMenu.getOpenMenuButton();
-        countIntegerField = new IntegerField("Количество");
+        IntegerField countIntegerField = new IntegerField("Количество");
         PopupMenuComponent popupCountMenu = new PopupMenuComponent(root.getTypeName(), countIntegerField, VaadinIcon.DROP,
                 "", event -> {
             Integer value = countIntegerField.getValue();
-            addedModulesToCountMap.put(root, value);
+            Integer integer = addedModulesToCountMap.get(root);
+            addedModulesToCountMap.put(root, Objects.isNull(value) ? integer : value);
             updateMaterials();
         });
         getUI().ifPresent(ui -> ui.add(popupEfficiencyMenu));
@@ -329,6 +376,7 @@ public class BuilderConstructionView extends View implements LocaleChangeObserve
                     ((HasComponents) parent).remove(layout);
                     addedModulesToEfficiencyMap.remove(root);
                     addedModulesToCountMap.remove(root);
+                    rendererModules.remove(root.getTypeName());
                     rootNodes.remove(root);
                     updateMaterials();
                 }

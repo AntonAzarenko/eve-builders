@@ -95,9 +95,11 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
         });
         layout.add(
                 initNextLayout(getTranslation("table.column.order_number"), shipOrderDto.getOrderNumber()),
-                initNextLayout(getTranslation("table.column.nomination"), shipOrderDto.getShipName()),
+                initNextLayout(getTranslation("table.column.nomination"), shipOrderDto.getItemName()),
                 initNextLayout(getTranslation("table.column.price"), shipOrderDto.getPrice().toString()),
                 initNextLayout(getTranslation("management.label.fit"), showFitButton),
+                initNextLayout(getTranslation("management.label.order_free"),
+                        String.valueOf(shipOrderDto.getCount() - shipOrderDto.getInProgressCount())),
                 initNextLayout(getTranslation("table.column.count"), countTextField)
         );
         return layout;

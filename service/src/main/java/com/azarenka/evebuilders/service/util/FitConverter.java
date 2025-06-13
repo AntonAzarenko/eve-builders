@@ -32,18 +32,6 @@ public class FitConverter {
         return fit;
     }
 
-    private Module createModule(String line, ModuleSlot slot) {
-        Module module = new Module();
-        module.setId(UUID.randomUUID().toString());
-        module.setModuleName(line);
-        module.setModuleSlot(slot);
-        return module;
-    }
-
-    private InvType getInvTypeForModule(String name) {
-        return dataService.getInvTypeByTypeName(name);
-    }
-
     private Fit parseHeaderToFit(String[] text) {
         String[] header = getHeader(text);
         Fit fit = null;

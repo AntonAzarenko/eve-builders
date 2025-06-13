@@ -1,9 +1,9 @@
-package com.azarenka.evebuilders.main.commonview;
+package com.azarenka.evebuilders.main.orders;
 
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
+import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
-import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
@@ -14,8 +14,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Objects;
 
 public class OrderMetadataView extends VerticalLayout implements LocaleChangeObserver {
 
@@ -58,9 +56,10 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
 
     private void updateInformation() {
         removeAll();
+        HorizontalLayout header = createHeader();
         Span orderInfo = new Span();
         orderInfo.getElement().setProperty("innerHTML", composeInformation());
-        add(orderInfo);
+        add(header, orderInfo);
         HorizontalLayout fitLayout = new HorizontalLayout();
         fitLayout.setWidthFull();
         Button showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
@@ -101,7 +100,6 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
 
     private String composeInformation() {
         return new StringBuilder()
-                .append(createHeader())
                 .append(createMenu())
                 .append("<br/>")
                 .append(createInfo(orderDto))
@@ -115,8 +113,14 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
                 ? DISTRIBUTION_PARTIAL : DISTRIBUTION_FULL;
     }
 
-    private String createHeader() {
-        return String.format(HEADER_FORMAT, orderDto.getShipName());
+    private HorizontalLayout createHeader() {
+        HorizontalLayout header = new HorizontalLayout();
+        header.setWidth("70%");
+        String itemName = orderDto.getItemName();
+        Span itemHeaderName = new Span();
+        itemHeaderName.getElement().setProperty("innerHTML", String.format(HEADER_FORMAT, itemName));
+        header.add(controller.getImageProviderService().createImage32(itemName), itemHeaderName);
+        return header;
     }
 
     private String createMenu() {
@@ -129,7 +133,9 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
                 String.format(MENU_LINE_FORMAT, TYPE, orderDto.getOrderType()) +
                 String.format(MENU_LINE_FORMAT, RECEIVER, orderDto.getReceiver()) +
                 String.format(MENU_LINE_FORMAT, BLUE_PRINT_FLAG, orderDto.isBluePrint()) +
+                String.format(MENU_LINE_FORMAT, "Deadline", orderDto.getFinishBy().toString()) +
                 "<br/>" +
+
                 String.format(MENU_LINE_FORMAT, COUNT_IN_PROGRESS, orderDto.getInProgressCount()) +
                 String.format(MENU_LINE_FORMAT, FREE, orderDto.getCount() - orderDto.getInProgressCount()) +
                 String.format(MENU_LINE_FORMAT, READY, orderDto.getCountReady()) +

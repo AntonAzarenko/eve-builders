@@ -16,6 +16,7 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.UIScope;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.Objects;
@@ -23,6 +24,7 @@ import java.util.Objects;
 @Route(value = "/landing", layout = BuildersApplicationUi.class)
 @PermitAll
 @ParentLayout(BuildersApplicationUi.class)
+@UIScope
 public class MainWidget extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
     private DrawerToggle drawerToggle = new DrawerToggle();

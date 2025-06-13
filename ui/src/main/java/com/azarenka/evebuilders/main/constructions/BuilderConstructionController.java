@@ -1,8 +1,10 @@
 package com.azarenka.evebuilders.main.constructions;
 
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
+import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.domain.sqllite.MaterialInfo;
 import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionController;
+import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.impl.EveMaterialsDataService;
 import com.azarenka.evebuilders.service.impl.ProductionTreeService;
 import com.azarenka.evebuilders.service.util.ImageService;
@@ -21,6 +23,8 @@ public class BuilderConstructionController implements IBuildConstructionControll
     private EveMaterialsDataService eveMaterialsDataService;
     @Autowired
     private ProductionTreeService productionTreeService;
+    @Autowired
+    private IEveMaterialDataService dataService;
 
 
     @Override
@@ -36,5 +40,9 @@ public class BuilderConstructionController implements IBuildConstructionControll
     @Override
     public ProductionNode getProductionNode(String moduleName, int i) {
         return productionTreeService.buildTree(moduleName, i);
+    }
+
+    public InvType getInvTypeByTypeName(String name) {
+        return dataService.getInvTypeByTypeName(name);
     }
 }

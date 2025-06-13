@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Route(value = "corporation", layout = MenuConstructionPageView.class)
 @PageTitle("Constructions")
@@ -69,13 +70,19 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 .build();
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
         fitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
-            Fit fitById = controller.getFitById(grid.getSelectedItems().stream().findFirst().get().getFitId());
-            if (Objects.nonNull(fitById)) {
-                new FitView(fitById, controller.getFitLoaderService()).open();
-            } else {
-                Notification notification = new Notification("Фит для этого заказа не загружен", 3000, Notification.Position.MIDDLE);
-                notification.open();
-            }
+            Optional<DistributedOrder> first = grid.getSelectedItems().stream().findFirst();
+            first.ifPresent(order -> {
+                if (Objects.nonNull(order.getFitId())) {
+                    Fit fit = controller.getFitById(order.getFitId());
+                    if (Objects.nonNull(fit)) {
+                        new FitView(fit, controller.getFitLoaderService()).open();
+                    } else {
+                        Notification notification = new Notification("Фит для этого заказа не загружен",
+                                3000, Notification.Position.MIDDLE);
+                        notification.open();
+                    }
+                }
+            });
         });
         showFullOrder = new Button(VaadinIcon.PRESENTATION.create());
         showFullOrder.addClickListener(event ->
@@ -115,9 +122,9 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private void openBuildTab() {
         DistributedOrder distributedOrder = grid.getSelectionModel().getFirstSelectedItem().get();
-        Fit fitById = controller.getFitById(distributedOrder.getFitId());
+        Fit fit = controller.getFitById(distributedOrder.getFitId());
         VaadinSession.getCurrent().setAttribute("currentOrder", distributedOrder);
-        VaadinSession.getCurrent().setAttribute("currentFit", fitById);
+        VaadinSession.getCurrent().setAttribute("currentFit", fit);
         UI.getCurrent().navigate(BuilderConstructionView.class);
     }
 

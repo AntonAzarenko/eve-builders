@@ -5,7 +5,7 @@
 
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
-COPY ui-1.0.0-SNAPSHOT.jar app.jar
+COPY ui-1.1.0.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=prod
 
 VOLUME ["/db"]

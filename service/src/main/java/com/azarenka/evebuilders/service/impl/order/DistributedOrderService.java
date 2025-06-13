@@ -148,7 +148,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         distributedOrder.setFitId(shipOrderDto.getFitId());
         distributedOrder.setUserName(userName);
         distributedOrder.setCountReady(0);
-        distributedOrder.setShipName(shipOrderDto.getShipName());
+        distributedOrder.setShipName(shipOrderDto.getItemName());
         distributedOrder.setOrderRights(shipOrderDto.getOrderRights());
         distributedOrder.setOrderStatus(shipOrderDto.getOrderStatus());
         distributedOrder.setFinishedDate(shipOrderDto.getFinishBy());

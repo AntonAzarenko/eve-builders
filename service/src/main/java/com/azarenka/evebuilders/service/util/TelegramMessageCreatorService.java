@@ -16,7 +16,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
         BigDecimal total = getOutcome(orderDto.getPrice(), count);
         var text = escapeMarkdownV2(
                 String.format("* Заказ:* %s отдан в работу - %s", orderDto.getOrderNumber(), username + "\n") +
-                        String.format(FORMAT, "Наименование", orderDto.getShipName()) +
+                        String.format(FORMAT, "Наименование", orderDto.getItemName()) +
                         String.format(FORMAT, "Количество", count) +
                         String.format(FORMAT, "Остаток свободных позиций в заказе", orderDto.getCount()
                                 - orderDto.getInProgressCount()) +
