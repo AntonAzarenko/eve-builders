@@ -1,11 +1,11 @@
-# Application for Builders in the EVE ONLINE game
+# Application for Industrial Management in EVE Online
 
-* The application provides functionality to manage corporation orders for Hold My Probs Alliance (can be changed in the
-  future)
+* This application is designed to support industrial operations within the EVE Online universe. It provides tools for managing corporation production orders, specifically tailored for the Hold My Probs alliance. The application enables streamlined tracking, assignment, and fulfillment of manufacturing requests, improving efficiency and coordination across the corporation. While currently configured for Hold My Probs, the system is modular and can be adapted for use by other alliances or corporations as needed.
 
-# Development plan
+# Release notes
 
 ## Version 1.1.0 
+Release Date: 2025-06-13
 
 ### Orders Tab
 - Add **order delivery date** field.
