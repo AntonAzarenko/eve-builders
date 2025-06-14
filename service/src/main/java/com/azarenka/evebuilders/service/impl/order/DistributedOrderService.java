@@ -95,6 +95,7 @@ public class DistributedOrderService implements IDistributedOrderService {
     }
 
     @Override
+    @Transactional
     public List<String> validateRequest(RequestOrder requestOrder) {
         List<String> errors = new ArrayList<>();
         Order byOrderNumber = orderService.getByOrderNumber(requestOrder.getOrderNumber());
@@ -129,6 +130,22 @@ public class DistributedOrderService implements IDistributedOrderService {
         return distributedOrderRepository.findAllByOrderNumber(orderNumber);
     }
 
+    @Override
+    @Transactional
+    public void discardOrder(DistributedOrder order) {
+        distributedOrderRepository.delete(order);
+        Order originalOrder = orderService.getByOrderNumber(order.getOrderNumber());
+        int inProgressCount = originalOrder.getInProgressCount() - order.getCount();
+        originalOrder.setInProgressCount(inProgressCount);
+        orderService.updateOrder(originalOrder);
+        if (inProgressCount == 0) {
+            originalOrder.setOrderStatus(OrderStatusEnum.NEW);
+        }
+        telegramIntegrationService.sendMessage(
+                TelegramMessageCreatorService.createDiscardOrderMessage(order, SecurityUtils.getUserName()),
+                threadRequestId);
+    }
+
     private void updateShipOrder(String orderId, int readyCount) {
         Order order = orderService.getByOrderNumber(orderId);
         Integer countReady = order.getCountReady();
@@ -156,6 +173,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         distributedOrder.setOrderRights(shipOrderDto.getOrderRights());
         distributedOrder.setOrderStatus(shipOrderDto.getOrderStatus());
         distributedOrder.setFinishedDate(shipOrderDto.getFinishBy());
+        distributedOrder.setCreatedDate(shipOrderDto.getCreatedDate());
         distributedOrder.setCategory(shipOrderDto.getCategory());
         distributedOrder.setPrice(shipOrderDto.getPrice());
         return distributedOrder;

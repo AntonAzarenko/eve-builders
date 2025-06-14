@@ -506,7 +506,6 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
             try {
                 binder.writeBean(order);
                 controller.createOrder(order);
-                controller.sendMessage(TelegramMessageCreatorService.createOrderMessage(order));
                 Order originalOrder = (Order) VaadinSession.getCurrent().getAttribute("originalOrder");
                 if (Objects.nonNull(originalOrder)) {
                     VaadinSession.getCurrent().setAttribute("originalOrder", null);

@@ -1,18 +1,21 @@
 package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.db.OrderFilter;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Destination;
-import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
+import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.repository.database.properties.IDestinationRepository;
-import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
 import com.azarenka.evebuilders.service.api.IOrderService;
+import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,10 @@ public class OrderService implements IOrderService {
     private IReceiverRepository receiverRepository;
     @Autowired
     private IOrderRepository orderRepository;
+    @Autowired
+    private ITelegramIntegrationService telegramIntegrationService;
+    @Value("${app.telegram_thread_ping_id}")
+    private String threadPingId;
 
     @Override
     public List<Destination> getAllDestination() {
@@ -45,6 +52,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public Order saveOrder(Order order) {
         order.setId(UUID.randomUUID().toString());
         order.setOrderStatus(OrderStatusEnum.NEW);
@@ -52,6 +60,7 @@ public class OrderService implements IOrderService {
         order.setCreatedBy(SecurityUtils.getUserName());
         order.setInProgressCount(0);
         order.setCountReady(0);
+        telegramIntegrationService.sendMessage(TelegramMessageCreatorService.createOrderMessage(order), threadPingId);
         return orderRepository.save(order);
     }
 
@@ -70,6 +79,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public Order updateOrder(ShipOrderDto orderDto) {
         Optional<Order> byId = orderRepository.findById(orderDto.getId());
         Order order = null;
@@ -117,6 +127,7 @@ public class OrderService implements IOrderService {
     @Transactional
     public void removeOrder(String orderNumber) {
         orderRepository.deleteByOrderNumber(orderNumber);
+        telegramIntegrationService.sendInfoMessage(String.format("Заказ %s был удален", orderNumber), threadPingId);
     }
 
     private String createOrderNumber() {

@@ -5,6 +5,7 @@ import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -84,6 +85,21 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
 
     private static BigDecimal getOutcome(BigDecimal price, Integer count) {
         return price.multiply(new BigDecimal(count));
+    }
+
+    public static String createDiscardOrderMessage(DistributedOrder distributedOrder, String userName) {
+        BigDecimal total = getOutcome(distributedOrder.getPrice(), distributedOrder.getCount());
+        StringBuilder builder = new StringBuilder();
+        builder
+                .append(String.format("* Отчет от - %s*\n", userName))
+                .append(String.format("* Заказ: %s - Отменен*\n", distributedOrder.getOrderNumber()))
+                .append(String.format(FORMAT, "Наименование", distributedOrder.getShipName()))
+                .append(String.format("* Контракт на %s позиций*\n", distributedOrder.getCount()))
+                .append(String.format("* Контракт %s*\n", DecimalFormatter.formatIsk(total) +
+                        " " + DecimalFormatter.maybeToText(total)))
+                .append("** ОТМЕНА**");
+        var text = escapeMarkdownV2(builder.toString());
+        return text.replace(".", "\\.");
     }
 
     @Override

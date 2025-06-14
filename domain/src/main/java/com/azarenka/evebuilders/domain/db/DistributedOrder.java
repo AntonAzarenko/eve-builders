@@ -35,7 +35,9 @@ public class DistributedOrder {
     @Column(name="status")
     private OrderStatusEnum orderStatus;
     @Column(name = "created_date")
-    private LocalDate createdDate = LocalDate.now();
+    private LocalDate createdDate;
+    @Column(name = "applied_date")
+    private LocalDate appliedDate = LocalDate.now();
     @Column(name = "finished_date")
     private LocalDate finishedDate;
     @Column(name = "category")
@@ -137,6 +139,14 @@ public class DistributedOrder {
 
     public void setOrderStatus(OrderStatusEnum orderStatus) {
         this.orderStatus = orderStatus;
+    }
+
+    public LocalDate getAppliedDate() {
+        return appliedDate;
+    }
+
+    public void setAppliedDate(LocalDate appliedDate) {
+        this.appliedDate = appliedDate;
     }
 
     public LocalDate getCreatedDate() {

@@ -20,15 +20,16 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class TakeOrderWindow extends CommonDialogComponent implements LocaleChangeObserver {
 
     private String HEADER_WINDOW = getTranslation("window.header.take_an_order");
-    private final Set<ShipOrderDto> selectedItems;
+    private final ShipOrderDto shipOrderDto;
     private final Map<ShipOrderDto, IntegerField> orderTexfieldMap = new HashMap<>();
     private final IOrderViewController controller;
     private Binder<Integer> binder = new Binder<>();
@@ -36,9 +37,9 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
 
     private Button addButton;
 
-    public TakeOrderWindow(Set<ShipOrderDto> selectedItems, IOrderViewController controller,
+    public TakeOrderWindow(ShipOrderDto shipOrderDto, IOrderViewController controller,
                            ComponentEventListener<ClickEvent<Button>> clickListener) {
-        this.selectedItems = selectedItems;
+        this.shipOrderDto = shipOrderDto;
         this.controller = controller;
         this.clickListener = clickListener;
         super.setHeaderTitle(HEADER_WINDOW);
@@ -69,11 +70,29 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
 
     private VerticalLayout initMainLayout() {
         var mainLayout = VaadinUtils.initCommonVerticalLayout();
-        selectedItems.forEach(shipOrderDto -> {
-            mainLayout.add(initOrderLayout(shipOrderDto));
-            mainLayout.add(new Hr());
-        });
+        mainLayout.add(initOrderLayout(shipOrderDto));
+        mainLayout.add(new Hr());
+        mainLayout.add(initNotificationLayer());
         return mainLayout;
+    }
+
+    private Span initNotificationLayer() {
+        LocalDate createdOrderDate = shipOrderDto.getCreatedDate();
+        LocalDate deadLineDate = shipOrderDto.getFinishBy();
+        LocalDate now = LocalDate.now();
+
+        long totalDays = ChronoUnit.DAYS.between(createdOrderDate, deadLineDate);
+        long halfDays = totalDays / 2;
+        long daysLeft = ChronoUnit.DAYS.between(now, deadLineDate);
+
+        Span span = new Span();
+        span.getStyle().setColor("RED");
+
+        if (daysLeft < halfDays) {
+            span.add("Предупреждение: Более половины времени, отведённого на выполнение заказа, уже прошло. " +
+                    "Убедитесь, что вы сможете завершить его в срок.");
+        }
+        return span;
     }
 
     private VerticalLayout initOrderLayout(ShipOrderDto shipOrderDto) {

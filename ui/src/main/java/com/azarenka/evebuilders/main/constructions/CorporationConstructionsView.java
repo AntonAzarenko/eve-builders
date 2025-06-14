@@ -4,10 +4,12 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.commonview.FitView;
+import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
 import com.vaadin.flow.component.UI;
@@ -30,6 +32,8 @@ import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -46,10 +50,10 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private SearchComponent searchField;
     private Button updateStatusOrderButton;
     private Button buildButton;
-    private Button filterButton;
     private OrderFilterPopupComponent orderFilterPopupComponent;
     private Button fitButton;
     private Button showFullOrder;
+    private Button discardOrderButton;
     private OrderFilter appliedFilter = new OrderFilter();
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
@@ -68,7 +72,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 .withStatusFilter()
                 .withTypeOrderFilter()
                 .build();
-        filterButton = orderFilterPopupComponent.getOpenFilterButton();
+        Button filterButton = orderFilterPopupComponent.getOpenFilterButton();
         fitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
             Optional<DistributedOrder> first = grid.getSelectedItems().stream().findFirst();
             first.ifPresent(order -> {
@@ -90,10 +94,12 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         filterButton.setTooltipText(getTranslation("message.button.tooltip.filter_window"));
         fitButton.setTooltipText(getTranslation("message.button.tooltip.show_fit"));
         showFullOrder.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
+        discardOrderButton = new Button(VaadinIcon.TRASH.create(), event -> onDiscardOrderClicked());
         fitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         filterButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         showFullOrder.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        return new HorizontalLayout(filterButton, fitButton, showFullOrder);
+        discardOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        return new HorizontalLayout(filterButton, fitButton, showFullOrder, discardOrderButton);
     }
 
     private HorizontalLayout initToolBarLayout() {
@@ -118,6 +124,38 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
+    }
+
+    private void onDiscardOrderClicked() {
+        Optional<DistributedOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+        firstSelectedItem.ifPresent(order -> {
+            if (order.getOrderStatus() != OrderStatusEnum.COMPLETED) {
+                LocalDate createdOrderDate = order.getCreatedDate();
+                LocalDate deadLineDate = order.getFinishedDate();
+                LocalDate now = LocalDate.now();
+
+                long totalDays = ChronoUnit.DAYS.between(createdOrderDate, deadLineDate);
+                long halfDays = totalDays / 2;
+
+                long daysLeft = ChronoUnit.DAYS.between(now, deadLineDate);
+                if (daysLeft < 0) {
+                    new NotificationWindow("Warning", "До даты завершения осталось " + daysLeft + ".\n " +
+                            "Вы не можете отменить заказ так как заказ уже просрочен")
+                            .open();
+                } else {
+                    if (daysLeft < halfDays) {
+                        new NotificationWindow("Warning", "До даты завершения осталось " + daysLeft + ".\n " +
+                                "Вы не можете отменить заказ так как прошло более половины времени с момента создания заказа")
+                                .open();
+                    } else {
+                        controller.discardOrder(order);
+                        UI.getCurrent().refreshCurrentRoute(true);
+                    }
+                }
+            } else {
+                new NotificationWindow("Error", "Вы не можете отменить заказ так как заказ уже завершен").open();
+            }
+        });
     }
 
     private void openBuildTab() {
@@ -199,6 +237,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         buildButton.setEnabled(isUpdateButtonEnabled);
         fitButton.setEnabled(!selectedItems.isEmpty());
         showFullOrder.setEnabled(!selectedItems.isEmpty());
+        discardOrderButton.setEnabled(!selectedItems.isEmpty());
     }
 
     @Override

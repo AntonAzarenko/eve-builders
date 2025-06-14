@@ -78,8 +78,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
                     controller.removeOrder(order.getOrderNumber());
                     String message = String.format("Заказ %s был удален", order.getOrderNumber());
                     Notification.show(message);
-                    controller.sendInfoMessage(message);
-                    grid.getDataProvider().refreshAll();
+                    UI.getCurrent().refreshCurrentRoute(true);
                 } else {
                     Notification.show(String.format("Заказ %s не может быть удален так как уже находится в работе",
                             order.getOrderNumber()), 3000, Notification.Position.MIDDLE);

@@ -69,7 +69,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
                     Optional<ShipOrderDto> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
                     if (firstSelectedItem.isPresent()) {
                         ShipOrderDto shipOrderDto = firstSelectedItem.get();
-                        TakeOrderWindow takeOrderWindow = new TakeOrderWindow(Set.of(shipOrderDto), controller,
+                        TakeOrderWindow takeOrderWindow = new TakeOrderWindow(shipOrderDto, controller,
                                 closeActionEvent -> {
                                     grid.getDataProvider().refreshAll();
                                     updateMetaDataPanel(shipOrderDto);

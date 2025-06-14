@@ -15,6 +15,7 @@ Release Date: 2025-06-14
 - Added a warning message when accepting an order if less than half of the time between publication and due date remains.
 ## Bug Fixes
 - Fixed a bug where the notification about staff taking an order was sent to the wrong Telegram channel.
+- Fixed a bug when after removed order did not update the UI
 
 ## Version 1.1.0 
 Release Date: 2025-06-13

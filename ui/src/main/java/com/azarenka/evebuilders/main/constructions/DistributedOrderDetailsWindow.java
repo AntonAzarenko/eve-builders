@@ -41,7 +41,7 @@ public class DistributedOrderDetailsWindow extends CommonDialogComponent {
         addRow(formLayout, "Общая сумма", DecimalFormatter.formatIsk(total));
         addRow(formLayout, "Статус", order.getOrderStatus().name());
         addRow(formLayout, "Категория", order.getCategory());
-        addRow(formLayout, "Дата создания", order.getCreatedDate().toString());
+        addRow(formLayout, "Дата создания", order.getAppliedDate().toString());
         addRow(formLayout, "Дата завершения", order.getFinishedDate() != null
                 ? order.getFinishedDate().toString()
                 : "-");

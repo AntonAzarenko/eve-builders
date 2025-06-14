@@ -19,4 +19,6 @@ public interface ICorporationConstructionController {
     void saveOrder(DistributedOrder distributedOrder, Integer value);
 
     IFitLoaderService getFitLoaderService();
+
+    void discardOrder(DistributedOrder order);
 }

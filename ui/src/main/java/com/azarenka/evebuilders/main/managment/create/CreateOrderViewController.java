@@ -24,11 +24,6 @@ import java.util.Objects;
 @Controller
 public class CreateOrderViewController implements ICreateOrderController {
 
-    @Value("${app.telegram_thread_ping_id}")
-    private String threadPingId;
-    @Value("${app.telegram_thread_request_id}")
-    private String threadRequestId;
-
     @Autowired
     private IEveMaterialDataService dataService;
     @Autowired
@@ -37,8 +32,6 @@ public class CreateOrderViewController implements ICreateOrderController {
     private IOrderService orderService;
     @Autowired
     private IFitLoaderService fitLoaderService;
-    @Autowired
-    private ITelegramIntegrationService telegramIntegrationService;
 
     @Override
     public List<Fit> gitAllFits() {
@@ -99,16 +92,6 @@ public class CreateOrderViewController implements ICreateOrderController {
     @Override
     public List<Receiver> getAllReceivers() {
         return orderService.getAllReceivers();
-    }
-
-    @Override
-    public void sendMessage(String s) {
-        telegramIntegrationService.sendMessage(s, threadRequestId);
-    }
-
-    @Override
-    public void sendInfoMessage(String s) {
-        telegramIntegrationService.sendInfoMessage(s, threadPingId);
     }
 
     @Override

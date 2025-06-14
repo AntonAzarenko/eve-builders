@@ -26,4 +26,6 @@ public interface IDistributedOrderService {
     List<DistributedOrder> getAllOrders();
 
     List<DistributedOrder> getOrdersByOrderNumber(String orderNumber);
+
+    void discardOrder(DistributedOrder order);
 }

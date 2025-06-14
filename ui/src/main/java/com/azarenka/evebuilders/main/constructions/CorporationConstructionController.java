@@ -57,4 +57,9 @@ public class CorporationConstructionController implements ICorporationConstructi
     public IFitLoaderService getFitLoaderService() {
         return fitLoaderService;
     }
+
+    @Override
+    public void discardOrder(DistributedOrder order) {
+        distributedOrderService.discardOrder(order);
+    }
 }
