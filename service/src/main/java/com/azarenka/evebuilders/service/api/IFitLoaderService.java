@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface IFitLoaderService {
 
+    //TODO adjust logic to return Object with error messages instead of boolean
     boolean upload(String text);
 
     List<Fit> getAll();

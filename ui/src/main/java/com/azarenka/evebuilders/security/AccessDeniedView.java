@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AccessDeniedView extends VerticalLayout implements LocaleChangeObserver, HasErrorParameter<AccessDeniedException> {
 
     public AccessDeniedView() {
-        add(new Button(VaadinIcon.BACKSPACE.create(), event -> UI.getCurrent().navigate("/orders/default")));
+        add(new Button(VaadinIcon.BACKSPACE.create(), event -> UI.getCurrent().navigate("/landing")));
         add(new H1(getTranslation("errors.message.access_denied")));
         add(new Paragraph(getTranslation("errors.message.access_denied.message")));
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);

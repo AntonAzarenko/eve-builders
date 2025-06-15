@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.managment.create;
+package com.azarenka.evebuilders.main.request.create;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
@@ -7,17 +7,12 @@ import com.azarenka.evebuilders.domain.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.db.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
-import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import com.azarenka.evebuilders.main.commonview.FitView;
-import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
-import com.azarenka.evebuilders.main.managment.dashboard.DashboardView;
-import com.azarenka.evebuilders.main.managment.properties.CreatePropertyWindow;
-import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
+import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
 import com.azarenka.evebuilders.validators.RequiredValidator;
 import com.azarenka.evebuilders.validators.StubValidator;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.ComboBoxVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -27,6 +22,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
@@ -49,26 +45,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class ParametersOrderView extends View implements LocaleChangeObserver {
+public class ParametersRequestView extends View implements LocaleChangeObserver {
 
     private static final String REQUIRED_FIELD_VALUE = "error.message.required_value";
 
     private final IntegerField countShipsField = new IntegerField(getTranslation("management.label.count"));
     private final BigDecimalField costField = new BigDecimalField(getTranslation("management.label.cost"));
     private final ComboBox<OrderType> orderScopeField = new ComboBox(getTranslation("management.label.type"));
-    private final ComboBox<String> destinationField = new ComboBox(getTranslation("management.label.destination"));
-    private final ComboBox<String> receiverField = new ComboBox(getTranslation("management.label.receiver"));
     private final ComboBox<PriorityOption> priorityField = new ComboBox(getTranslation("management.label.priority"));
-    private final ComboBox<BlueprintOption> bluePrintField = new ComboBox(getTranslation("management.label.blue_print"));
     private final ComboBox<Fit> fitField = new ComboBox(getTranslation("management.label.fit"));
-    private final ComboBox<OrderRights> rightsholderField = new ComboBox(getTranslation("management.label.rightsholder"));
-    private final Binder<Order> binder = new Binder<>();
-    private final ICreateOrderController controller;
+    private final Binder<RequestOrder> binder = new Binder<>();
+    private final ICreateRequestController controller;
     private final DatePicker datePickerField = new DatePicker();
     private RequiredValidator requiredValidator = new RequiredValidator(getTranslation(REQUIRED_FIELD_VALUE));
     private final Div imageContainer = new Div();
 
-    private Order order = new Order();
+    private RequestOrder request = new RequestOrder();
     private ComboBox<InvGroup> groupsComboBox;
     private ComboBox<String> categoryComboBox;
     private ComboBox<InvType> itemsComboBox;
@@ -80,12 +72,12 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
     private List<InvGroup> invGroupById = new ArrayList<>();
     private SearchComponent searchField;
 
-    public ParametersOrderView(ICreateOrderController controller) {
+    public ParametersRequestView(ICreateRequestController controller) {
         this.controller = controller;
         initContent();
-        Order originalOrder = (Order) VaadinSession.getCurrent().getAttribute("originalOrder");
+        RequestOrder originalOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
         if (Objects.nonNull(originalOrder)) {
-            order = originalOrder;
+            request = originalOrder;
             binder.readBean(originalOrder);
         }
     }
@@ -120,10 +112,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         countShipsField.setLabel(getTranslation("management.label.count"));
         costField.setLabel(getTranslation("management.label.cost"));
         orderScopeField.setLabel(getTranslation("management.label.type"));
-        destinationField.setLabel(getTranslation("management.label.destination"));
-        receiverField.setLabel(getTranslation("management.label.receiver"));
         priorityField.setLabel(getTranslation("management.label.priority"));
-        bluePrintField.setLabel(getTranslation("management.label.blue_print"));
         fitField.setLabel(getTranslation("management.label.fit"));
         var selectedType = orderScopeField.getValue();
         orderScopeField.setItems(OrderType.values());
@@ -131,9 +120,6 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         var selectedPriority = priorityField.getValue();
         priorityField.setItems(PriorityOption.values());
         priorityField.setValue(selectedPriority);
-        var selected = bluePrintField.getValue();
-        bluePrintField.setItems(BlueprintOption.values());
-        bluePrintField.setValue(selected);
         requiredValidator = new RequiredValidator(getTranslation(REQUIRED_FIELD_VALUE));
     }
 
@@ -154,11 +140,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 countShipsField,
                 costField,
                 orderScopeField,
-                initDestinationFieldLayout(),
-                initReceiverFieldLayout(),
                 priorityField,
-                bluePrintField,
-                rightsholderField,
                 datePickerField,
                 initButtonsLayout()
         );
@@ -174,8 +156,8 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         searchField.setWidth("70%");
         var headerTitle = new HorizontalLayout(searchField, new Button(VaadinIcon.REFRESH.create(), event -> refresh()));
         headerTitle.setWidthFull();
-        headerTitle.setVerticalComponentAlignment(Alignment.STRETCH);
-        headerTitle.setAlignItems(Alignment.CENTER);
+        headerTitle.setVerticalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        headerTitle.setAlignItems(FlexComponent.Alignment.CENTER);
         add(headerTitle);
         return headerTitle;
     }
@@ -186,17 +168,12 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         initItemsCombobox();
         initCountShipsField();
         initCostField();
-        initDestinationField();
         initPriorityField();
         initTypeField();
-        initReceiverField();
-        initBlueprintField();
         initFitField();
-        initRightsholderLayout();
         initDataPickerLayout();
         VaadinUtils.setPadding("5px", categoryComboBox, groupsComboBox, itemsComboBox, countShipsField, costField,
-                orderScopeField, destinationField, receiverField, priorityField, bluePrintField, fitField,
-                rightsholderField, datePickerField);
+                orderScopeField, priorityField, fitField, datePickerField);
         updateFieldsStatus();
     }
 
@@ -221,7 +198,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         });
         binder.forField(categoryComboBox)
                 .withValidator(requiredValidator)
-                .bind(Order::getCategory, Order::setCategory);
+                .bind(RequestOrder::getCategory, RequestOrder::setCategory);
     }
 
     private void initGroupCombobox() {
@@ -245,7 +222,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         });
         binder.forField(groupsComboBox)
                 .withValidator(requiredValidator)
-                .bind(this::buildGroup, (obj, value) -> obj.setGroup(value.getGroupName()));
+                .bind(this::buildGroup, (obj, value) -> obj.setGroupName(value.getGroupName()));
     }
 
     private void initItemsCombobox() {
@@ -266,7 +243,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         binder.forField(itemsComboBox)
                 .withValidator(requiredValidator)
                 .bind((this::buildInvType),
-                        (shipOrder, invType) -> shipOrder.setShipName(invType.getTypeName()));
+                        (shipOrder, invType) -> shipOrder.setItemName(invType.getTypeName()));
     }
 
     //init order creation fields
@@ -276,7 +253,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         binder.forField(countShipsField)
                 .withValidator(requiredValidator)
                 .withValidator(value -> value > 0, getTranslation("errors.message.zero_value"))
-                .bind(Order::getCount, Order::setCount);
+                .bind(RequestOrder::getCount, RequestOrder::setCount);
     }
 
     private void initCostField() {
@@ -285,16 +262,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         binder.forField(costField)
                 .withValidator(requiredValidator)
                 .withValidator(value -> value.compareTo(BigDecimal.ZERO) > 0, getTranslation("errors.message.zero_value"))
-                .bind(Order::getPrice, Order::setPrice);
-    }
-
-    private void initDestinationField() {
-        destinationField.setWidthFull();
-        destinationField.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-        destinationField.setItems(controller.getAllDestination().stream().map(Destination::getDestination).toList());
-        binder.forField(destinationField)
-                .withValidator(requiredValidator)
-                .bind(Order::getDestination, Order::setDestination);
+                .bind(RequestOrder::getPrice, RequestOrder::setPrice);
     }
 
     private void initPriorityField() {
@@ -310,9 +278,9 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 .bind(this::getOption, (order, value) -> order.setPriority(value.name()));
     }
 
-    private PriorityOption getOption(Order order) {
-        if (Objects.nonNull(order.getPriority())) {
-            return PriorityOption.valueOf(order.getPriority().toUpperCase());
+    private PriorityOption getOption(RequestOrder request) {
+        if (Objects.nonNull(request.getPriority())) {
+            return PriorityOption.valueOf(request.getPriority().toUpperCase());
         }
         return PriorityOption.LOW;
     }
@@ -330,79 +298,20 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 .bind(this::getType, (order, value) -> order.setOrderType(value.name()));
     }
 
-    private OrderType getType(Order order) {
+    private OrderType getType(RequestOrder order) {
         if (Objects.nonNull(order.getOrderType())) {
             return OrderType.valueOf(order.getOrderType().toUpperCase());
         }
         return OrderType.REDEMPTION;
     }
 
-    private HorizontalLayout initDestinationFieldLayout() {
-        var layout = new HorizontalLayout();
-        layout.setWidthFull();
-        var createNewButton = new Button(VaadinIcon.PLUS.create(), event -> {
-            CreatePropertyWindow createPropertyWindow = new CreatePropertyWindow(getTranslation("window.header.add_destination"),
-                    getTranslation("window.header.add_destination"), closeEvent ->
-                    destinationField.setItems(controller.getAllDestination().stream()
-                            .map(Destination::getDestination)
-                            .toList()));
-            createPropertyWindow.setClickListener(controller::addNewDestination);
-            createPropertyWindow.open();
-        });
-        createNewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        layout.add(destinationField, createNewButton);
-        layout.setVerticalComponentAlignment(Alignment.STRETCH);
-        layout.setAlignItems(Alignment.END);
-        return layout;
-    }
-
-    private HorizontalLayout initReceiverFieldLayout() {
-        var layout = new HorizontalLayout();
-        layout.setWidthFull();
-        var createNewButton = new Button(VaadinIcon.PLUS.create(), event -> {
-            CreatePropertyWindow createPropertyWindow = new CreatePropertyWindow(getTranslation("window.header.add_receiver"),
-                    getTranslation("window.header.add_receiver"), closeEvent ->
-                    receiverField.setItems(controller.getAllReceivers().stream()
-                            .map(Receiver::getReceiver)
-                            .toList()));
-            createPropertyWindow.setClickListener(controller::addNewReceiver);
-            createPropertyWindow.open();
-        });
-        createNewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        layout.add(receiverField, createNewButton);
-        layout.setVerticalComponentAlignment(Alignment.STRETCH);
-        layout.setAlignItems(Alignment.END);
-        return layout;
-    }
-
     private HorizontalLayout initFitLoadFitButtonLayout() {
         loadButton.setTooltipText("Insert from clipboard");
         HorizontalLayout layout = new HorizontalLayout(fitField, loadButton, showFitButton);
-        layout.setVerticalComponentAlignment(Alignment.STRETCH);
-        layout.setAlignItems(Alignment.END);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        layout.setAlignItems(FlexComponent.Alignment.END);
         layout.setWidthFull();
         return layout;
-    }
-
-    private void initReceiverField() {
-        receiverField.setWidthFull();
-        receiverField.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
-        receiverField.setItems(controller.getAllReceivers().stream().map(Receiver::getReceiver).toList());
-        binder.forField(receiverField)
-                .withValidator(requiredValidator)
-                .bind(Order::getReceiver, Order::setReceiver);
-    }
-
-    private void initBlueprintField() {
-        bluePrintField.setWidthFull();
-        bluePrintField.setItems(BlueprintOption.values());
-        bluePrintField.setItemLabelGenerator(option -> switch (option) {
-            case YES -> getTranslation("management.label.blue_print.yes");
-            case NO -> getTranslation("management.label.blue_print.no");
-        });
-        binder.forField(bluePrintField)
-                .bind(order -> order.isBluePrint() ? BlueprintOption.YES : BlueprintOption.NO,
-                        (order, value) -> order.setBluePrint(value == BlueprintOption.YES));
     }
 
     private void initFitField() {
@@ -414,7 +323,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 .withValidator(StringUtils.isNotBlank(categoryComboBox.getValue())
                         && GroupTypeEnum.valueOf(categoryComboBox.getValue()) == GroupTypeEnum.valueOf("SHIPS")
                         ? requiredValidator : new StubValidator())
-                .bind(this::getFit, (order, value) -> order.setFit(Objects.nonNull(value) ? value.getId() : StringUtils.EMPTY));
+                .bind(this::getFit, (order, value) -> order.setFitId(Objects.nonNull(value) ? value.getId() : StringUtils.EMPTY));
         loadButton = new Button(VaadinIcon.FILE_ADD.create(), event -> {
             getUI().ifPresent(ui -> ui.getPage().executeJs(
                     "navigator.clipboard.readText().then(text => {" +
@@ -425,6 +334,12 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                             "});",
                     getElement()
             ));
+        });
+        showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
+            Fit fitById = fitField.getValue();
+            if (Objects.nonNull(fitById)) {
+                new FitView(fitById, controller.getFitLoaderService()).open();
+            }
         });
         fitField.addValueChangeListener(event -> {
             Fit fit = event.getValue();
@@ -444,15 +359,9 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                         .get());
             }
         });
-        showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
-            Fit fitById = fitField.getValue();
-            if (Objects.nonNull(fitById)) {
-                new FitView(fitById, controller.getFitLoaderService()).open();
-            }
-        });
     }
 
-    private Fit getFit(Order order) {
+    private Fit getFit(RequestOrder order) {
         Fit fit = new Fit();
         fit.setName("");
         if (StringUtils.isNotBlank(order.getFitId())) {
@@ -464,21 +373,13 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         return fit;
     }
 
-    private void initRightsholderLayout() {
-        rightsholderField.setItems(OrderRights.values());
-        rightsholderField.setWidthFull();
-        binder.forField(rightsholderField)
-                .withValidator(requiredValidator)
-                .bind(Order::getOrderRights, Order::setOrderRights);
-    }
-
     private void initDataPickerLayout() {
         datePickerField.setWidthFull();
         datePickerField.setLabel(getTranslation("management.label.finish_date_order"));
         binder.forField(datePickerField)
                 .withValidator(requiredValidator)
                 .withValidator(value -> value.isAfter(LocalDate.now()), getTranslation("errors.message.data_less_then_day"))
-                .bind(Order::getFinishBy, Order::setFinishBy);
+                .bind(RequestOrder::getFinishDate, RequestOrder::setFinishDate);
     }
 
     private HorizontalLayout initButtonsLayout() {
@@ -491,7 +392,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         HorizontalLayout layout = new HorizontalLayout(applyButton, clearButton);
         layout.setWidthFull();
         layout.setMargin(false);
-        layout.setJustifyContentMode(JustifyContentMode.END);
+        layout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         return layout;
     }
 
@@ -499,12 +400,19 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         GroupTypeEnum[] typeEnum = GroupTypeEnum.values();
         IntStream.range(0, typeEnum.length).forEach(i -> {
             List<InvGroup> invGroupsById = controller.getInvGroupsById(typeEnum[i].getGroupId());
-            List<InvType> typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream().map(InvGroup::getGroupID).toList());
-            Optional<InvType> optionalInvType = typesByGroupIds.stream().filter(e -> e.getTypeName().equalsIgnoreCase(value)).findFirst();
+            List<InvType> typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream()
+                    .map(InvGroup::getGroupID)
+                    .toList());
+            Optional<InvType> optionalInvType = typesByGroupIds.stream()
+                    .filter(e -> e.getTypeName().equalsIgnoreCase(value))
+                    .findFirst();
             if (optionalInvType.isPresent()) {
                 InvType invType = optionalInvType.get();
                 categoryComboBox.setValue(typeEnum[i].name());
-                groupsComboBox.setValue(invGroupsById.stream().filter(e -> e.getGroupID().equals(invType.getGroupId())).findFirst().get());
+                groupsComboBox.setValue(invGroupsById.stream()
+                        .filter(e -> e.getGroupID().equals(invType.getGroupId()))
+                        .findFirst()
+                        .get());
                 itemsComboBox.setValue(invType);
             }
         });
@@ -522,11 +430,11 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
     private void clickApplyButton() {
         if (binder.validate().isOk()) {
             try {
-                binder.writeBean(order);
-                controller.createOrder(order);
-                Order originalOrder = (Order) VaadinSession.getCurrent().getAttribute("originalOrder");
+                binder.writeBean(request);
+                controller.createRequest(request);
+                RequestOrder originalOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
                 if (Objects.nonNull(originalOrder)) {
-                    VaadinSession.getCurrent().setAttribute("originalOrder", null);
+                    VaadinSession.getCurrent().setAttribute("requestOrder", null);
                 }
                 getUI().ifPresent(ui -> ui.refreshCurrentRoute(true));
             } catch (ValidationException e) {
@@ -539,12 +447,8 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         countShipsField.clear();
         costField.clear();
         orderScopeField.clear();
-        destinationField.clear();
-        receiverField.clear();
         priorityField.clear();
-        bluePrintField.clear();
         fitField.clear();
-        rightsholderField.clear();
         datePickerField.clear();
         categoryComboBox.clear();
         groupsComboBox.clear();
@@ -557,15 +461,17 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         return controller.getBigImageByParameters(invType, "64");
     }
 
-    private InvType buildInvType(Order order) {
+    private InvType buildInvType(RequestOrder order) {
         InvType invType = new InvType();
-        if (Objects.nonNull(order.getCategory()) && Objects.nonNull(order.getGroup())) {
-            Optional<InvGroup> optionalInvGroup = controller.getInvGroupsById(GroupTypeEnum.valueOf(order.getCategory()).getGroupId()).stream()
-                    .filter(e -> e.getGroupName().equals(order.getGroup())).findFirst();
+        if (Objects.nonNull(order.getCategory()) && Objects.nonNull(order.getGroupName())) {
+            Optional<InvGroup> optionalInvGroup =
+                    controller.getInvGroupsById(GroupTypeEnum.valueOf(order.getCategory()).getGroupId()).stream()
+                            .filter(e -> e.getGroupName().equals(order.getGroupName()))
+                            .findFirst();
             if (optionalInvGroup.isPresent()) {
                 InvGroup invGroup = optionalInvGroup.get();
                 Optional<InvType> optionalInvType = controller.getTypesByGroupId(invGroup.getGroupID())
-                        .stream().filter(e -> e.getTypeName().equals(order.getShipName())).findFirst();
+                        .stream().filter(e -> e.getTypeName().equals(order.getItemName())).findFirst();
                 if (optionalInvType.isPresent()) {
                     invType = optionalInvType.get();
                 }
@@ -574,11 +480,12 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         return invType;
     }
 
-    private InvGroup buildGroup(Order order1) {
+    private InvGroup buildGroup(RequestOrder request) {
         InvGroup invGroup = new InvGroup();
-        if (Objects.nonNull(order1.getCategory()) && Objects.nonNull(order1.getGroup())) {
-            Optional<InvGroup> optionalInvGroup = controller.getInvGroupsById(GroupTypeEnum.valueOf(order1.getCategory()).getGroupId()).stream()
-                    .filter(e -> e.getGroupName().equals(order1.getGroup())).findFirst();
+        if (Objects.nonNull(request.getCategory()) && Objects.nonNull(request.getGroupName())) {
+            Optional<InvGroup> optionalInvGroup = controller.getInvGroupsById(
+                            GroupTypeEnum.valueOf(request.getCategory()).getGroupId()).stream()
+                    .filter(e -> e.getGroupName().equals(request.getGroupName())).findFirst();
             if (optionalInvGroup.isPresent()) {
                 invGroup = optionalInvGroup.get();
             }
@@ -591,10 +498,5 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         InvGroup invGroup = groupsComboBox.getValue();
         groupsComboBox.setEnabled(StringUtils.isNotBlank(value));
         itemsComboBox.setEnabled(Objects.nonNull(invGroup));
-        //boolean fitLayoutEnabled = StringUtils.isNotBlank(value)
-        //        && GroupTypeEnum.valueOf(value) == GroupTypeEnum.valueOf("SHIPS");
-        //fitField.setEnabled(fitLayoutEnabled);
-        //loadButton.setEnabled(fitLayoutEnabled);
-        //showFitButton.setEnabled(fitLayoutEnabled);
     }
 }

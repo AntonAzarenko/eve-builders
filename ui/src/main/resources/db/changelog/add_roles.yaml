@@ -32,3 +32,14 @@ databaseChangeLog:
               - column:
                   name: name
                   value: ROLE_VIEWER
+  - changeSet:
+      id: 2
+      author: aazarenka
+      changes:
+        - insert:
+            tableName: roles
+            schemaName: builders
+            columns:
+              - column:
+                  name: name
+                  value: ROLE_COORDINATOR

@@ -5,7 +5,6 @@ import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
 import com.azarenka.evebuilders.main.constructions.BuilderConstructionView;
 import com.azarenka.evebuilders.main.constructions.CorporationConstructionsView;
-import com.azarenka.evebuilders.main.constructions.PersonalConstructionView;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -14,14 +13,15 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("construction")
 @Route("")
-@PermitAll
+@RolesAllowed({"ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @ParentLayout(MainWidget.class)
-public class MenuConstructionPageView extends NavigationParentViewWithTabs implements LocaleChangeObserver {
+public class MenuConstructionPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
-    public MenuConstructionPageView() {
+    public MenuConstructionPage() {
         addView(CorporationConstructionsView.class, getTranslation("tab.construction.corporation_orders"),
                 VaadinIcon.GLOBE_WIRE.create());
 

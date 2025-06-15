@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.main.managment.api.IDashBoardController;
-import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
+import com.azarenka.evebuilders.main.menu.MenuManagerPage;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -17,7 +17,7 @@ import java.util.List;
 import static com.azarenka.evebuilders.service.util.DecimalFormatter.formatIsk;
 import static com.azarenka.evebuilders.service.util.DecimalFormatter.maybeToText;
 
-@Route(value = "dashboard", layout = MenuManagerPageView.class)
+@Route(value = "dashboard", layout = MenuManagerPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 public class DashboardView extends View {
 

@@ -13,7 +13,8 @@ public enum Role implements GrantedAuthority {
     ROLE_VIEWER,
     ROLE_USER,
     ROLE_ADMIN,
-    ROLE_SUPER_ADMIN;
+    ROLE_SUPER_ADMIN,
+    ROLE_COORDINATOR;
 
     @Id
     @Column(name = "name", nullable = false, unique = true)

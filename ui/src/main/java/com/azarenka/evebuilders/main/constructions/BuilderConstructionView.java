@@ -10,7 +10,7 @@ import com.azarenka.evebuilders.domain.db.Module;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
-import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
+import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.button.Button;
@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Route(value = "build_order", layout = MenuConstructionPageView.class)
+@Route(value = "build_order", layout = MenuConstructionPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_USER"})
 @PageTitle("Build Order")
 public class BuilderConstructionView extends View implements LocaleChangeObserver {

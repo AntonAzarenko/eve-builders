@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.domain.db.ApplicationProperties;
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.main.managment.api.IPropertiesController;
-import com.azarenka.evebuilders.main.menu.MenuManagerPageView;
+import com.azarenka.evebuilders.main.menu.MenuManagerPage;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 
-@Route(value = "properties", layout = MenuManagerPageView.class)
+@Route(value = "properties", layout = MenuManagerPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @PageTitle("Properties")
 public class PropertiesView extends View {

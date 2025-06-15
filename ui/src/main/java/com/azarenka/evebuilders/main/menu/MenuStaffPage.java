@@ -3,8 +3,6 @@ package com.azarenka.evebuilders.main.menu;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
-import com.azarenka.evebuilders.main.managment.dashboard.DashboardView;
-import com.azarenka.evebuilders.main.managment.properties.PropertiesView;
 import com.azarenka.evebuilders.main.staff.StaffDashboard;
 import com.azarenka.evebuilders.main.staff.StaffProperties;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -16,15 +14,16 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("staff")
 @Route("")
-@PermitAll
+@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @PageTitle("Staff")
 @ParentLayout(MainWidget.class)
-public class MenuStaffPageView extends NavigationParentViewWithTabs implements LocaleChangeObserver {
+public class MenuStaffPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
-    public MenuStaffPageView() {
+    public MenuStaffPage() {
         addView(StaffDashboard.class, getTranslation("tab.manager.dashboard"), VaadinIcon.CROSSHAIRS.create());
         addView(StaffProperties.class, getTranslation("tab.manager.properties"), VaadinIcon.FOLDER.create());
     }

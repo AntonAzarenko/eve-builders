@@ -4,14 +4,14 @@ import com.azarenka.evebuilders.component.StatCard;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.main.managment.api.IStaffController;
-import com.azarenka.evebuilders.main.menu.MenuStaffPageView;
+import com.azarenka.evebuilders.main.menu.MenuStaffPage;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
 
-@Route(value = "dashbord", layout = MenuStaffPageView.class)
+@Route(value = "dashbord", layout = MenuStaffPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 public class StaffDashboard extends View {
 

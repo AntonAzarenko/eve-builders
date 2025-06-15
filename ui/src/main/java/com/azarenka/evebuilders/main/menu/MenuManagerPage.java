@@ -10,19 +10,19 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("manager")
 @Route("")
-@PermitAll
+@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @ParentLayout(MainWidget.class)
-public class MenuManagerPageView extends NavigationParentViewWithTabs implements LocaleChangeObserver {
+public class MenuManagerPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
-    public MenuManagerPageView() {
+    public MenuManagerPage() {
         addView(DashboardView.class, getTranslation("tab.manager.dashboard"), VaadinIcon.CROSSHAIRS.create());
         addView(AddOrderPage.class, getTranslation("tab.manager.add_order"), VaadinIcon.DOCTOR_BRIEFCASE.create());
         addView(PropertiesView.class, getTranslation("tab.manager.properties"), VaadinIcon.FOLDER.create());

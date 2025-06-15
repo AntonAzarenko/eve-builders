@@ -13,14 +13,15 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class NavigationParentViewWithTabs extends NavigableParentView implements AfterNavigationObserver {
 
     private final Tabs tabs = new Tabs();
     private final Div viewDisplay = new Div();
     private boolean noNavigation = false;
+    private final Map<Class<?>, NavigationTab> tabMap = new LinkedHashMap<>();
+
 
     public NavigationParentViewWithTabs() {
         setSizeFull();
@@ -40,10 +41,13 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
             tab.setId(tabId);
         }
         tabs.add(tab);
+        tabMap.put(viewClass, tab);
     }
 
-    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role viewPermission, Icon tabIcon) {
-        if (viewPermission != null && Objects.requireNonNull(SecurityUtils.getUserRoles()).contains(viewPermission)) {
+    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission, Icon tabIcon) {
+        boolean hasPermission = Arrays.stream(viewPermission)
+                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        if (hasPermission) {
             addView(viewClass, caption, tabIcon);
         }
     }
@@ -90,10 +94,17 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
 
     @Override
     protected Class<? extends Component> getDefaultChildView() {
+        if (tabs.getComponentCount() == 0) {
+            return null;
+        }
         return ((NavigationTab) tabs.getTabAt(0)).getNavigationTarget();
     }
 
     public Tabs getTabs() {
         return tabs;
+    }
+
+    public Map<Class<?>, NavigationTab> getTabMap() {
+        return tabMap;
     }
 }

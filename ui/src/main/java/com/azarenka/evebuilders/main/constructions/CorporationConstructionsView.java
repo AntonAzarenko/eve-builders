@@ -11,7 +11,7 @@ import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
-import com.azarenka.evebuilders.main.menu.MenuConstructionPageView;
+import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-@Route(value = "corporation", layout = MenuConstructionPageView.class)
+@Route(value = "corporation", layout = MenuConstructionPage.class)
 @PageTitle("Constructions")
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_USER"})
 public class CorporationConstructionsView extends View implements LocaleChangeObserver {
