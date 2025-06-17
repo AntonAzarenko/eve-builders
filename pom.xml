@@ -22,7 +22,8 @@
     </modules>
 
     <properties>
-        <project.version>1.3.0</project.version>
+        <app.version>1.3.0</app.version>
+        <project.version>${app.version}</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
@@ -122,5 +123,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/*.sqlite</exclude>
+                    <exclude>**/*.png</exclude>
+                    <exclude>**/*.jpg</exclude>
+                    <exclude>**/*.pdf</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>
