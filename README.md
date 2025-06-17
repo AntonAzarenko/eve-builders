@@ -4,6 +4,26 @@
 
 # Release notes
 
+## Version 1.3.0
+Release Date: 2025-06-17
+
+## Roles and Permissions
+- Introduced the `ROLE_COORDINATOR` role.
+    - Coordinators can create and view their own order requests.
+- Users with `ROLE_ADMIN` or `ROLE_SUPER_ADMIN` can:
+    - View all submitted requests.
+    - Create full orders based on submitted requests.
+## Order Workflow
+- Added logic for **processing submitted requests** by administrators.
+- Implemented order creation flow based on coordinator-submitted requests.
+
+## Request Center
+- Added a new menu section: **Request Center**.
+- The section contains three tabs:
+    - **Create Request** – available for users with the `ROLE_COORDINATOR` role.
+    - **My Requests** – available for users with the `ROLE_COORDINATOR` role.
+    - **Requests** – available for users with `ROLE_ADMIN` and `ROLE_SUPER_ADMIN` roles.
+
 ## Version 1.2.0
 Release Date: 2025-06-14
 
