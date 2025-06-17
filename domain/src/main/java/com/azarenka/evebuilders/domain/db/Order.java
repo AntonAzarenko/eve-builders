@@ -51,6 +51,8 @@ public class Order {
     private LocalDate updatedDate;
     @Column(name = "fit_id")
     private String fitId;
+    @Column(name = "request_id")
+    private String requestId;
     @Column(name = "order_rights")
     private OrderRights orderRights;
     @Column(name = "rightsholder")
@@ -62,6 +64,14 @@ public class Order {
     @Column(name = "finish_by")
     private LocalDate finishBy;
 
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -70,11 +80,11 @@ public class Order {
         this.category = category;
     }
 
-    public String getGroup() {
+    public String getGroupName() {
         return groupName;
     }
 
-    public void setGroup(String group) {
+    public void setGroupName(String group) {
         this.groupName = group;
     }
 

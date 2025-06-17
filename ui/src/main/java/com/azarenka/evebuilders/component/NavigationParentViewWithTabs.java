@@ -32,11 +32,11 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
     }
 
     public void addView(Class<? extends Component> viewClass, String label, Icon tabIcon) {
-        addView(viewClass, label, null, tabIcon);
+        addView(viewClass, label, null, tabIcon, 0);
     }
 
-    public void addView(Class<? extends Component> viewClass, String label, String tabId, Icon tabIcon) {
-        NavigationTab tab = new NavigationTab(viewClass, label, tabIcon);
+    public void addView(Class<? extends Component> viewClass, String label, String tabId, Icon tabIcon, Integer badgeCount) {
+        NavigationTab tab = new NavigationTab(viewClass, label, tabIcon, badgeCount);
         if (tabId != null) {
             tab.setId(tabId);
         }
@@ -49,6 +49,15 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
                 .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
         if (hasPermission) {
             addView(viewClass, caption, tabIcon);
+        }
+    }
+
+    public void addTabIfAllowedWithBadge(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
+                                         Icon tabIcon, Integer badgeCount) {
+        boolean hasPermission = Arrays.stream(viewPermission)
+                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        if (hasPermission) {
+            addView(viewClass, caption, null, tabIcon, badgeCount);
         }
     }
 

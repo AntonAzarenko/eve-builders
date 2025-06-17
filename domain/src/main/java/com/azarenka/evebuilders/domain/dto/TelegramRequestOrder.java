@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RequestOrder {
+public class TelegramRequestOrder {
 
     @JsonProperty("user_name")
     private String userName;
@@ -13,7 +13,7 @@ public class RequestOrder {
     @JsonProperty("count")
     private int count;
 
-    public RequestOrder() {
+    public TelegramRequestOrder() {
     }
 
     public String getUserName() {

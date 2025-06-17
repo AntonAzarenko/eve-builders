@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.api;
 
 import com.azarenka.evebuilders.domain.db.OrderFilter;
-import com.azarenka.evebuilders.domain.dto.RequestOrder;
+import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 
@@ -17,9 +17,9 @@ public interface IDistributedOrderService {
 
     void update(DistributedOrder distributedOrder, Integer value);
 
-    DistributedOrder distributeOrder(RequestOrder requestOrder);
+    DistributedOrder distributeOrder(TelegramRequestOrder telegramRequestOrder);
 
-    List<String> validateRequest(RequestOrder requestOrder);
+    List<String> validateRequest(TelegramRequestOrder telegramRequestOrder);
 
     void sendMessage(String message);
 

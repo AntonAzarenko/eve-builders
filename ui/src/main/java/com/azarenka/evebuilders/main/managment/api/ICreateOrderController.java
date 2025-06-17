@@ -1,9 +1,6 @@
 package com.azarenka.evebuilders.main.managment.api;
 
-import com.azarenka.evebuilders.domain.db.Destination;
-import com.azarenka.evebuilders.domain.db.Fit;
-import com.azarenka.evebuilders.domain.db.Order;
-import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.db.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
@@ -46,4 +43,8 @@ public interface ICreateOrderController {
     void removeOrder(String orderNumber);
 
     IFitLoaderService getFitLoaderService();
+
+    void updateRequestStatusOrder(RequestOrder requestOrder, RequestOrderStatusEnum status);
+
+    RequestOrder getRequestOrderById(String requestId);
 }

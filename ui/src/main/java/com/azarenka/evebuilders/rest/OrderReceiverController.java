@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.rest;
 
-import com.azarenka.evebuilders.domain.dto.RequestOrder;
+import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +19,14 @@ public class OrderReceiverController {
     private IDistributedOrderService distributedOrderService;
 
     @PostMapping(value = "/api/orders", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DistributedOrder> receiveOrder(@RequestBody RequestOrder requestOrder) {
-        DistributedOrder distributedOrder = distributedOrderService.distributeOrder(requestOrder);
+    public ResponseEntity<DistributedOrder> receiveOrder(@RequestBody TelegramRequestOrder telegramRequestOrder) {
+        DistributedOrder distributedOrder = distributedOrderService.distributeOrder(telegramRequestOrder);
         return new ResponseEntity<>(distributedOrder, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/api/orders/validator", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> validateOrder(@RequestBody RequestOrder requestOrder) {
-        List<String> errors = distributedOrderService.validateRequest(requestOrder);
+    public ResponseEntity<List<String>> validateOrder(@RequestBody TelegramRequestOrder telegramRequestOrder) {
+        List<String> errors = distributedOrderService.validateRequest(telegramRequestOrder);
         return new ResponseEntity<>(errors, HttpStatus.CREATED);
     }
 }

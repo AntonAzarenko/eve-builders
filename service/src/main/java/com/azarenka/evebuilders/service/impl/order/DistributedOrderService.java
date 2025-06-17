@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.User;
-import com.azarenka.evebuilders.domain.dto.RequestOrder;
+import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
@@ -88,27 +88,27 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     @Override
     @Transactional
-    public DistributedOrder distributeOrder(RequestOrder requestOrder) {
-        Order byOrderNumber = orderService.getByOrderNumber(requestOrder.getOrderNumber());
+    public DistributedOrder distributeOrder(TelegramRequestOrder telegramRequestOrder) {
+        Order byOrderNumber = orderService.getByOrderNumber(telegramRequestOrder.getOrderNumber());
         ShipOrderDto shipOrderDto = new ShipOrderDto(byOrderNumber);
-        return save(shipOrderDto, requestOrder.getCount(), requestOrder.getUserName());
+        return save(shipOrderDto, telegramRequestOrder.getCount(), telegramRequestOrder.getUserName());
     }
 
     @Override
     @Transactional
-    public List<String> validateRequest(RequestOrder requestOrder) {
+    public List<String> validateRequest(TelegramRequestOrder telegramRequestOrder) {
         List<String> errors = new ArrayList<>();
-        Order byOrderNumber = orderService.getByOrderNumber(requestOrder.getOrderNumber());
+        Order byOrderNumber = orderService.getByOrderNumber(telegramRequestOrder.getOrderNumber());
         if (Objects.isNull(byOrderNumber)) {
-            errors.add("Заказ под номером " + requestOrder.getOrderNumber() + " не найден.\n");
+            errors.add("Заказ под номером " + telegramRequestOrder.getOrderNumber() + " не найден.\n");
         }
-        Optional<User> byUsername = userService.getByUsername(requestOrder.getUserName());
+        Optional<User> byUsername = userService.getByUsername(telegramRequestOrder.getUserName());
         if (byUsername.isEmpty()) {
-            errors.add("Пользователь под ником " + requestOrder.getUserName() + " не найден.\n");
+            errors.add("Пользователь под ником " + telegramRequestOrder.getUserName() + " не найден.\n");
         }
         if (Objects.nonNull(byOrderNumber)) {
             int freeCount = byOrderNumber.getCount() - byOrderNumber.getInProgressCount();
-            if (freeCount < requestOrder.getCount()) {
+            if (freeCount < telegramRequestOrder.getCount()) {
                 errors.add("Количество запрошенных кораблей превышает количество свободных. Свобоных - " + freeCount + "\n");
             }
         }

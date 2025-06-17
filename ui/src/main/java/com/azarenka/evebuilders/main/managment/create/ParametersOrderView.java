@@ -10,9 +10,7 @@ import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
-import com.azarenka.evebuilders.main.managment.dashboard.DashboardView;
 import com.azarenka.evebuilders.main.managment.properties.CreatePropertyWindow;
-import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 import com.azarenka.evebuilders.validators.RequiredValidator;
 import com.azarenka.evebuilders.validators.StubValidator;
 import com.vaadin.flow.component.ClientCallable;
@@ -87,7 +85,21 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         if (Objects.nonNull(originalOrder)) {
             order = originalOrder;
             binder.readBean(originalOrder);
+        } else if (Objects.nonNull(VaadinSession.getCurrent().getAttribute("requestOrder"))) {
+            createOrderBasedOnRequest();
         }
+    }
+
+    private void createOrderBasedOnRequest() {
+        RequestOrder requestOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
+        searchByText(requestOrder.getItemName());
+        datePickerField.setValue(requestOrder.getFinishDate());
+        fitField.setValue(controller.getFitById(requestOrder.getFitId()));
+        countShipsField.setValue(requestOrder.getCount());
+        costField.setValue(requestOrder.getPrice());
+        orderScopeField.setValue(OrderType.valueOf(requestOrder.getOrderType()));
+        priorityField.setValue(PriorityOption.valueOf(requestOrder.getPriority()));
+        order.setRequestId(requestOrder.getId());
     }
 
     @ClientCallable
@@ -245,7 +257,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         });
         binder.forField(groupsComboBox)
                 .withValidator(requiredValidator)
-                .bind(this::buildGroup, (obj, value) -> obj.setGroup(value.getGroupName()));
+                .bind(this::buildGroup, (obj, value) -> obj.setGroupName(value.getGroupName()));
     }
 
     private void initItemsCombobox() {
@@ -524,14 +536,19 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
             try {
                 binder.writeBean(order);
                 controller.createOrder(order);
-                Order originalOrder = (Order) VaadinSession.getCurrent().getAttribute("originalOrder");
-                if (Objects.nonNull(originalOrder)) {
-                    VaadinSession.getCurrent().setAttribute("originalOrder", null);
-                }
+                updateRequestOrder();
+                clearFields();
                 getUI().ifPresent(ui -> ui.refreshCurrentRoute(true));
             } catch (ValidationException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void updateRequestOrder() {
+        if (Objects.nonNull(VaadinSession.getCurrent().getAttribute("requestOrder"))) {
+            RequestOrder requestOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
+            controller.updateRequestStatusOrder(requestOrder, RequestOrderStatusEnum.APPROVED);
         }
     }
 
@@ -551,6 +568,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         itemsComboBox.clear();
         imageContainer.removeAll();
         VaadinSession.getCurrent().setAttribute("originalOrder", null);
+        VaadinSession.getCurrent().setAttribute("requestOrder", null);
     }
 
     private Image createImage(InvType invType) {
@@ -559,9 +577,9 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
 
     private InvType buildInvType(Order order) {
         InvType invType = new InvType();
-        if (Objects.nonNull(order.getCategory()) && Objects.nonNull(order.getGroup())) {
+        if (Objects.nonNull(order.getCategory()) && Objects.nonNull(order.getGroupName())) {
             Optional<InvGroup> optionalInvGroup = controller.getInvGroupsById(GroupTypeEnum.valueOf(order.getCategory()).getGroupId()).stream()
-                    .filter(e -> e.getGroupName().equals(order.getGroup())).findFirst();
+                    .filter(e -> e.getGroupName().equals(order.getGroupName())).findFirst();
             if (optionalInvGroup.isPresent()) {
                 InvGroup invGroup = optionalInvGroup.get();
                 Optional<InvType> optionalInvType = controller.getTypesByGroupId(invGroup.getGroupID())
@@ -576,9 +594,9 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
 
     private InvGroup buildGroup(Order order1) {
         InvGroup invGroup = new InvGroup();
-        if (Objects.nonNull(order1.getCategory()) && Objects.nonNull(order1.getGroup())) {
+        if (Objects.nonNull(order1.getCategory()) && Objects.nonNull(order1.getGroupName())) {
             Optional<InvGroup> optionalInvGroup = controller.getInvGroupsById(GroupTypeEnum.valueOf(order1.getCategory()).getGroupId()).stream()
-                    .filter(e -> e.getGroupName().equals(order1.getGroup())).findFirst();
+                    .filter(e -> e.getGroupName().equals(order1.getGroupName())).findFirst();
             if (optionalInvGroup.isPresent()) {
                 invGroup = optionalInvGroup.get();
             }

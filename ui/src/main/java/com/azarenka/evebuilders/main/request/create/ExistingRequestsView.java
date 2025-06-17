@@ -3,8 +3,7 @@ package com.azarenka.evebuilders.main.request.create;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
-import com.azarenka.evebuilders.domain.db.RequestOrderEnum;
-import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -46,11 +45,10 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        grid.getColumns().get(0).setHeader(getTranslation("table.column.order_number"));
+        grid.getColumns().get(0).setHeader(getTranslation("table.column.nomination"));
         grid.getColumns().get(1).setHeader(getTranslation("table.column.status"));
-        grid.getColumns().get(2).setHeader(getTranslation("table.column.nomination"));
-        grid.getColumns().get(3).setHeader(getTranslation("table.column.count"));
-        grid.getColumns().get(4).setHeader(getTranslation("table.column.price"));
+        grid.getColumns().get(2).setHeader(getTranslation("table.column.count"));
+        grid.getColumns().get(3).setHeader(getTranslation("table.column.price"));
     }
 
     private void initContent() {
@@ -76,7 +74,7 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
         recycleButton.setTooltipText("Удалить заказ");
         recycleButton.addClickListener(event -> {
             grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
-                if (order.getRequestStatus() == RequestOrderEnum.SUBMITTED) {
+                if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED) {
                     controller.removeRequest(order.getId());
                     String message = String.format("Заявка на %s была удалена", order.getItemName());
                     Notification.show(message);
@@ -116,9 +114,8 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
     }
 
     private void addColumns() {
-        addColumn(RequestOrder::getId);
-        addColumn(value -> value.getRequestStatus().name());
         addColumn(RequestOrder::getItemName);
+        addColumn(value -> value.getRequestStatus().name());
         addNumberColumn(RequestOrder::getCount);
         addAmountColumn(order -> formatIsk(order.getPrice()));
     }
@@ -153,7 +150,7 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
         Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         boolean isOrderSelected = firstSelectedItem.isPresent();
         boolean isEditButtonEnabled =
-                isOrderSelected && firstSelectedItem.get().getRequestStatus() == RequestOrderEnum.SUBMITTED;
+                isOrderSelected && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED;
         recycleButton.setEnabled(isOrderSelected);
         repeatOrderButton.setEnabled(isOrderSelected);
         editButton.setEnabled(isEditButtonEnabled);

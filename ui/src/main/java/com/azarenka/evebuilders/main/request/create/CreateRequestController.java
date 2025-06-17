@@ -1,7 +1,6 @@
 package com.azarenka.evebuilders.main.request.create;
 
 import com.azarenka.evebuilders.domain.db.Fit;
-import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
@@ -61,8 +60,7 @@ public class CreateRequestController implements ICreateRequestController {
 
     @Override
     public RequestOrder createRequest(RequestOrder order) {
-        RequestOrder byOrderNumber = requestOrderService.getRequestById(order.getId());
-        if (Objects.nonNull(byOrderNumber)) {
+        if (Objects.nonNull(order.getId())) {
             return requestOrderService.update(order);
         } else {
             return requestOrderService.save(order);

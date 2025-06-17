@@ -4,6 +4,7 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -76,6 +77,8 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
             grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
                 if (order.getOrderStatus() == OrderStatusEnum.NEW) {
                     controller.removeOrder(order.getOrderNumber());
+                    controller.updateRequestStatusOrder(
+                            controller.getRequestOrderById(order.getRequestId()), RequestOrderStatusEnum.SUBMITTED);
                     String message = String.format("Заказ %s был удален", order.getOrderNumber());
                     Notification.show(message);
                     UI.getCurrent().refreshCurrentRoute(true);

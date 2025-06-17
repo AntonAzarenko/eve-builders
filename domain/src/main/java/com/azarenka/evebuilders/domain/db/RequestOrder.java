@@ -1,6 +1,5 @@
 package com.azarenka.evebuilders.domain.db;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -43,13 +42,13 @@ public class RequestOrder {
     @Column(name = "finish_date")
     private LocalDate finishDate;
     @Column(name = "status")
-    private RequestOrderEnum requestStatus;
+    private RequestOrderStatusEnum requestStatus;
 
-    public RequestOrderEnum getRequestStatus() {
+    public RequestOrderStatusEnum getRequestStatus() {
         return requestStatus;
     }
 
-    public void setRequestStatus(RequestOrderEnum requestStatus) {
+    public void setRequestStatus(RequestOrderStatusEnum requestStatus) {
         this.requestStatus = requestStatus;
     }
 

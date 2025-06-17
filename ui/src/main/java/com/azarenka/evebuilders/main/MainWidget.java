@@ -32,18 +32,23 @@ import java.util.Map;
 public class MainWidget extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
     private final DrawerToggle drawerToggle = new DrawerToggle();
+    private final MainWidgetController controller;
+    private int countSubmittedRequests;
 
-    public MainWidget() {
+    public MainWidget(MainWidgetController controller) {
+        this.controller = controller;
+        countSubmittedRequests = controller.countRequests();
         addTabIfAllowed(getTranslation("menu.tab.orders"), OrdersPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.HOME.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create());
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.FACTORY.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.FACTORY.create());
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
                 new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create());
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
                 new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create());
-        addTabIfAllowed(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
-                new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create());
+        addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
+                new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
+                countSubmittedRequests);
     }
 
     @Override
@@ -60,6 +65,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
+        countSubmittedRequests = controller.countRequests();
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasUserPermission() || BuilderPermission.hasAdminPermission()) {
             tabMap.get(OrdersPage.class).updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create());
@@ -70,7 +76,8 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
             tabMap.get(MenuStaffPage.class).updateLabel(getTranslation("menu.tab.personal"), VaadinIcon.SPECIALIST.create());
         }
         if (BuilderPermission.hasCoordinatorPermission() || BuilderPermission.hasAdminPermission()) {
-            tabMap.get(MenuRequestCenterPage.class).updateLabel(getTranslation("menu.tab.request"), VaadinIcon.DASHBOARD.create());
+            tabMap.get(MenuRequestCenterPage.class).updateLabel(getTranslation("menu.tab.request"),
+                    VaadinIcon.DASHBOARD.create(), countSubmittedRequests);
         }
     }
 }

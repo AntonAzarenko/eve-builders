@@ -1,8 +1,7 @@
 package com.azarenka.evebuilders.service.impl.request;
 
-import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
-import com.azarenka.evebuilders.domain.db.RequestOrderEnum;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.repository.database.IRequestOrderRepository;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
@@ -23,7 +22,7 @@ public class RequestOrderService implements IRequestOrderService {
     @Override
     public RequestOrder save(RequestOrder requestOrder) {
         requestOrder.setId(UUID.randomUUID().toString());
-        requestOrder.setRequestStatus(RequestOrderEnum.SUBMITTED);
+        requestOrder.setRequestStatus(RequestOrderStatusEnum.SUBMITTED);
         requestOrder.setCreatedBy(SecurityUtils.getUserName());
         return requestOrderRepository.save(requestOrder);
     }

@@ -1,20 +1,13 @@
 package com.azarenka.evebuilders.main.managment.create;
 
-import com.azarenka.evebuilders.domain.db.Destination;
-import com.azarenka.evebuilders.domain.db.Fit;
-import com.azarenka.evebuilders.domain.db.Order;
-import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.db.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
-import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
-import com.azarenka.evebuilders.service.api.IFitLoaderService;
-import com.azarenka.evebuilders.service.api.IOrderService;
-import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.api.*;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +25,8 @@ public class CreateOrderViewController implements ICreateOrderController {
     private IOrderService orderService;
     @Autowired
     private IFitLoaderService fitLoaderService;
+    @Autowired
+    private IRequestOrderService requestOrderService;
 
     @Override
     public List<Fit> gitAllFits() {
@@ -116,5 +111,15 @@ public class CreateOrderViewController implements ICreateOrderController {
 
     public IFitLoaderService getFitLoaderService() {
         return fitLoaderService;
+    }
+
+    public void updateRequestStatusOrder(RequestOrder requestOrder, RequestOrderStatusEnum status) {
+        requestOrder.setRequestStatus(status);
+        requestOrderService.update(requestOrder);
+    }
+
+    @Override
+    public RequestOrder getRequestOrderById(String requestId) {
+        return requestOrderService.getRequestById(requestId);
     }
 }
