@@ -27,6 +27,8 @@ public class CreateOrderViewController implements ICreateOrderController {
     private IFitLoaderService fitLoaderService;
     @Autowired
     private IRequestOrderService requestOrderService;
+    @Autowired
+    private IEveMailService mailService;
 
     @Override
     public List<Fit> gitAllFits() {
@@ -121,5 +123,10 @@ public class CreateOrderViewController implements ICreateOrderController {
     @Override
     public RequestOrder getRequestOrderById(String requestId) {
         return requestOrderService.getRequestById(requestId);
+    }
+
+    @Override
+    public void sentMessage(Order order) {
+        mailService.sendMailToCoordinator(order);
     }
 }

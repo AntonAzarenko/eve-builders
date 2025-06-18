@@ -52,7 +52,7 @@ public class OrdersViewController implements IOrderViewController {
         String userName = SecurityUtils.getUserName();
         orderTexfieldMap.forEach((order, textField) -> {
             Integer value = textField.getValue();
-            distributedOrderService.save(order, value, userName);
+            distributedOrderService.save(order.getOrderNumber(), value, userName);
         });
     }
 

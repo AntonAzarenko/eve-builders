@@ -1,6 +1,8 @@
 package com.azarenka.evebuilders.service.impl.intergarion;
 
-import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +15,14 @@ import java.net.http.HttpResponse;
 @Service
 public class TelegramIntegrationService implements ITelegramIntegrationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TelegramIntegrationService.class);
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+
     @Value("${app.telegram_bot.token}")
     private String token;
     @Value("${app.telegram_chat_id}")
     private String chatId;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
     public void sendMessage(String messageText, String threadId) {
@@ -40,9 +44,7 @@ public class TelegramIntegrationService implements ITelegramIntegrationService {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.out.println("Error: " + response.body());
-            } else {
-                System.out.println("Sent: " + response.body());
+                LOGGER.error("Message was not sent: {}", response.body());
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);

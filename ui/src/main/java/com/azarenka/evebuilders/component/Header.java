@@ -11,7 +11,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -59,7 +58,6 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         initUserName();
         initAboutLayout();
         createContextMenu();
-
         var layout = new HorizontalLayout();
         layout.add(aboutButton, avatar);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
@@ -78,7 +76,7 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
     private void initAddCharacterButton() {
         addCharacterButton = new Button(getTranslation("button.app.add_character"));
         addCharacterButton.addClickListener(event ->
-                UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
+            UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
         addCharacterButton.setMaxWidth("176px");
         addCharacterButton.setMinWidth("176px");
     }
@@ -89,7 +87,6 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         contextMenu.getElement().getStyle().set("padding", "0px").set("margin", "0px");
         contextMenu.getElement().getStyle().set("align-items", "center");
         contextMenu.setTarget(avatar);
-
         addMenuItem(contextMenu, largeAvatar);
         addMenuItem(contextMenu, userNameDiv);
         addMenuItem(contextMenu, localeComboboxField);
@@ -98,10 +95,9 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         return contextMenu;
     }
 
-    private MenuItem addMenuItem(ContextMenu contextMenu, Component component) {
+    private void addMenuItem(ContextMenu contextMenu, Component component) {
         MenuItem menuItem = contextMenu.addItem(component);
         menuItem.getElement().getStyle().set("padding", "0px").set("margin", "0px");
-        return menuItem;
     }
 
     @Override
@@ -147,7 +143,7 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
 
     private void initLogoutButton() {
         logoutButton = new Button(getTranslation("button.app.logout"), VaadinIcon.OUT.create(),
-                event -> UI.getCurrent().getPage().setLocation("/logout"));
+            event -> UI.getCurrent().getPage().setLocation("/logout"));
         logoutButton.setWidth("176px");
     }
 

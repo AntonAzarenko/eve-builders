@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
-import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;

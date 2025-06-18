@@ -4,6 +4,23 @@
 
 # Release notes
 
+## Version 1.3.1
+Release Date: 2025-06-18
+
+## Access Control Improvements
+- Added informational message for unauthorized users without sufficient roles, including instructions whom to contact for access.
+
+## Concurrency Fixes
+- Fixed a race condition issue where users could simultaneously take an order, leading to incorrect number of assigned items.
+
+## EVE Mail Integration
+- Added integration for sending in-game mails via EVE Online API.
+  - Currently used for coordinators: when their request is processed, a notification is automatically sent to their EVE Online mail.
+
+## Administrator Features
+- Added "Process Request" button for administrators.
+- Administrators can now directly create orders based on submitted requests.
+
 ## Version 1.3.0
 Release Date: 2025-06-17
 

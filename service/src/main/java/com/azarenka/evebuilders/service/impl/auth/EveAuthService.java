@@ -7,6 +7,7 @@ import com.azarenka.evebuilders.service.converter.JsonConverter;
 import com.azarenka.evebuilders.service.converter.VaadinImageConverter;
 import com.azarenka.evebuilders.service.impl.intergarion.EvePortraitService;
 import com.vaadin.flow.component.html.Image;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -33,11 +34,11 @@ public class EveAuthService implements IEveAuthService {
     @Value("${eve.clientSecret}")
     private String clientSecret;
     @Value("${eve.authorize.uri}")
-    private  String authorizationEndpoint;
+    private String authorizationEndpoint;
     @Value("${eve.token.uri}")
-    private  String tokenEndpoint;
+    private String tokenEndpoint;
     @Value("${app.version}")
-    private  String appVersion;
+    private String appVersion;
 
     @Autowired
     private EvePortraitService evePortraitService;
@@ -45,14 +46,18 @@ public class EveAuthService implements IEveAuthService {
     private IUserService userService;
 
     public String generateAuthUrl() {
-        String state = UUID.randomUUID().toString();
+        var state = UUID.randomUUID().toString();
         return String.format(
-                "%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s",
-                authorizationEndpoint,
-                clientId,
-                URLEncoder.encode(redirectUri, StandardCharsets.UTF_8),
-                URLEncoder.encode("publicData esi-assets.read_assets.v1", StandardCharsets.UTF_8),
-                state
+            "%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s",
+            authorizationEndpoint,
+            clientId,
+            URLEncoder.encode(redirectUri, StandardCharsets.UTF_8),
+            URLEncoder.encode(
+                    "publicData " +
+                    "esi-assets.read_assets.v1 " +
+                    "esi-mail.send_mail.v1",
+                StandardCharsets.UTF_8),
+            state
         );
     }
 
@@ -66,7 +71,7 @@ public class EveAuthService implements IEveAuthService {
         headers.setBasicAuth(clientId, clientSecret);
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-                tokenEndpoint, HttpMethod.POST, requestEntity, String.class
+            tokenEndpoint, HttpMethod.POST, requestEntity, String.class
         );
         return JsonConverter.convertJsonToTokenResponse(response.getBody());
     }

@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.api;
+package com.azarenka.evebuilders.service.api.integration;
 
 public interface ITelegramIntegrationService {
 

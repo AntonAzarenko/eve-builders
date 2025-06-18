@@ -47,4 +47,6 @@ public interface ICreateOrderController {
     void updateRequestStatusOrder(RequestOrder requestOrder, RequestOrderStatusEnum status);
 
     RequestOrder getRequestOrderById(String requestId);
+
+    void sentMessage(Order order);
 }

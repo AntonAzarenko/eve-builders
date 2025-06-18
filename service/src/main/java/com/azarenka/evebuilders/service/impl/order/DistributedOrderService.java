@@ -5,23 +5,28 @@ import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.User;
-import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
+import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
-import com.azarenka.evebuilders.service.api.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.api.IUserService;
+import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class DistributedOrderService implements IDistributedOrderService {
@@ -40,10 +45,11 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     @Override
     @Transactional
-    public DistributedOrder save(ShipOrderDto shipOrderDto, int count, String userName) {
+    public DistributedOrder save(String orderNumber, int count, String userName) {
         DistributedOrder distributedOrder;
+        var shipOrderDto = orderService.getOrderById(orderNumber);
         Optional<DistributedOrder> orderOptional = distributedOrderRepository
-                .findByOrderNumberAndUserName(shipOrderDto.getOrderNumber(), userName);
+            .findByOrderNumberAndUserName(shipOrderDto.getOrderNumber(), userName);
         if (orderOptional.isPresent()) {
             distributedOrder = orderOptional.get();
             distributedOrder.setCount(distributedOrder.getCount() + count);
@@ -89,16 +95,15 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public DistributedOrder distributeOrder(TelegramRequestOrder telegramRequestOrder) {
-        Order byOrderNumber = orderService.getByOrderNumber(telegramRequestOrder.getOrderNumber());
-        ShipOrderDto shipOrderDto = new ShipOrderDto(byOrderNumber);
-        return save(shipOrderDto, telegramRequestOrder.getCount(), telegramRequestOrder.getUserName());
+        return save(telegramRequestOrder.getOrderNumber(), telegramRequestOrder.getCount(),
+            telegramRequestOrder.getUserName());
     }
 
     @Override
     @Transactional
     public List<String> validateRequest(TelegramRequestOrder telegramRequestOrder) {
-        List<String> errors = new ArrayList<>();
-        Order byOrderNumber = orderService.getByOrderNumber(telegramRequestOrder.getOrderNumber());
+        var errors = new ArrayList<String>();
+        var byOrderNumber = orderService.getByOrderNumber(telegramRequestOrder.getOrderNumber());
         if (Objects.isNull(byOrderNumber)) {
             errors.add("Заказ под номером " + telegramRequestOrder.getOrderNumber() + " не найден.\n");
         }
@@ -109,7 +114,8 @@ public class DistributedOrderService implements IDistributedOrderService {
         if (Objects.nonNull(byOrderNumber)) {
             int freeCount = byOrderNumber.getCount() - byOrderNumber.getInProgressCount();
             if (freeCount < telegramRequestOrder.getCount()) {
-                errors.add("Количество запрошенных кораблей превышает количество свободных. Свобоных - " + freeCount + "\n");
+                errors.add(
+                    "Количество запрошенных кораблей превышает количество свободных. Свобоных - " + freeCount + "\n");
             }
         }
         return errors;
@@ -121,11 +127,13 @@ public class DistributedOrderService implements IDistributedOrderService {
     }
 
     @Override
+    @Transactional
     public List<DistributedOrder> getAllOrders() {
         return distributedOrderRepository.findAll();
     }
 
     @Override
+    @Transactional
     public List<DistributedOrder> getOrdersByOrderNumber(String orderNumber) {
         return distributedOrderRepository.findAllByOrderNumber(orderNumber);
     }
@@ -134,7 +142,7 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Transactional
     public void discardOrder(DistributedOrder order) {
         distributedOrderRepository.delete(order);
-        Order originalOrder = orderService.getByOrderNumber(order.getOrderNumber());
+        var originalOrder = orderService.getByOrderNumber(order.getOrderNumber());
         int inProgressCount = originalOrder.getInProgressCount() - order.getCount();
         originalOrder.setInProgressCount(inProgressCount);
         orderService.updateOrder(originalOrder);
@@ -142,13 +150,13 @@ public class DistributedOrderService implements IDistributedOrderService {
             originalOrder.setOrderStatus(OrderStatusEnum.NEW);
         }
         telegramIntegrationService.sendMessage(
-                TelegramMessageCreatorService.createDiscardOrderMessage(order, SecurityUtils.getUserName()),
-                threadRequestId);
+            TelegramMessageCreatorService.createDiscardOrderMessage(order, SecurityUtils.getUserName()),
+            threadRequestId);
     }
 
     private void updateShipOrder(String orderId, int readyCount) {
-        Order order = orderService.getByOrderNumber(orderId);
-        Integer countReady = order.getCountReady();
+        var order = orderService.getByOrderNumber(orderId);
+        var countReady = order.getCountReady();
         countReady = countReady + readyCount;
         order.setCountReady(countReady);
         order.setUpdatedDate(LocalDate.now());
@@ -161,7 +169,7 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     private DistributedOrder buildDistributedOrder(ShipOrderDto shipOrderDto, int count, String userName) {
 
-        DistributedOrder distributedOrder = new DistributedOrder();
+        var distributedOrder = new DistributedOrder();
         distributedOrder.setId(UUID.randomUUID().toString());
         distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
         distributedOrder.setOrderNumber(shipOrderDto.getOrderNumber());

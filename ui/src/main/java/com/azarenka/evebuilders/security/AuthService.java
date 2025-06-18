@@ -13,6 +13,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private static final String ALLIANCE_NAME = "HOLD MY PROBS";
+    private static final List<String> ALLIANCE_NAMES = List.of("HOLD MY PROBS", "Intrepid Crossing");
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
@@ -37,12 +38,12 @@ public class AuthService {
         var accessToken = tokenResponse.getAccessToken();
         var characterName = eveCharacterService.getCharacterNameFromToken(accessToken);
         Optional<User> existingUser = userService.getByUsername(characterName);
-        User user = existingUser.orElseGet(() -> getUserBasedOnTokenResponse(tokenResponse, characterName, isUserLoggedIn,
+        var user = existingUser.orElseGet(() -> getUserBasedOnTokenResponse(tokenResponse, characterName, isUserLoggedIn,
                 locale));
         if (checkAuth(user)) {
             return userService.saveUser(user);
         }
-        LOGGER.info("User {} didn't got authorisation", characterName);
+        LOGGER.info("User {} doesn't have permissions", characterName);
         return null;
     }
 
@@ -76,7 +77,7 @@ public class AuthService {
 
     public boolean checkAuth(User user) {
         if (env.acceptsProfiles(Profiles.of("prod"))) {
-            return user.getAllianceName().equalsIgnoreCase(ALLIANCE_NAME)
+            return ALLIANCE_NAMES.contains(user.getAllianceName())
                     && checkIndustryGroup(user);
         } else {
             return true;

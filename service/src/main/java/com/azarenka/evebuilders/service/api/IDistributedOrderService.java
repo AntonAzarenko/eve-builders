@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface IDistributedOrderService {
 
-    DistributedOrder save(ShipOrderDto shipOrderDto, int count, String userName);
+    DistributedOrder save(String orderNumber, int count, String userName);
 
     List<DistributedOrder> getAllByUserName(OrderFilter filter);
 

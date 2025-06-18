@@ -19,6 +19,8 @@ public interface IOrderService {
 
     List<ShipOrderDto> getOrderList(OrderFilter filter);
 
+    ShipOrderDto getOrderById(String orderNumber);
+
     void updateStatus(OrderStatusEnum orderStatusEnum, String id);
 
     Order updateOrder(ShipOrderDto orderDto);

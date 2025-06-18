@@ -549,6 +549,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         if (Objects.nonNull(VaadinSession.getCurrent().getAttribute("requestOrder"))) {
             RequestOrder requestOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
             controller.updateRequestStatusOrder(requestOrder, RequestOrderStatusEnum.APPROVED);
+            controller.sentMessage(order);
         }
     }
 
@@ -567,6 +568,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         groupsComboBox.clear();
         itemsComboBox.clear();
         imageContainer.removeAll();
+        order = new Order();
         VaadinSession.getCurrent().setAttribute("originalOrder", null);
         VaadinSession.getCurrent().setAttribute("requestOrder", null);
     }
@@ -609,10 +611,5 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         InvGroup invGroup = groupsComboBox.getValue();
         groupsComboBox.setEnabled(StringUtils.isNotBlank(value));
         itemsComboBox.setEnabled(Objects.nonNull(invGroup));
-        //boolean fitLayoutEnabled = StringUtils.isNotBlank(value)
-        //        && GroupTypeEnum.valueOf(value) == GroupTypeEnum.valueOf("SHIPS");
-        //fitField.setEnabled(fitLayoutEnabled);
-        //loadButton.setEnabled(fitLayoutEnabled);
-        //showFitButton.setEnabled(fitLayoutEnabled);
     }
 }

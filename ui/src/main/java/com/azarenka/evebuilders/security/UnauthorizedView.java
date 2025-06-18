@@ -19,6 +19,7 @@ public class UnauthorizedView extends View {
         add(new Button(VaadinIcon.BACKSPACE.create(), event -> UI.getCurrent().navigate("/login")));
         add(new H1(getTranslation("errors.message.access_denied")));
         add(new Paragraph(getTranslation("errors.message.access_denied.unauthorized.message")));
+        add(new Paragraph(getTranslation("errors.message.access_denied.unauthorized.message.help")));
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
     }
 }
