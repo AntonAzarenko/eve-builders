@@ -35,7 +35,13 @@ import com.vaadin.flow.server.VaadinSession;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class OrdersView extends View implements LocaleChangeObserver {
 
@@ -65,30 +71,30 @@ public class OrdersView extends View implements LocaleChangeObserver {
 
     private HorizontalLayout initToolBarLayout() {
         takeAnOrderButton = new Button(getTranslation("button.take_an_order"), VaadinIcon.CART.create(),
-                event -> {
-                    Optional<ShipOrderDto> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
-                    if (firstSelectedItem.isPresent()) {
-                        ShipOrderDto shipOrderDto = firstSelectedItem.get();
-                        TakeOrderWindow takeOrderWindow = new TakeOrderWindow(shipOrderDto, controller,
-                                closeActionEvent -> {
-                                    grid.getDataProvider().refreshAll();
-                                    updateMetaDataPanel(shipOrderDto);
-                                    UI.getCurrent().refreshCurrentRoute(true);
-                                });
-                        boolean hasFreeShipsInOrder = shipOrderDto.getCount() - shipOrderDto.getInProgressCount() > 0;
-                        if (hasFreeShipsInOrder) {
-                            takeOrderWindow.open();
-                        } else {
-                            new NotificationWindow("Warning", getTranslation("errors.message.order_is_distributed"))
-                                    .open();
-                        }
+            event -> {
+                Optional<ShipOrderDto> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+                if (firstSelectedItem.isPresent()) {
+                    ShipOrderDto shipOrderDto = firstSelectedItem.get();
+                    TakeOrderWindow takeOrderWindow = new TakeOrderWindow(shipOrderDto, controller,
+                        closeActionEvent -> {
+                            grid.getDataProvider().refreshAll();
+                            updateMetaDataPanel(shipOrderDto);
+                            UI.getCurrent().refreshCurrentRoute(true);
+                        });
+                    boolean hasFreeShipsInOrder = shipOrderDto.getCount() - shipOrderDto.getInProgressCount() > 0;
+                    if (hasFreeShipsInOrder) {
+                        takeOrderWindow.open();
+                    } else {
+                        new NotificationWindow("Warning", getTranslation("errors.message.order_is_distributed"))
+                            .open();
                     }
                 }
+            }
         );
         takeAnOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         searchField = new SearchComponent(getTranslation("order.search.placeholder"),
-                event -> searchByText(searchField.getValue()),
-                event -> clearSearch()
+            event -> searchByText(searchField.getValue()),
+            event -> clearSearch()
         );
         HorizontalLayout layout = new HorizontalLayout(takeAnOrderButton, searchField);
         layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
@@ -102,12 +108,15 @@ public class OrdersView extends View implements LocaleChangeObserver {
             Collection<ShipOrderDto> items = dataProvider.getItems();
             String lowerCaseValue = value.trim().toLowerCase();
             List<ShipOrderDto> list = items.stream()
-                    .filter(item ->
-                            (item.getOrderNumber() != null && item.getOrderNumber().toLowerCase().contains(lowerCaseValue)) ||
-                                    (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
-                                    (item.getOrderStatus() != null && item.getOrderStatus().name().toLowerCase().contains(lowerCaseValue))
-                    )
-                    .toList();
+                .filter(item ->
+                    (item.getOrderNumber() != null && item.getOrderNumber().toLowerCase().contains(lowerCaseValue)) ||
+                        (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
+                        (item.getOrderStatus() != null && item.getOrderStatus()
+                            .name()
+                            .toLowerCase()
+                            .contains(lowerCaseValue))
+                )
+                .toList();
             dataProvider = DataProvider.ofCollection(list);
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
@@ -141,11 +150,11 @@ public class OrdersView extends View implements LocaleChangeObserver {
 
     private HorizontalLayout initFilterLayout() {
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
-                .withStatusFilter()
-                .withTypeOrderFilter()
-                .withCountFreeFilter()
-                .withDistributedFilter()
-                .build();
+            .withStatusFilter()
+            .withTypeOrderFilter()
+            .withCountFreeFilter()
+            .withDistributedFilter()
+            .build();
         getUI().ifPresent(ui -> ui.add(orderFilterPopupComponent));
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
         editOrderButton = new Button(VaadinIcon.EDIT.create(), event -> editOrder());
@@ -153,7 +162,6 @@ public class OrdersView extends View implements LocaleChangeObserver {
         editOrderButton.setVisible(editPermit);
         editOrderButton.setTooltipText(getTranslation("message.button.tooltip.edit_order"));
         orderInfoButton = new Button(VaadinIcon.INFO.create(), event -> openOrderInfo());
-        orderInfoButton.setVisible(editPermit);
         orderInfoButton.setTooltipText(getTranslation("message.button.tooltip.order_info"));
         return new HorizontalLayout(filterButton, editOrderButton, orderInfoButton);
     }
@@ -221,37 +229,40 @@ public class OrdersView extends View implements LocaleChangeObserver {
     }
 
     private void addColumns() {
-        addColumn(ShipOrderDto::getOrderNumber);
-        addColumn(value -> value.getOrderStatus().name());
-        addColumn(ShipOrderDto::getItemName);
-        addNumberColumn(ShipOrderDto::getCount);
-        addAmountColumn(order -> formatIsk(order.getPrice()));
+        addColumn(ShipOrderDto::getOrderNumber, "130px");
+        addColumn(value -> value.getOrderStatus().name(), "130px");
+        addColumn(ShipOrderDto::getItemName, "150px");
+        addNumberColumn(ShipOrderDto::getCount, "90px");
+        addAmountColumn(order -> formatIsk(order.getPrice()), "160px");
     }
 
-    private Grid.Column<ShipOrderDto> addAmountColumn(ValueProvider<ShipOrderDto, ?> provider) {
+    private Grid.Column<ShipOrderDto> addAmountColumn(ValueProvider<ShipOrderDto, ?> provider, String width) {
         Grid.Column<ShipOrderDto> column = grid.addColumn(provider);
+        column.setWidth(width);
         column.setTextAlign(ColumnTextAlign.END);
         return column;
     }
 
-    private Grid.Column<ShipOrderDto> addNumberColumn(ValueProvider<ShipOrderDto, Integer> provider) {
+    private Grid.Column<ShipOrderDto> addNumberColumn(ValueProvider<ShipOrderDto, Integer> provider, String width) {
         Grid.Column<ShipOrderDto> column = grid.addColumn(provider);
+        column.setWidth(width);
         column.setTextAlign(ColumnTextAlign.END);
         return column;
     }
 
-    private Grid.Column<ShipOrderDto> addColumn(ValueProvider<ShipOrderDto, String> provider) {
+    private Grid.Column<ShipOrderDto> addColumn(ValueProvider<ShipOrderDto, String> provider, String width) {
         Grid.Column<ShipOrderDto> column = grid.addColumn(provider);
+        column.setWidth(width);
         return column;
     }
 
     private void updateButtonStatus() {
         List<ShipOrderDto> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
         boolean isOrderSelected = !selectedItems.isEmpty()
-                && !(selectedItems.get(0).getOrderStatus() == OrderStatusEnum.COMPLETED);
+            && !(selectedItems.get(0).getOrderStatus() == OrderStatusEnum.COMPLETED);
         takeAnOrderButton.setEnabled(isOrderSelected);
         editOrderButton.setEnabled(isOrderSelected);
-        orderInfoButton.setEnabled(isOrderSelected);
+        orderInfoButton.setEnabled(!selectedItems.isEmpty());
     }
 
     @Override
@@ -268,7 +279,9 @@ public class OrdersView extends View implements LocaleChangeObserver {
     }
 
     private String formatIsk(BigDecimal value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
         symbols.setGroupingSeparator(' ');
@@ -278,7 +291,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
 
     private boolean isEditPermitted() {
         return Objects.requireNonNull(SecurityUtils.getUserRoles())
-                .stream().anyMatch(role -> (role == Role.ROLE_ADMIN) || role == Role.ROLE_SUPER_ADMIN);
+            .stream().anyMatch(role -> (role == Role.ROLE_ADMIN) || role == Role.ROLE_SUPER_ADMIN);
     }
 
     private boolean isInfoPermitted() {

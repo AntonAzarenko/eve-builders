@@ -5,7 +5,6 @@ import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 
@@ -25,7 +24,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
                                 " " + DecimalFormatter.maybeToText(orderDto.getPrice())) +
                         String.format(FORMAT, "Цена за все", DecimalFormatter.formatIsk(total) +
                                 " " + DecimalFormatter.maybeToText(total)) +
-                        String.format(FORMAT, "Срок сдачи до", orderDto.getFinishBy()));
+                        String.format(FORMAT, "Срок сдачи до", orderDto.getFinishDate()));
         return text.replace(".", "\\.");
     }
 

@@ -19,6 +19,7 @@ public class CommonDialogComponent extends Dialog {
 
     public Component createCloseButton() {
         Button button = new Button(VaadinIcon.CLOSE.create(), event -> this.close());
+        button.setTooltipText(getTranslation("message.button.tooltip.close"));
         button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         return button;
     }

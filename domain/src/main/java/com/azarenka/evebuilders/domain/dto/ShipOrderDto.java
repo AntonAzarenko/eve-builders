@@ -65,7 +65,7 @@ public class ShipOrderDto {
         this.category = category;
     }
 
-    public LocalDate getFinishBy() {
+    public LocalDate getFinishDate() {
         return finishBy;
     }
 

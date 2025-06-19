@@ -2,7 +2,6 @@ package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
-import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
@@ -49,7 +48,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         DistributedOrder distributedOrder;
         var shipOrderDto = orderService.getOrderById(orderNumber);
         Optional<DistributedOrder> orderOptional = distributedOrderRepository
-            .findByOrderNumberAndUserName(shipOrderDto.getOrderNumber(), userName);
+            .findByOrderNumberAndUserName(orderNumber, userName);
         if (orderOptional.isPresent()) {
             distributedOrder = orderOptional.get();
             distributedOrder.setCount(distributedOrder.getCount() + count);
@@ -180,7 +179,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         distributedOrder.setShipName(shipOrderDto.getItemName());
         distributedOrder.setOrderRights(shipOrderDto.getOrderRights());
         distributedOrder.setOrderStatus(shipOrderDto.getOrderStatus());
-        distributedOrder.setFinishedDate(shipOrderDto.getFinishBy());
+        distributedOrder.setFinishedDate(shipOrderDto.getFinishDate());
         distributedOrder.setCreatedDate(shipOrderDto.getCreatedDate());
         distributedOrder.setCategory(shipOrderDto.getCategory());
         distributedOrder.setPrice(shipOrderDto.getPrice());

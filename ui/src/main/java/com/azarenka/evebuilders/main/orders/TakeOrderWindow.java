@@ -78,7 +78,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
 
     private Span initNotificationLayer() {
         LocalDate createdOrderDate = shipOrderDto.getCreatedDate();
-        LocalDate deadLineDate = shipOrderDto.getFinishBy();
+        LocalDate deadLineDate = shipOrderDto.getFinishDate();
         LocalDate now = LocalDate.now();
 
         long totalDays = ChronoUnit.DAYS.between(createdOrderDate, deadLineDate);

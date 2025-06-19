@@ -54,6 +54,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private Button fitButton;
     private Button showFullOrder;
     private Button discardOrderButton;
+    private Button filterButton;
     private OrderFilter appliedFilter = new OrderFilter();
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
@@ -72,7 +73,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 .withStatusFilter()
                 .withTypeOrderFilter()
                 .build();
-        Button filterButton = orderFilterPopupComponent.getOpenFilterButton();
+        filterButton = orderFilterPopupComponent.getOpenFilterButton();
         fitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
             Optional<DistributedOrder> first = grid.getSelectedItems().stream().findFirst();
             first.ifPresent(order -> {
@@ -200,32 +201,40 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private void addColumns() {
-        addColumn(DistributedOrder::getOrderNumber);
-        addColumn(value -> value.getOrderStatus().name());
-        addColumn(DistributedOrder::getShipName);
-        addNumberColumn(DistributedOrder::getCount);
-        addNumberColumn(DistributedOrder::getCountReady);
-        addColumn(order -> order.getFinishedDate().toString());
+        addColumn(DistributedOrder::getOrderNumber, "130px");
+        addColumn(value -> value.getOrderStatus().name(), "130px");
+        addColumn(DistributedOrder::getShipName, "150px");
+        addNumberColumn(DistributedOrder::getCount, "130px");
+        addNumberColumn(DistributedOrder::getCountReady, "130px");
+        addColumn(order -> order.getFinishedDate().toString(), "170px");
     }
 
-    private Grid.Column<DistributedOrder> addComponentColumn(ValueProvider<DistributedOrder, Button> provider) {
+    private Grid.Column<DistributedOrder> addComponentColumn(ValueProvider<DistributedOrder, Button> provider,
+                                                             String width) {
         Grid.Column<DistributedOrder> column = grid.addComponentColumn(provider);
+        column.setWidth(width);
         return column;
     }
 
-    private Grid.Column<DistributedOrder> addAmountColumn(ValueProvider<DistributedOrder, BigDecimal> provider) {
+    private Grid.Column<DistributedOrder> addAmountColumn(ValueProvider<DistributedOrder, BigDecimal> provider,
+                                                          String width) {
         Grid.Column<DistributedOrder> column = grid.addColumn(provider);
+        column.setWidth(width);
         return column;
     }
 
-    private Grid.Column<DistributedOrder> addNumberColumn(ValueProvider<DistributedOrder, Integer> provider) {
+    private Grid.Column<DistributedOrder> addNumberColumn(ValueProvider<DistributedOrder, Integer> provider,
+                                                          String width) {
         Grid.Column<DistributedOrder> column = grid.addColumn(provider);
+        column.setWidth(width);
         column.setTextAlign(ColumnTextAlign.END);
         return column;
     }
 
-    private Grid.Column<DistributedOrder> addColumn(ValueProvider<DistributedOrder, String> provider) {
+    private Grid.Column<DistributedOrder> addColumn(ValueProvider<DistributedOrder, String> provider,
+                                                    String width) {
         Grid.Column<DistributedOrder> column = grid.addColumn(provider);
+        column.setWidth(width);
         return column;
     }
 
@@ -253,6 +262,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         buildButton.setText(getTranslation("button.build_order"));
         fitButton.setTooltipText(getTranslation("message.button.tooltip.show_fit"));
         showFullOrder.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
+        filterButton.setTooltipText(getTranslation("message.button.tooltip.filter_window"));
     }
 
     private void applyFilter() {

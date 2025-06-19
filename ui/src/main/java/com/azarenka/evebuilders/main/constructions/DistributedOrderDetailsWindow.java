@@ -19,6 +19,7 @@ public class DistributedOrderDetailsWindow extends CommonDialogComponent {
 
         setHeaderTitle("Информация о заказе " + order.getOrderNumber());
         super.setWidth("800px");
+        super.setDraggable(true);
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(false);
         layout.setPadding(false);
@@ -35,7 +36,7 @@ public class DistributedOrderDetailsWindow extends CommonDialogComponent {
         addRow(formLayout, "Осталось сдать", String.valueOf(order.getCount() - order.getCountReady()));
         addRow(formLayout, "Фит", order.getFitId());
 
-        BigDecimal price = order.getPrice(); // поле должно быть добавлено
+        BigDecimal price = order.getPrice();
         BigDecimal total = price.multiply(BigDecimal.valueOf(order.getCount()));
         addRow(formLayout, "Цена за единицу", DecimalFormatter.formatIsk(price));
         addRow(formLayout, "Общая сумма", DecimalFormatter.formatIsk(total));

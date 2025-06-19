@@ -102,19 +102,15 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public Order updateOrder(ShipOrderDto orderDto) {
-        var optionalOrder = orderRepository.findById(orderDto.getId());
-        Order order = null;
-        if (optionalOrder.isPresent()) {
-            var userName = SecurityUtils.getUserName();
-            LOGGER.info("Updating order. Started. OrderNumber={}, ItemName={}, UserName={}", orderDto.getOrderNumber(),
-                orderDto.getItemName(), userName);
-            order = optionalOrder.get();
-            order.setOrderStatus(orderDto.getOrderStatus());
-            order.setInProgressCount(orderDto.getInProgressCount());
-            order = orderRepository.save(order);
-            LOGGER.info("Updating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderDto.getOrderNumber(),
-                orderDto.getItemName(), userName);
-        }
+        var order = orderRepository.findById(orderDto.getId()).get();
+        var userName = SecurityUtils.getUserName();
+        LOGGER.info("Updating order. Started. OrderNumber={}, ItemName={}, UserName={}", orderDto.getOrderNumber(),
+            orderDto.getItemName(), userName);
+        order.setOrderStatus(orderDto.getOrderStatus());
+        order.setInProgressCount(orderDto.getInProgressCount());
+        order = orderRepository.save(order);
+        LOGGER.info("Updating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderDto.getOrderNumber(),
+            orderDto.getItemName(), userName);
         return order;
     }
 
