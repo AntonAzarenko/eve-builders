@@ -54,8 +54,7 @@ public class EveAuthService implements IEveAuthService {
             URLEncoder.encode(redirectUri, StandardCharsets.UTF_8),
             URLEncoder.encode(
                     "publicData " +
-                    "esi-assets.read_assets.v1 " +
-                    "esi-mail.send_mail.v1",
+                    "esi-assets.read_assets.v1",
                 StandardCharsets.UTF_8),
             state
         );
