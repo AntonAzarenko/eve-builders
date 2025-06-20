@@ -19,7 +19,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 @AnonymousAllowed
 public class LoginView extends AppLayout {
 
-    private final Button authButton = new Button("Login with EVE Online");
+    private final Button authButton = new Button("Login with EVE Online OAuth 2.0");
     private IEveAuthService eveAuthService;
 
     public LoginView(IEveAuthService eveAuthService) {
@@ -37,7 +37,7 @@ public class LoginView extends AppLayout {
     }
 
     private VerticalLayout initLoginLayout() {
-        authButton.addClickListener(event -> UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
+        authButton.addClickListener(event -> UI.getCurrent().getPage().setLocation("/oauth2/authorization/eveonline"));
         authButton.setWidthFull();
         Span description = new Span("""
                 Construction Management Application.

@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.security;
+package com.azarenka.evebuilders.service.api;
 
 public interface IAuthIntegrationService {
 

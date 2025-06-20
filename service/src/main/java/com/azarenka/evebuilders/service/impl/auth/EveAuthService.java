@@ -6,6 +6,8 @@ import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.converter.JsonConverter;
 import com.azarenka.evebuilders.service.converter.VaadinImageConverter;
 import com.azarenka.evebuilders.service.impl.intergarion.EvePortraitService;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
 import com.vaadin.flow.component.html.Image;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,7 +24,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -44,6 +50,8 @@ public class EveAuthService implements IEveAuthService {
     private EvePortraitService evePortraitService;
     @Autowired
     private IUserService userService;
+    private final RestTemplate restTemplate = new RestTemplate();
+
 
     public String generateAuthUrl() {
         var state = UUID.randomUUID().toString();
@@ -53,8 +61,9 @@ public class EveAuthService implements IEveAuthService {
             clientId,
             URLEncoder.encode(redirectUri, StandardCharsets.UTF_8),
             URLEncoder.encode(
-                    "publicData " +
-                    "esi-assets.read_assets.v1",
+                "publicData " +
+                    "esi-assets.read_assets.v1 " +
+                    "esi-mail.send_mail.v1",
                 StandardCharsets.UTF_8),
             state
         );

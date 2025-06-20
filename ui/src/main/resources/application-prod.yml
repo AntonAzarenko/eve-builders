@@ -1,0 +1,118 @@
+app:
+  version: "@app.version@"
+  sqlite:
+    path: ${APP_SQLLITE_PATH}
+  telegram_bot:
+    token: ${APP.TELEGRAM_BOT.TOKEN}
+  telegram_chat_id: ${APP.TELEGRAM_CHAT_ID}
+  telegram_thread_ping_id: ${APP.TELEGRAM_THREAD_PING_ID}
+  telegram_thread_request_id: ${APP.TELEGRAM_THREAD_REQUEST_ID}
+
+spring:
+  datasource:
+    mysql:
+      url: ${SPRING.DATASOURCE.MYSQL.URL}
+      driver-class-name: ${SPRING.DATASOURCE.MYSQL.DRIVER-CLASS-NAME}
+      username: ${SPRING.DATASOURCE.MYSQL.USERNAME}
+      password: ${SPRING.DATASOURCE.MYSQL.PASSWORD}
+    sqlite:
+      url: ${SPRING.DATASOURCE.SQLITE.URL}
+      driver-class-name: ${SPRING.DATASOURCE.SQLITE.DRIVER-CLASS-NAME}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        transaction:
+          coordinator_class: jdbc
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          auto: update
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        boot:
+          allow_jdbc_metadata_access: false
+  liquibase:
+    url: ${SPRING.LIQUIBASE.URL}
+    user: ${SPRING.LIQUIBASE.USER}
+    password: ${SPRING.LIQUIBASE.PASSWORD}
+    change-log: ${SPRING.LIQUIBASE.CHANGE-LOG}
+    enabled: ${SPRING.LIQUIBASE.ENABLED}
+    driver-class-name: ${SPRING.LIQUIBASE.DRIVER-CLASS-NAME}
+  defer-datasource-initialization: false
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  messages:
+    encoding: UTF-8
+  security:
+    oauth2:
+      client:
+        registration:
+          eveonline:
+            client-id: ${EVE.CLIENTID}
+            client-secret: ${EVE.CLIENTSECRET}
+            scope:
+              - publicData
+              - esi-assets.read_assets.v1
+              - esi-mail.send_mail.v1
+            authorization-grant-type: authorization_code
+            redirect-uri: ${eve.redirectUri}
+            client-name: EVE Online
+        provider:
+          eveonline:
+            authorization-uri: ${eve.authorize.uri}
+            token-uri: ${eve.token.uri}
+            user-info-uri: ${eve.user-info.uri}
+            user-name-attribute: CharacterName
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      timeout: 30m
+  tomcat:
+    uri-encoding: UTF-8
+
+eve:
+  authorize:
+    uri: https://login.eveonline.com/v2/oauth/authorize
+  character:
+    portrait:
+      url: https://images.evetech.net/characters/%s/portrait
+    assets:
+      url: /v5/characters/{characterId}/assets/
+    uri: https://esi.evetech.net/latest/characters/%s/
+  clientId: ${EVE.CLIENTID}
+  clientSecret: ${EVE.CLIENTSECRET}
+  corporation:
+    info: /v5/corporations/{corporation_id}/
+  alliance:
+    info: /v3/alliances/{alliance_id}/
+  mail:
+    send:
+      url: /latest/characters/{characterId}/mail/
+  redirectUri: ${EVE.REDIRECTURI}
+  token:
+    uri: https://login.eveonline.com/v2/oauth/token
+  user-info:
+    uri: https://login.eveonline.com/oauth/verify
+  webclient:
+    baseUrl: https://esi.evetech.net
+
+timrod:
+  api:
+    url: https://service.scan-stakan.com/api/auth/checkUserByGroup.php
+    token: ${TIMROD_API_TOKEN}
+    group-id: ${TIMROD_API_GROUP_ID}

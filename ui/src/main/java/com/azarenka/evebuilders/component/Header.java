@@ -76,7 +76,7 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
     private void initAddCharacterButton() {
         addCharacterButton = new Button(getTranslation("button.app.add_character"));
         addCharacterButton.addClickListener(event ->
-            UI.getCurrent().getPage().setLocation(eveAuthService.generateAuthUrl()));
+            UI.getCurrent().getPage().setLocation("/oauth2/authorization/eveonline"));
         addCharacterButton.setMaxWidth("176px");
         addCharacterButton.setMinWidth("176px");
     }

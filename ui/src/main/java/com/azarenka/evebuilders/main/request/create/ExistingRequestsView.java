@@ -92,6 +92,7 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
             if (firstSelectedItem.isPresent()) {
                 RequestOrder order = firstSelectedItem.get();
                 order.setId(StringUtils.EMPTY);
+                order.setRequestStatus(RequestOrderStatusEnum.SUBMITTED);
                 moveOrderToParameters(order);
             }
         });

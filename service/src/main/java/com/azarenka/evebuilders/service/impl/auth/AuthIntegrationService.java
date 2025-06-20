@@ -1,4 +1,6 @@
-package com.azarenka.evebuilders.security;
+package com.azarenka.evebuilders.service.impl.auth;
+
+import com.azarenka.evebuilders.service.api.IAuthIntegrationService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
