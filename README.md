@@ -4,6 +4,19 @@
 
 # Release notes
 
+## Version 1.3.3
+Release Date: 2025-06-20
+
+## Bug Fixes
+- fix translation for metadapanel
+- fix auth issue related to permissions
+
+## Version 1.3.2
+Release Date: 2025-06-19
+
+## Metadata panel Improvements
+- Organize information on metadata panel
+
 ## Version 1.3.1
 Release Date: 2025-06-18
 
