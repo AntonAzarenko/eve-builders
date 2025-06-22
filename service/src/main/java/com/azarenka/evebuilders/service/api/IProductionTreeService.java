@@ -5,4 +5,6 @@ import com.azarenka.evebuilders.domain.dto.ProductionNode;
 public interface IProductionTreeService {
 
     ProductionNode buildProductionTree(String typeName, int quantity);
+
+    ProductionNode buildProductionTreeCached(String typeName, int quantity);
 }

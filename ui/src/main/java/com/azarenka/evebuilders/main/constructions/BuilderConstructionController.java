@@ -1,12 +1,13 @@
 package com.azarenka.evebuilders.main.constructions;
 
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
+import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.domain.sqllite.MaterialInfo;
 import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionController;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
+import com.azarenka.evebuilders.service.api.IProductionTreeService;
 import com.azarenka.evebuilders.service.impl.EveMaterialsDataService;
-import com.azarenka.evebuilders.service.impl.ProductionTreeService;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class BuilderConstructionController implements IBuildConstructionControll
     @Autowired
     private EveMaterialsDataService eveMaterialsDataService;
     @Autowired
-    private ProductionTreeService productionTreeService;
+    private IProductionTreeService productionTreeService;
     @Autowired
     private IEveMaterialDataService dataService;
 
@@ -39,10 +40,17 @@ public class BuilderConstructionController implements IBuildConstructionControll
 
     @Override
     public ProductionNode getProductionNode(String moduleName, int i) {
-        return productionTreeService.buildTree(moduleName, i);
+        return productionTreeService.buildProductionTreeCached(moduleName, i);
     }
 
-    public InvType getInvTypeByTypeName(String name) {
-        return dataService.getInvTypeByTypeName(name);
+    @Override
+    public List<InvGroup> getInvGroupsById(Integer id) {
+        return dataService.getInvGroupsById(id);
     }
+
+    @Override
+    public List<InvType> getTypesByGroupIds(List<Integer> groupIds) {
+        return dataService.getTypesByGroupIds(groupIds);
+    }
+
 }

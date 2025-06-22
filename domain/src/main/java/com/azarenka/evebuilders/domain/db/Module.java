@@ -18,6 +18,15 @@ public class Module {
     @JoinColumn(name = "fit_id", nullable = false)
     private Fit fit;
 
+    public Module() {
+    }
+
+    public Module(String id, String moduleName, ModuleSlot moduleSlot) {
+        this.id = id;
+        this.moduleName = moduleName;
+        this.moduleSlot = moduleSlot;
+    }
+
     public String getId() {
         return id;
     }

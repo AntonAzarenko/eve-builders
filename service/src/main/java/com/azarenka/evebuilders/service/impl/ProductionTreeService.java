@@ -1,13 +1,17 @@
 package com.azarenka.evebuilders.service.impl;
 
+import com.azarenka.evebuilders.domain.ProductionTreeCacheKey;
 import com.azarenka.evebuilders.domain.dto.MaterialType;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.file.MaterialEntry;
 import com.azarenka.evebuilders.domain.dto.file.TypeInfo;
 import com.azarenka.evebuilders.domain.sqllite.MaterialInfo;
 import com.azarenka.evebuilders.repository.litesql.InvTypesRepository;
+import com.azarenka.evebuilders.service.ProductionTreeCache;
 import com.azarenka.evebuilders.service.api.IProductionTreeService;
 import com.azarenka.evebuilders.service.util.StaticMaterialLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,18 +20,33 @@ import java.util.List;
 @Service
 public class ProductionTreeService implements IProductionTreeService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductionTreeService.class);
+
     private final InvTypesRepository repository;
 
     @Autowired
     private EveMaterialsDataService eveMaterialsDataService;
     @Autowired
     private StaticMaterialLoader loader;
+    @Autowired
+    private ProductionTreeCache treeCache;
 
     public ProductionTreeService(InvTypesRepository repository) {
         this.repository = repository;
     }
 
-    @Override
+    public ProductionNode buildProductionTreeCached(String typeName, int quantity) {
+        ProductionTreeCacheKey key = new ProductionTreeCacheKey(typeName, quantity);
+        if (treeCache.contains(key)) {
+            LOGGER.info("Production tree cache hit");
+            return treeCache.get(key);
+        }
+        ProductionNode node = buildProductionTree(typeName, quantity); // твоя текущая рекурсивная логика
+        treeCache.put(key, node);
+        return node;
+    }
+
+/*    @Override
     public ProductionNode buildProductionTree(String typeName, int quantity) {
         MaterialType baseType = eveMaterialsDataService.getTypeByName(typeName);
         ProductionNode root = new ProductionNode();
@@ -44,13 +63,13 @@ public class ProductionTreeService implements IProductionTreeService {
             int batches = (int) Math.ceil((double) quantity / outputPerBatch);
             int totalQty = inputPerBatch * batches;
             ProductionNode child = buildProductionTree(mat.getMaterialName(), inputPerBatch);
-            child.setQuantity(totalQty); // для UI: общее кол-во
+            child.setQuantity(totalQty);
             child.setBlueprintName(mat.getBlueprintName());
             child.setMaterialType(eveMaterialsDataService.getTypeByName(mat.getMaterialName()));
             root.getChildren().add(child);
         }
         return root;
-    }
+    }*/
 
     public List<MaterialInfo> resolveMaterials(MaterialType baseType, String typeName) {
         return switch (baseType) {
@@ -66,7 +85,7 @@ public class ProductionTreeService implements IProductionTreeService {
         };
     }
 
-    public ProductionNode buildTree(String typeName, int requiredQty) {
+    public ProductionNode buildProductionTree(String typeName, int requiredQty) {
         TypeInfo typeInfo = loader.getByTypeName(typeName);
         ProductionNode root = new ProductionNode();
         root.setTypeName(typeName);
@@ -82,7 +101,7 @@ public class ProductionTreeService implements IProductionTreeService {
         root.setProducedQuantity(produced);
         root.setExcessQuantity(produced - requiredQty);
         for (MaterialEntry material : typeInfo.getMaterials()) {
-            ProductionNode child = buildTree(material.getMaterialTypeName(), material.getQuantity() * batches);
+            ProductionNode child = buildProductionTree(material.getMaterialTypeName(), material.getQuantity() * batches);
             if (child != null) {
                 child.setParent(root);
                 root.getChildren().add(child);
