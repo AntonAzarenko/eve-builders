@@ -4,6 +4,13 @@
 
 # Release notes
 
+## Version 1.4.1
+Release Date: 2025-06-24
+
+### General
+- Increase performance during loading a lot of images to UI and calculating materials for order with adding cache services for calculation items and for load images
+- Improve UI for Assembly tab
+
 ## Version 1.4.0
 Release Date: 2025-06-20
 
