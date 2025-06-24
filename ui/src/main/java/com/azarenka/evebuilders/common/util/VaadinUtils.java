@@ -1,8 +1,12 @@
 package com.azarenka.evebuilders.common.util;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
@@ -39,6 +43,12 @@ public class VaadinUtils {
         return verticalLayout;
     }
 
+    public static Button createLumoTertiaryButton(VaadinIcon icon) {
+        Button button = new Button(icon.create());
+        button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        return button;
+    }
+
     public static void setPaddingZero(Component... components) {
         IntStream.range(0, components.length).forEach(i -> components[i].getStyle().setPadding("0"));
     }
@@ -65,6 +75,11 @@ public class VaadinUtils {
         grid.setItems(dataProvider);
         applyGridProperties(grid, id);
         return grid;
+    }
+
+    public static void copyToClipboard(Component component, String text, String message) {
+        component.getElement().executeJs("navigator.clipboard.writeText($0);", text);
+        Notification.show(message, 2000, Notification.Position.MIDDLE);
     }
 
     private static <T> void applyGridProperties(Grid<T> grid, String id) {

@@ -57,7 +57,7 @@ public class CreateOrderViewController implements ICreateOrderController {
 
     @Override
     public Image getBigImageByParameters(InvType invType, String size) {
-        return imageService.createImage64(invType, size);
+        return imageService.createImage(invType.getTypeID(), size);
     }
 
     @Override

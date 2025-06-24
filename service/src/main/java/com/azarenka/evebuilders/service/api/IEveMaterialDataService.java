@@ -25,4 +25,6 @@ public interface IEveMaterialDataService {
     List<MaterialInfo> getMaterialsForType(String moduleName);
 
     MaterialType getTypeByName(String typeName);
+
+     Integer getTypeIdByName(String typeName);
 }
