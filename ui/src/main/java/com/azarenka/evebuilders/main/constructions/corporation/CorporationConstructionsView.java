@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.corporation;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
@@ -10,6 +10,9 @@ import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
+import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
+import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
+import com.azarenka.evebuilders.main.constructions.FinishOrderWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.vaadin.flow.component.UI;
@@ -134,10 +137,8 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 LocalDate createdOrderDate = order.getCreatedDate();
                 LocalDate deadLineDate = order.getFinishedDate();
                 LocalDate now = LocalDate.now();
-
                 long totalDays = ChronoUnit.DAYS.between(createdOrderDate, deadLineDate);
                 long halfDays = totalDays / 2;
-
                 long daysLeft = ChronoUnit.DAYS.between(now, deadLineDate);
                 if (daysLeft < 0) {
                     new NotificationWindow("Warning", "До даты завершения осталось " + daysLeft + ".\n " +

@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 public class SearchComponent extends TextField {
 
@@ -36,6 +37,7 @@ public class SearchComponent extends TextField {
 
     private void initComponent() {
         setWidth("50%");
+        setValueChangeMode(ValueChangeMode.LAZY);
         Button searchButton = new Button(VaadinIcon.SEARCH.create());
         searchButton.setMaxWidth("23px");
         searchButton.setMaxHeight("23px");

@@ -1,12 +1,11 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.build;
 
+import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.GroupTypeEnum;
-import com.azarenka.evebuilders.domain.ModuleSlot;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
-import com.azarenka.evebuilders.domain.db.Module;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.vaadin.flow.component.Component;
@@ -29,15 +28,16 @@ import java.util.stream.IntStream;
 public class RightSidePanel extends View {
 
     private final BuilderConstructionController controller;
+    private final MiddleSidePanel middleSidePanel;
     private HorizontalLayout rightSideToolbar;
     private SearchComponent searchField;
 
     public RightSidePanel(BuilderConstructionController controller, MiddleSidePanel middleSidePanel, DistributedOrder order, Fit fit) {
+        this.middleSidePanel = middleSidePanel;
         this.controller = controller;
-        setSizeFull();
-        setClassName("scrollable-column");
+        //setClassName("scrollable-column");
         initToolbar();
-        initPanel(order, fit, middleSidePanel);
+        initPanel(order, fit);
     }
 
     void initToolbar() {
@@ -49,33 +49,33 @@ public class RightSidePanel extends View {
                 event -> clearSearch()
         );
         searchField.setWidth("70%");
-        rightSideToolbar.add(searchField);
+        var addAllButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
+        var clearButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.TRASH);
+        clearButton.addClickListener(event -> clearAllModules());
+        addAllButton.addClickListener(event -> addAllModules());
+        rightSideToolbar.add(addAllButton, clearButton, searchField);
         add(rightSideToolbar);
     }
 
-    private void initPanel(DistributedOrder order, Fit fit, MiddleSidePanel middleSidePanel) {
+    private void initPanel(DistributedOrder order, Fit fit) {
         if (Objects.nonNull(order)) {
             add(createDraggableModule(order.getShipName()));
         }
         if (Objects.nonNull(fit)) {
             getModules(fit).stream()
-                    .sorted(Comparator.comparing(Module::getModuleName))
-                    .map(module -> createDraggableModule(module.getModuleName()))
+                    .sorted(Comparator.naturalOrder())
+                    .map(this::createDraggableModule)
                     .forEach(this::add);
         }
     }
 
-    private List<Module> getModules(Fit fit) {
-        String[] lines = fit.getTextFit().split("\n");
-        List<Module> modules = new ArrayList<>();
+    private List<String> getModules(Fit fit) {
+        var lines = fit.getTextFit().split("\n");
+        var modules = new ArrayList<String>();
         IntStream.range(1, lines.length).forEach(i -> {
             String line = lines[i];
             if (StringUtils.isNotBlank(line)) {
-                Module module = new Module();
-                module.setId(UUID.randomUUID().toString());
-                module.setModuleName(line);
-                module.setModuleSlot(ModuleSlot.HIGH_SLOT);
-                modules.add(module);
+                modules.add(line);
             }
         });
         return modules;
@@ -130,4 +130,25 @@ public class RightSidePanel extends View {
         searchField.clearText();
         searchByText("");
     }
+
+    private void addAllModules() {
+        getChildren()
+                .filter(component -> component instanceof HorizontalLayout)
+                .map(component -> (HorizontalLayout) component)
+                .filter(layout -> layout.getClassNames().contains("draggable-item"))
+                .map(layout -> {
+                    Span span = (Span) ((HorizontalLayout) layout.getComponentAt(0)).getComponentAt(1);
+                    return span.getText();
+                })
+                .forEach(middleSidePanel::onModuleDragged);
+    }
+
+    private void clearAllModules() {
+        getChildren()
+                .filter(component -> component instanceof HorizontalLayout)
+                .map(component -> (HorizontalLayout) component)
+                .filter(layout -> layout.getClassNames().contains("draggable-item"))
+                .forEach(this::remove);
+    }
+
 }

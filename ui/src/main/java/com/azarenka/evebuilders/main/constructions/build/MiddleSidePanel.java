@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.build;
 
 import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
@@ -33,8 +33,9 @@ public class MiddleSidePanel extends View {
         this.assemblyState = assemblyState;
         this.leftSidePanel = leftSidePanel;
         setClassName("assembly-area");
-        setClassName("scrollable-column");
+        //setClassName("scrollable-column");
         setSizeFull();
+        setWidth("70%");
         initPanel();
     }
 

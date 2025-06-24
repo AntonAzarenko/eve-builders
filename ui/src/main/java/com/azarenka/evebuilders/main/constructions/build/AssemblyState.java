@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.build;
 
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 

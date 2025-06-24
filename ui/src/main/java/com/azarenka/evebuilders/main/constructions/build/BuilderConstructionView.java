@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.build;
 
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
@@ -21,8 +21,8 @@ public class BuilderConstructionView extends View {
     private final HorizontalLayout mainLayout = new HorizontalLayout();
     private final AssemblyState assemblyState = new AssemblyState();
 
-    private Fit fit;
-    private DistributedOrder order;
+    private final Fit fit;
+    private final DistributedOrder order;
 
     public BuilderConstructionView(@Autowired BuilderConstructionController controller) {
         this.controller = controller;
@@ -30,6 +30,7 @@ public class BuilderConstructionView extends View {
         this.fit = (Fit) VaadinSession.getCurrent().getAttribute("currentFit");
         setHeight("95%");
         initView();
+        new AttentionWindow().open();
     }
 
     private void initView() {

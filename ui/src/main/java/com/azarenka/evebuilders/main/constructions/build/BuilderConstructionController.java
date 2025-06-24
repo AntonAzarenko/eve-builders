@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.constructions.build;
 
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
@@ -27,7 +27,6 @@ public class BuilderConstructionController implements IBuildConstructionControll
     @Autowired
     private IEveMaterialDataService dataService;
 
-
     @Override
     public Image getImageByInvTypeName(String name) {
         return imageService.createImage32(name);
@@ -53,4 +52,7 @@ public class BuilderConstructionController implements IBuildConstructionControll
         return dataService.getTypesByGroupIds(groupIds);
     }
 
+    public ImageService getImageService() {
+        return imageService;
+    }
 }

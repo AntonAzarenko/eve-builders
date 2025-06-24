@@ -51,8 +51,8 @@ public class DistributedOrderDetailsWindow extends CommonDialogComponent {
         HorizontalLayout buttons = new HorizontalLayout(closeButton);
         buttons.setWidthFull();
         buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        layout.add(buttons);
-        getFooter().add(layout);
+        add(layout);
+        getFooter().add(buttons);
     }
 
     private void addRow(FormLayout form, String label, String value) {

@@ -172,3 +172,51 @@
     align-items: center;
     justify-content: center;
 }
+
+.root-block {
+    border: 1px solid var(--lumo-contrast-20pct);
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.07);
+    margin-bottom: var(--lumo-space-m);
+    background: var(--lumo-base-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 97%;
+}
+
+.root-header {
+    display: flex;
+    align-items: center;
+    column-gap: var(--lumo-space-s);
+    min-height: 40px;
+    padding: var(--lumo-space-s);
+    font-weight: 600;
+}
+
+vaadin-details::part(content) {
+    padding: 0;
+}
+
+.stage-row {
+    display: flex;
+    align-items: stretch;
+    padding-right: 0;  /* добавим безопасный зазор справа */
+    margin-right: 0;
+    box-sizing: border-box;
+}
+
+.stage-row > details {
+    border: 1px solid var(--lumo-contrast-20pct);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.stage-row > .btn-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 0;
+    padding-right: 25px;
+    justify-content: flex-start;
+}

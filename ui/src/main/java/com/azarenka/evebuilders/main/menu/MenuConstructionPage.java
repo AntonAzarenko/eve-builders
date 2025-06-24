@@ -3,8 +3,8 @@ package com.azarenka.evebuilders.main.menu;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
-import com.azarenka.evebuilders.main.constructions.BuilderConstructionView;
-import com.azarenka.evebuilders.main.constructions.CorporationConstructionsView;
+import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
+import com.azarenka.evebuilders.main.constructions.corporation.CorporationConstructionsView;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -12,7 +12,6 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
-import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("construction")

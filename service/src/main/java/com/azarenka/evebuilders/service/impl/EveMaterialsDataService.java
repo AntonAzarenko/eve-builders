@@ -38,7 +38,7 @@ public class EveMaterialsDataService implements IEveMaterialDataService {
     @Override
     public InvType getInvTypeByTypeName(String name) {
         List<InvType> byTypeName = invTypesRepository.findByTypeName(name);
-        return byTypeName.isEmpty() ? null : invTypesRepository.findByTypeName(name).get(0);
+        return byTypeName.isEmpty() ? null : byTypeName.get(0);
     }
 
     @Override
@@ -77,6 +77,11 @@ public class EveMaterialsDataService implements IEveMaterialDataService {
         else if (category.contains("module")) return MaterialType.MODULE;
         else if (group.contains("material")) return MaterialType.MATERIAL;
         else return MaterialType.UNKNOWN;
+    }
+
+    @Override
+    public Integer getTypeIdByName(String typeName) {
+        return invTypesRepository.findTypeIdByName(typeName);
     }
 
     @Override
