@@ -11,7 +11,7 @@ import reactor.netty.http.client.HttpClient;
 
 public abstract class EveAbstractIntegrationConnection {
 
-    WebClient webClient;
+    protected WebClient webClient;
 
     @Value("${eve.webclient.baseUrl}")
     private String baseUrl;

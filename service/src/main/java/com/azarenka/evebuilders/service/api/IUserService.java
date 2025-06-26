@@ -12,6 +12,8 @@ public interface IUserService {
 
     Optional<User> getByUsername(String username);
 
+    Optional<User> getByUserId(String id);
+
     User saveUser(User tokenResponse);
 
     String getCharacterId();

@@ -24,4 +24,9 @@ public class UserTokenService implements IUserTokenService {
     public String getUserToken(String userId) {
         return repository.findById(userId).orElseThrow().getAccessToken();
     }
+
+    @Override
+    public UserToken findByUserId(String uid) {
+        return repository.findById(uid).orElseThrow();
+    }
 }

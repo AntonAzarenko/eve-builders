@@ -11,4 +11,5 @@ public interface IUserTokenService {
 
     String getUserToken(String userId);
 
+    UserToken findByUserId(String uid);
 }

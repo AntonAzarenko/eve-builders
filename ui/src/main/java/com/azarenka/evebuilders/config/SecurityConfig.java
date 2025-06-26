@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.config;
 
+import com.azarenka.evebuilders.service.impl.auth.EveAuthenticationSuccessHandler;
 import com.azarenka.evebuilders.service.impl.auth.EveOAuth2UserService;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
@@ -15,9 +16,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig extends VaadinWebSecurity {
 
     private final EveOAuth2UserService eveOAuth2UserService;
+    private final EveAuthenticationSuccessHandler eveAuthenticationSuccessHandler;
 
-    public SecurityConfig(EveOAuth2UserService eveOAuth2UserService) {
+    public SecurityConfig(EveOAuth2UserService eveOAuth2UserService,
+                          EveAuthenticationSuccessHandler eveAuthenticationSuccessHandler) {
         this.eveOAuth2UserService = eveOAuth2UserService;
+        this.eveAuthenticationSuccessHandler = eveAuthenticationSuccessHandler;
     }
 
     @Override
@@ -35,7 +39,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                 .userService(eveOAuth2UserService)
             )
             .failureHandler(customFailureHandler())
-            .defaultSuccessUrl("/landing", true)
+            .successHandler(eveAuthenticationSuccessHandler)
         );
         http.logout(logout -> logout.logoutSuccessUrl("/logout"));
         http.csrf(csrf -> csrf
