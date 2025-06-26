@@ -98,11 +98,11 @@ eve:
   clientId: ${EVE.CLIENTID}
   clientSecret: ${EVE.CLIENTSECRET}
   corporation:
-    info: /v5/corporations/{corporation_id}/
+    info: /v5/corporations/{corporation_id}
     contracts:
-      url: /v1/corporations/{corporation_id}/contracts/
+      url: /v1/corporations/{corporation_id}/contracts
       items:
-        url: /v1/corporations/{corporation_id}/contracts/{contract_id}/items/
+        url: /v1/corporations/{corporation_id}/contracts/{contract_id}/items
   alliance:
     info: /v3/alliances/{alliance_id}/
   mail:
