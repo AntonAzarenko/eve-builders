@@ -4,6 +4,12 @@
 
 # Release notes
 
+## Version 1.4.1.1
+Release Date: 2025-06-24
+
+### HOT FIX
+- Fix issue related to disability to assembly order with wrong name in fit modules 
+
 ## Version 1.4.1
 Release Date: 2025-06-24
 

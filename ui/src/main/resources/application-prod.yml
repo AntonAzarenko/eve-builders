@@ -104,7 +104,7 @@ eve:
       items:
         url: /v1/corporations/{corporation_id}/contracts/{contract_id}/items/
   alliance:
-    info: /v3/alliances/{alliance_id}/
+    info: /v3/alliances/{alliance_id}
   mail:
     send:
       url: /latest/characters/{characterId}/mail/
