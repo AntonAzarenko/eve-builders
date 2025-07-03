@@ -64,6 +64,7 @@ spring:
               - publicData
               - esi-assets.read_assets.v1
               - esi-mail.send_mail.v1
+              - esi-contracts.read_corporation_contracts.v1
             authorization-grant-type: authorization_code
             redirect-uri: ${eve.redirectUri}
             client-name: EVE Online
@@ -98,8 +99,12 @@ eve:
   clientSecret: ${EVE.CLIENTSECRET}
   corporation:
     info: /v5/corporations/{corporation_id}/
+    contracts:
+      url: /v1/corporations/{corporation_id}/contracts/
+      items:
+        url: /v1/corporations/{corporation_id}/contracts/{contract_id}/items/
   alliance:
-    info: /v3/alliances/{alliance_id}/
+    info: /v3/alliances/{alliance_id}
   mail:
     send:
       url: /latest/characters/{characterId}/mail/
