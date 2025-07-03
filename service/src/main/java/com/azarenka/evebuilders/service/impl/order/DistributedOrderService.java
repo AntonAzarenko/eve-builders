@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
+import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
@@ -41,6 +42,8 @@ public class DistributedOrderService implements IDistributedOrderService {
     private IOrderService orderService;
     @Autowired
     private ITelegramIntegrationService telegramIntegrationService;
+    @Autowired
+    private IAuditService auditService;
 
     @Override
     @Transactional

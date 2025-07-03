@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ContractValidatorJob {
 
-    @Scheduled(fixedDelay = 2 * 60 * 60 * 1000) // каждые 2 часа
+    @Scheduled(fixedDelay = 2 * 60 * 60 * 1000)
     public void checkContracts() {
         //TODO will implement later
     }

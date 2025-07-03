@@ -109,12 +109,15 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private HorizontalLayout initToolBarLayout() {
         updateStatusOrderButton = new Button(getTranslation("button.finish_order"), VaadinIcon.CASH.create(),
                 event -> {
-                    List<DistributedOrder> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
-                    if (selectedItems.size() == 1) {
+                    Optional<DistributedOrder> optional = grid.getSelectionModel().getFirstSelectedItem();
+                   optional.ifPresent(order-> {
+                       controller.updateOrder(order.getOrderNumber());
+                   });
+                   /* if (selectedItems.size() == 1) {
                         FinishOrderWindow finishOrderWindow = new FinishOrderWindow(selectedItems.get(0), controller,
                                 save -> UI.getCurrent().refreshCurrentRoute(true));
                         finishOrderWindow.open();
-                    }
+                    }*/
                 }
         );
         updateStatusOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);

@@ -4,5 +4,8 @@ public enum OrderStatusEnum {
 
     NEW,
     IN_PROGRESS,
-    COMPLETED
+    COMPLETED,
+    DISCARDED,
+    EXPIRED,
+    STOPPED;
 }

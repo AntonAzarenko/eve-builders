@@ -27,6 +27,11 @@ public class UserTokenService implements IUserTokenService {
 
     @Override
     public UserToken findByUserId(String uid) {
-        return repository.findById(uid).orElseThrow();
+        return repository.findById(uid).orElse(null);
+    }
+
+    @Override
+    public void delete(String userId) {
+        repository.deleteById(userId);
     }
 }

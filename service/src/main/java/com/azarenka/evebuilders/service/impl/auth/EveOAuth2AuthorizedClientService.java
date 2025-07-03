@@ -37,14 +37,14 @@ public class EveOAuth2AuthorizedClientService implements OAuth2AuthorizedClientS
     public void saveAuthorizedClient(OAuth2AuthorizedClient authorizedClient, Authentication principal) {
         store.put(buildKey(authorizedClient, principal), authorizedClient);
         if (principal.getPrincipal() instanceof EveUserPrincipal eveUserPrincipal) {
-            User user = eveUserPrincipal.getUser();
-            String userId = user.getUid();
-            String accessToken = authorizedClient.getAccessToken().getTokenValue();
-            String refreshToken = authorizedClient.getRefreshToken() != null
+            var user = eveUserPrincipal.getUser();
+            var userId = user.getUid();
+            var accessToken = authorizedClient.getAccessToken().getTokenValue();
+            var refreshToken = authorizedClient.getRefreshToken() != null
                 ? authorizedClient.getRefreshToken().getTokenValue()
                 : null;
-            Instant expiresAt = authorizedClient.getAccessToken().getExpiresAt();
-            UserToken token = new UserToken();
+            var expiresAt = authorizedClient.getAccessToken().getExpiresAt();
+            var token = new UserToken();
             token.setUserId(userId);
             token.setAccessToken(accessToken);
             token.setRefreshToken(refreshToken);
