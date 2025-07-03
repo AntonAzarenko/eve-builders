@@ -2,5 +2,11 @@ package com.azarenka.evebuilders.domain.db;
 
 public enum RequestOrderStatusEnum {
 
-    SUBMITTED, APPROVED, COMPLETED, SUSPENDED, REJECT;
+    CREATED,
+    SUBMITTED,
+    APPROVED,
+    IN_PROGRESS,
+    COMPLETED,
+    SUSPENDED,
+    REJECT;
 }

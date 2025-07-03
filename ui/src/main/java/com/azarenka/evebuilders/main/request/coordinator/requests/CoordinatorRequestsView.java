@@ -4,8 +4,11 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.request.api.IRequestsController;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -15,21 +18,24 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.RolesAllowed;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
+
 @Route(value = "my-requests", layout = MenuRequestCenterPage.class)
 @RolesAllowed({"ROLE_COORDINATOR"})
-public class CoordinatorRequestsView extends View implements LocaleChangeObserver {
+public class CoordinatorRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
 
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
     private final IRequestsController controller;
+    private Button submitButton;
 
     public CoordinatorRequestsView(@Autowired IRequestsController controller) {
         this.controller = controller;
@@ -42,11 +48,17 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private HorizontalLayout initToolBarLayout() {
+        submitButton = new Button("Submit");
+        submitButton.addClickListener(event -> {
+            RequestOrder requestOrder = grid.getSelectedItems().stream().findFirst().get();
+            requestOrder.setRequestStatus(RequestOrderStatusEnum.APPROVED);
+            controller.updateRequest(requestOrder);
+        });
         searchField = new SearchComponent(getTranslation("order.search.placeholder"),
-                event -> searchByText(searchField.getValue()),
-                event -> clearSearch()
+            event -> searchByText(searchField.getValue()),
+            event -> clearSearch()
         );
-        HorizontalLayout layout = new HorizontalLayout(searchField);
+        HorizontalLayout layout = new HorizontalLayout(submitButton, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
@@ -60,6 +72,10 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             shipOrderDtoColumn.setSortable(true);
             shipOrderDtoColumn.setResizable(true);
         });
+        grid.addSelectionListener(event -> {
+            updateStatusButton();
+        });
+        updateStatusButton();
         return grid;
     }
 
@@ -73,11 +89,11 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             Collection<RequestOrder> items = dataProvider.getItems();
             String lowerCaseValue = value.trim().toLowerCase();
             List<RequestOrder> list = items.stream()
-                    .filter(item -> (
-                            (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
-                                    (item.getRequestStatus() != null && item.getRequestStatus().name().toLowerCase()
-                                            .contains(lowerCaseValue))))
-                    .toList();
+                .filter(item -> (
+                    (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
+                        (item.getRequestStatus() != null && item.getRequestStatus().name().toLowerCase()
+                            .contains(lowerCaseValue))))
+                .toList();
             dataProvider = DataProvider.ofCollection(list);
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
@@ -90,8 +106,9 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
 
     private void addColumns() {
         addColumn(RequestOrder::getId);
-        addColumn(value -> value.getRequestStatus().name());
-        addColumn(RequestOrder::getItemName);
+        addColumn(value -> convertStatus(value.getRequestStatus()))
+            .setWidth("200px");
+        addColumn(RequestOrder::getItemName).setWidth("200px");
         addColumn(RequestOrder::getPriority);
         addNumberColumn(RequestOrder::getCount);
         addAmountColumn(RequestOrder::getPrice);
@@ -127,5 +144,14 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         grid.getColumns().get(6).setHeader(getTranslation("table.column.created_by"));
         grid.getColumns().get(7).setHeader(getTranslation("table.column.deadline"));
         searchField.setPlaceholder(getTranslation("request.search.placeholder"));
+    }
+
+    private void updateStatusButton() {
+        boolean selected = !grid.getSelectedItems().isEmpty();
+        submitButton.setEnabled(selected && grid.getSelectedItems()
+            .stream()
+            .findFirst()
+            .get()
+            .getRequestStatus() == RequestOrderStatusEnum.SUBMITTED);
     }
 }

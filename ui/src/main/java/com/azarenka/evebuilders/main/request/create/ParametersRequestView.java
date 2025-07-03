@@ -50,7 +50,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private static final String REQUIRED_FIELD_VALUE = "error.message.required_value";
 
     private final IntegerField countShipsField = new IntegerField(getTranslation("management.label.count"));
-    private final BigDecimalField costField = new BigDecimalField(getTranslation("management.label.cost"));
     private final ComboBox<OrderType> orderScopeField = new ComboBox(getTranslation("management.label.type"));
     private final ComboBox<PriorityOption> priorityField = new ComboBox(getTranslation("management.label.priority"));
     private final ComboBox<Fit> fitField = new ComboBox(getTranslation("management.label.fit"));
@@ -110,7 +109,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         groupsComboBox.setLabel(getTranslation("management.label_groups"));
         paramentersSpan.setText(getTranslation("management.label.parameters"));
         countShipsField.setLabel(getTranslation("management.label.count"));
-        costField.setLabel(getTranslation("management.label.cost"));
         orderScopeField.setLabel(getTranslation("management.label.type"));
         priorityField.setLabel(getTranslation("management.label.priority"));
         fitField.setLabel(getTranslation("management.label.fit"));
@@ -138,7 +136,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 layout,
                 initFitLoadFitButtonLayout(),
                 countShipsField,
-                costField,
                 orderScopeField,
                 priorityField,
                 datePickerField,
@@ -167,12 +164,11 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         initGroupCombobox();
         initItemsCombobox();
         initCountShipsField();
-        initCostField();
         initPriorityField();
         initTypeField();
         initFitField();
         initDataPickerLayout();
-        VaadinUtils.setPadding("5px", categoryComboBox, groupsComboBox, itemsComboBox, countShipsField, costField,
+        VaadinUtils.setPadding("5px", categoryComboBox, groupsComboBox, itemsComboBox, countShipsField,
                 orderScopeField, priorityField, fitField, datePickerField);
         updateFieldsStatus();
     }
@@ -254,15 +250,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 .withValidator(requiredValidator)
                 .withValidator(value -> value > 0, getTranslation("errors.message.zero_value"))
                 .bind(RequestOrder::getCount, RequestOrder::setCount);
-    }
-
-    private void initCostField() {
-        costField.setWidthFull();
-        costField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        binder.forField(costField)
-                .withValidator(requiredValidator)
-                .withValidator(value -> value.compareTo(BigDecimal.ZERO) > 0, getTranslation("errors.message.zero_value"))
-                .bind(RequestOrder::getPrice, RequestOrder::setPrice);
     }
 
     private void initPriorityField() {
@@ -445,7 +432,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
 
     private void clearFields() {
         countShipsField.clear();
-        costField.clear();
         orderScopeField.clear();
         priorityField.clear();
         fitField.clear();

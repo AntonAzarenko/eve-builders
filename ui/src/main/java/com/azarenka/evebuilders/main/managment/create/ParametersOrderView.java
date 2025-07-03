@@ -548,7 +548,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
     private void updateRequestOrder() {
         if (Objects.nonNull(VaadinSession.getCurrent().getAttribute("requestOrder"))) {
             RequestOrder requestOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
-            controller.updateRequestStatusOrder(requestOrder, RequestOrderStatusEnum.APPROVED);
+            controller.updateRequestStatusOrder(requestOrder, RequestOrderStatusEnum.IN_PROGRESS);
             controller.sentMessage(order);
         }
     }

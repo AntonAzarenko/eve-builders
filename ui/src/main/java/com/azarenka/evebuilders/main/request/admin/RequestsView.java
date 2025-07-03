@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.request.api.IRequestsController;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -23,7 +24,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.annotation.security.RolesAllowed;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -31,16 +32,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.security.RolesAllowed;
+
 @Route(value = "requests", layout = MenuRequestCenterPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @PageTitle("Requests")
-public class RequestsView extends View implements LocaleChangeObserver {
+public class RequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
 
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
     private final IRequestsController controller;
     private Button applyButton;
+    private Button createOrderButton;
 
     public RequestsView(@Autowired IRequestsController controller) {
         this.controller = controller;
@@ -55,20 +59,31 @@ public class RequestsView extends View implements LocaleChangeObserver {
 
     private HorizontalLayout initToolBarLayout() {
         searchField = new SearchComponent(getTranslation("order.search.placeholder"),
-                event -> searchByText(searchField.getValue()),
-                event -> clearSearch()
+            event -> searchByText(searchField.getValue()),
+            event -> clearSearch()
         );
+        createOrderButton = new Button(VaadinIcon.LAYOUT.create());
+        createOrderButton.setText("Создать заказ");
+        createOrderButton.addClickListener(event -> onCreateButtonClicked());
+        createOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         applyButton = new Button(VaadinIcon.LAYOUT.create());
         applyButton.setText("Обработать");
         applyButton.addClickListener(event -> onApplyButtonClicked());
         applyButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        HorizontalLayout layout = new HorizontalLayout(applyButton, searchField);
+        HorizontalLayout layout = new HorizontalLayout(applyButton, createOrderButton, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
     }
 
     private void onApplyButtonClicked() {
+        SubmitRequestOrderWindow submitRequestOrderWindow =
+            new SubmitRequestOrderWindow(grid.getSelectionModel().getFirstSelectedItem().get(), controller,
+                save -> UI.getCurrent().refreshCurrentRoute(true));
+        submitRequestOrderWindow.open();
+    }
+
+    private void onCreateButtonClicked() {
         Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         firstSelectedItem.ifPresent(requestOrder -> {
             VaadinSession.getCurrent().setAttribute("requestOrder", requestOrder);
@@ -91,8 +106,10 @@ public class RequestsView extends View implements LocaleChangeObserver {
     private void updateButtonStatus() {
         Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         boolean isSelected = firstSelectedItem.isPresent();
+        createOrderButton.setEnabled(isSelected
+            && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.APPROVED);
         applyButton.setEnabled(isSelected
-                && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED);
+            && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.CREATED);
     }
 
     private void clearSearch() {
@@ -105,11 +122,11 @@ public class RequestsView extends View implements LocaleChangeObserver {
             Collection<RequestOrder> items = dataProvider.getItems();
             String lowerCaseValue = value.trim().toLowerCase();
             List<RequestOrder> list = items.stream()
-                    .filter(item -> (
-                            (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
-                                    (item.getRequestStatus() != null && item.getRequestStatus().name().toLowerCase()
-                                            .contains(lowerCaseValue))))
-                    .toList();
+                .filter(item -> (
+                    (item.getItemName() != null && item.getItemName().toLowerCase().contains(lowerCaseValue)) ||
+                        (item.getRequestStatus() != null && item.getRequestStatus().name().toLowerCase()
+                            .contains(lowerCaseValue))))
+                .toList();
             dataProvider = DataProvider.ofCollection(list);
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
@@ -122,7 +139,7 @@ public class RequestsView extends View implements LocaleChangeObserver {
 
     private void addColumns() {
         addColumn(RequestOrder::getId);
-        addColumn(value -> value.getRequestStatus().name());
+        addColumn(value -> convertStatus(value.getRequestStatus()));
         addColumn(RequestOrder::getItemName);
         addColumn(RequestOrder::getPriority);
         addNumberColumn(RequestOrder::getCount);

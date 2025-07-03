@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.main.request.coordinator.requests;
 
 import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.request.api.IRequestsController;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,5 +18,10 @@ public class CoordinatorRequestsController implements IRequestsController {
     @Override
     public List<RequestOrder> getRequestOrders() {
         return requestOrderService.getAllRequestOrders();
+    }
+
+    @Override
+    public void updateRequest(RequestOrder requestOrder) {
+        requestOrderService.update(requestOrder);
     }
 }

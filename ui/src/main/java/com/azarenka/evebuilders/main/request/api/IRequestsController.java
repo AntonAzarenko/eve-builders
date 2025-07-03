@@ -7,4 +7,6 @@ import java.util.List;
 public interface IRequestsController {
 
     List<RequestOrder> getRequestOrders();
+
+    void updateRequest(RequestOrder requestOrder);
 }

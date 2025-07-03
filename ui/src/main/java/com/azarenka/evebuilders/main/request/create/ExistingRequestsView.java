@@ -5,6 +5,7 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -27,7 +28,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Optional;
 
-public class ExistingRequestsView extends View implements LocaleChangeObserver {
+public class ExistingRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter   {
 
     private final ICreateRequestController controller;
     private Grid<RequestOrder> grid;
@@ -116,7 +117,7 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver {
 
     private void addColumns() {
         addColumn(RequestOrder::getItemName);
-        addColumn(value -> value.getRequestStatus().name());
+        addColumn(value -> convertStatus(value.getRequestStatus()));
         addNumberColumn(RequestOrder::getCount);
         addAmountColumn(order -> formatIsk(order.getPrice()));
     }
