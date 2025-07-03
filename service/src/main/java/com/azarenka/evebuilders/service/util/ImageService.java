@@ -23,29 +23,29 @@ public class ImageService {
 
     public Image createImage64(String typeName) {
         String normalizedName = normalizeName(typeName);
-        int id = dataService.getTypeIdByName(normalizedName);
+        Integer id = dataService.getTypeIdByName(normalizedName);
         return loadImage(id, IMAGE_SIZE_64);
     }
 
     public Image createImage32(String typeName) {
         String normalizedName = normalizeName(typeName);
-        int id = dataService.getTypeIdByName(normalizedName);
+        Integer id = dataService.getTypeIdByName(normalizedName);
         return loadImage(id, IMAGE_SIZE_32);
     }
 
-    public Image createImage64(int id) {
+    public Image createImage64(Integer id) {
         return loadImage(id, IMAGE_SIZE_64);
     }
 
-    public Image createImage32(int id) {
+    public Image createImage32(Integer id) {
         return loadImage(id, IMAGE_SIZE_32);
     }
 
-    public Image createImage(int id, String size) {
+    public Image createImage(Integer id, String size) {
         return loadImage(id, size);
     }
 
-    private Image loadImage(int id, String cdnSize) {
+    private Image loadImage(Integer id, String cdnSize) {
         try {
             byte[] imageBytes = imageCacheService.getImageBytes(id, cdnSize);
             String base64 = Base64.getEncoder().encodeToString(imageBytes);
