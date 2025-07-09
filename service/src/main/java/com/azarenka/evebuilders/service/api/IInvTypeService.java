@@ -7,4 +7,6 @@ import java.util.List;
 public interface IInvTypeService {
 
     List<InvType> getTypesByGroupId(Integer groupId);
+
+    InvType getInvTypeByModuleName(String moduleName);
 }

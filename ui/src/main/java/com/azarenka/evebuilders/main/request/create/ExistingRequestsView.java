@@ -50,6 +50,9 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver, 
         grid.getColumns().get(1).setHeader(getTranslation("table.column.status"));
         grid.getColumns().get(2).setHeader(getTranslation("table.column.count"));
         grid.getColumns().get(3).setHeader(getTranslation("table.column.price"));
+        recycleButton.setTooltipText(getTranslation("message.button_tooltip.remove"));
+        repeatOrderButton.setTooltipText(getTranslation("message.button_tooltip.repeat"));
+        editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
     }
 
     private void initContent() {
@@ -72,33 +75,35 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver, 
 
     private void initToolbarLayout() {
         recycleButton = new Button(VaadinIcon.RECYCLE.create());
-        recycleButton.setTooltipText("Удалить заказ");
+        recycleButton.setTooltipText(getTranslation("message.button_tooltip.remove"));
         recycleButton.addClickListener(event -> {
             grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
-                if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED) {
+                if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED ||
+                    order.getRequestStatus() == RequestOrderStatusEnum.CREATED) {
                     controller.removeRequest(order.getId());
-                    String message = String.format("Заявка на %s была удалена", order.getItemName());
+                    var message = String.format(getTranslation("message.notification.request_removed"),
+                        order.getItemName());
                     Notification.show(message);
                     UI.getCurrent().refreshCurrentRoute(true);
                 } else {
-                    Notification.show(String.format("Заявка на %s не может быть удалена так как заказ уже находится в работе",
+                    Notification.show(String.format(getTranslation("message.notification.request_can_not_removed"),
                             order.getItemName()), 3000, Notification.Position.MIDDLE);
                 }
             });
         });
         repeatOrderButton = new Button(VaadinIcon.REPLY_ALL.create());
-        repeatOrderButton.setTooltipText("Повторить заказ");
+        repeatOrderButton.setTooltipText(getTranslation("message.button_tooltip.repeat"));
         repeatOrderButton.addClickListener(event -> {
             Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
             if (firstSelectedItem.isPresent()) {
                 RequestOrder order = firstSelectedItem.get();
-                order.setId(StringUtils.EMPTY);
-                order.setRequestStatus(RequestOrderStatusEnum.SUBMITTED);
+                order.setId(null);
+                order.setRequestStatus(RequestOrderStatusEnum.CREATED);
                 moveOrderToParameters(order);
             }
         });
         editButton = new Button(VaadinIcon.EDIT.create());
-        editButton.setTooltipText("Редактировать заказ");
+        editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
         editButton.addClickListener(event -> {
             Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
             firstSelectedItem.ifPresent(this::moveOrderToParameters);
@@ -117,8 +122,8 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver, 
 
     private void addColumns() {
         addColumn(RequestOrder::getItemName);
-        addColumn(value -> convertStatus(value.getRequestStatus()));
-        addNumberColumn(RequestOrder::getCount);
+        addColumn(value -> convertRequestStatus(value.getRequestStatus())).setWidth("200px").setFlexGrow(0);
+        addNumberColumn(RequestOrder::getCount).setWidth("100px").setFlexGrow(0);
         addAmountColumn(order -> formatIsk(order.getPrice()));
     }
 
@@ -152,7 +157,8 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver, 
         Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         boolean isOrderSelected = firstSelectedItem.isPresent();
         boolean isEditButtonEnabled =
-                isOrderSelected && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED;
+                isOrderSelected && (firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED ||
+                    firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.CREATED);
         recycleButton.setEnabled(isOrderSelected);
         repeatOrderButton.setEnabled(isOrderSelected);
         editButton.setEnabled(isEditButtonEnabled);

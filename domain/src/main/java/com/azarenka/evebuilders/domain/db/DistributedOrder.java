@@ -4,6 +4,8 @@ import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -11,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "distributed_oder", schema = "builders")
+@Table(name = "distributed_order", schema = "builders")
 public class DistributedOrder {
 
     @Id
@@ -29,10 +31,12 @@ public class DistributedOrder {
     @Column(name = "fit_id")
     private String fitId;
     @Column(name = "order_rights")
+    @Enumerated(EnumType.STRING)
     private OrderRights orderRights;
     @Column(name = "ready", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer countReady;
     @Column(name="status")
+    @Enumerated(EnumType.STRING)
     private OrderStatusEnum orderStatus;
     @Column(name = "created_date")
     private LocalDate createdDate;

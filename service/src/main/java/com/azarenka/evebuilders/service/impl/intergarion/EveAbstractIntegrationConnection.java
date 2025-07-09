@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
@@ -23,6 +24,11 @@ public abstract class EveAbstractIntegrationConnection {
             .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
                 .responseTimeout(Duration.ofMinutes(2))
             ))
+            .exchangeStrategies(ExchangeStrategies.builder()
+                .codecs(configurer -> configurer
+                    .defaultCodecs()
+                    .maxInMemorySize(10 * 1024 * 1024)) // 10 MB, можешь уменьшить/увеличить
+                .build())
             .build();
     }
 }

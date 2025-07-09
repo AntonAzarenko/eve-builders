@@ -45,6 +45,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     private final IRequestsController controller;
     private Button applyButton;
     private Button createOrderButton;
+    private Button redjectRequestButton;
 
     public RequestsView(@Autowired IRequestsController controller) {
         this.controller = controller;
@@ -63,21 +64,29 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
             event -> clearSearch()
         );
         createOrderButton = new Button(VaadinIcon.LAYOUT.create());
-        createOrderButton.setText("Создать заказ");
+        createOrderButton.setText(getTranslation("button.app.create"));
         createOrderButton.addClickListener(event -> onCreateButtonClicked());
         createOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         applyButton = new Button(VaadinIcon.LAYOUT.create());
-        applyButton.setText("Обработать");
+        applyButton.setText(getTranslation("button.app.apply"));
         applyButton.addClickListener(event -> onApplyButtonClicked());
         applyButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        HorizontalLayout layout = new HorizontalLayout(applyButton, createOrderButton, searchField);
+        redjectRequestButton = new Button(getTranslation("button.request_reject"));
+        redjectRequestButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        redjectRequestButton.addClickListener(event -> {
+            var requestOrder = grid.getSelectedItems().stream().findFirst().get();
+            requestOrder.setRequestStatus(RequestOrderStatusEnum.REJECTED);
+            controller.updateRequest(requestOrder);
+            UI.getCurrent().refreshCurrentRoute(true);
+        });
+        var layout = new HorizontalLayout(applyButton, createOrderButton, redjectRequestButton, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
     }
 
     private void onApplyButtonClicked() {
-        SubmitRequestOrderWindow submitRequestOrderWindow =
+        var submitRequestOrderWindow =
             new SubmitRequestOrderWindow(grid.getSelectionModel().getFirstSelectedItem().get(), controller,
                 save -> UI.getCurrent().refreshCurrentRoute(true));
         submitRequestOrderWindow.open();
@@ -110,6 +119,10 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
             && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.APPROVED);
         applyButton.setEnabled(isSelected
             && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.CREATED);
+        redjectRequestButton.setEnabled(isSelected &&
+            (firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.APPROVED ||
+                firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.CREATED ||
+                firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED));
     }
 
     private void clearSearch() {
@@ -139,12 +152,13 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
 
     private void addColumns() {
         addColumn(RequestOrder::getId);
-        addColumn(value -> convertStatus(value.getRequestStatus()));
+        addColumn(value -> convertRequestStatus(value.getRequestStatus()));
         addColumn(RequestOrder::getItemName);
         addColumn(RequestOrder::getPriority);
         addNumberColumn(RequestOrder::getCount);
         addAmountColumn(RequestOrder::getPrice);
         addColumn(RequestOrder::getCreatedBy);
+        addColumn(order -> order.getCreatedDate().toString()).setWidth("200px");
         addColumn(order -> order.getFinishDate().toString());
     }
 
@@ -173,7 +187,11 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
         grid.getColumns().get(4).setHeader(getTranslation("table.column.count"));
         grid.getColumns().get(5).setHeader(getTranslation("table.column.price"));
         grid.getColumns().get(6).setHeader(getTranslation("table.column.created_by"));
-        grid.getColumns().get(7).setHeader(getTranslation("table.column.deadline"));
+        grid.getColumns().get(7).setHeader(getTranslation("table.column.create_date_request"));
+        grid.getColumns().get(8).setHeader(getTranslation("table.column.deadline"));
         searchField.setPlaceholder(getTranslation("request.search.placeholder"));
+        redjectRequestButton.setText(getTranslation("button.request_reject"));
+        createOrderButton.setText(getTranslation("button.app.create"));
+        applyButton.setText(getTranslation("button.app.apply"));
     }
 }

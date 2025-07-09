@@ -18,4 +18,9 @@ public class InvTypesService implements IInvTypeService {
     public List<InvType> getTypesByGroupId(Integer groupId) {
         return invTypesRepository.findByGroupId(groupId);
     }
+
+    @Override
+    public InvType getInvTypeByModuleName(String moduleName) {
+        return invTypesRepository.findByTypeNameIgnoreCase(moduleName).orElse(null);
+    }
 }

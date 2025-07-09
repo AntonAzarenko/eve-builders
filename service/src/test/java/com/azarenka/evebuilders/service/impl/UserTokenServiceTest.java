@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -72,9 +73,9 @@ class UserTokenServiceTest {
     }
 
     @Test
-    void testFindByUserIdWhenUserNotFoundThrowsException() {
+    void testFindByUserIdWhenUserNotFoundReturnsNull() {
         when(repository.findById(userId)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class, () -> userTokenService.findByUserId(userId));
+        assertNull(userTokenService.findByUserId(userId));
         verify(repository).findById(userId);
         verifyNoMoreInteractions(repository);
     }

@@ -96,7 +96,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
     }
 
     private VerticalLayout initOrderLayout(ShipOrderDto shipOrderDto) {
-        IntegerField countTextField = new IntegerField();
+        var countTextField = new IntegerField();
         binder.forField(countTextField)
                 .withValidator(integer ->
                                 integer <= (shipOrderDto.getCount() - shipOrderDto.getInProgressCount()),
@@ -106,7 +106,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
                 .bind(e -> e, (s, r) -> r.intValue());
         orderTexfieldMap.put(shipOrderDto, countTextField);
         VerticalLayout layout = VaadinUtils.initCommonVerticalLayout();
-        Button showFitButton = new Button(VaadinIcon.EYE.create(), event -> {
+        var showFitButton = new Button(VaadinIcon.EYE.create(), event -> {
             Fit fitById = controller.getFitById(shipOrderDto.getFitId());
             if (Objects.nonNull(fitById)) {
                 new FitView(fitById, controller.getFitLoaderService()).open();

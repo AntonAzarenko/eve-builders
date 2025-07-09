@@ -1,37 +1,56 @@
 package com.azarenka.evebuilders.service.util;
 
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.internal.LocaleUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
-public interface IOrderStatusToStringConverter {
+import java.util.Optional;
 
-    default String convertStatus(RequestOrderStatusEnum statusEnum) {
+public interface IOrderStatusToStringConverter extends LocaleChangeObserver {
+
+    default String convertRequestStatus(RequestOrderStatusEnum statusEnum) {
         switch (statusEnum) {
             case CREATED -> {
-                return "Создано";
+                return getTranslation("label.created");
             }
             case SUBMITTED -> {
-                return "На рассмотрении";
+                return getTranslation("label.submitted");
             }
             case APPROVED -> {
-                return "Принят";
+                return getTranslation("label.approved");
             }
             case COMPLETED -> {
-                return "Завершен";
+                return getTranslation("label.completed");
             }
             case IN_PROGRESS -> {
-                return "В работе";
+                return getTranslation("label.in_progress");
             }
             case SUSPENDED -> {
-                return "Приостановлен";
+                return getTranslation("label.suspended");
             }
-            case REJECT -> {
-                return "Отклонен";
+            case REJECTED -> {
+                return getTranslation("label.rejected");
             }
             default -> {
                 return StringUtils.EMPTY;
             }
         }
+    }
+
+    default void localeChange(LocaleChangeEvent event) {
+
+    }
+
+    default String getTranslation(String key, Object... params) {
+        final Optional<I18NProvider> i18NProvider = LocaleUtil
+            .getI18NProvider();
+        return i18NProvider
+            .map(i18n -> i18n.getTranslation(key,
+                LocaleUtil.getLocale(() -> i18NProvider), params))
+            .orElseGet(() -> "!{" + key + "}!");
     }
 }

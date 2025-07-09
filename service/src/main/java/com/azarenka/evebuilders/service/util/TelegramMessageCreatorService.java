@@ -48,6 +48,17 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
         return text.replace(".", "\\.");
     }
 
+    public static String createWaitingForApprovalMessage(DistributedOrder distributedOrder, String username) {
+        var builder = new StringBuilder();
+        builder
+            .append(String.format("* Отчет от - %s*\n", username))
+            .append(String.format("* Заказ: %s*\n", distributedOrder.getOrderNumber()))
+            .append(String.format(FORMAT, "Наименование", distributedOrder.getShipName()))
+            .append(String.format(FORMAT, "СТАТУC", "ОЖИДАЕТ ВАЛИДАЦИИ КОНТРАКТА"));
+        var text = escapeMarkdownV2(builder.toString());
+        return text.replace(".", "\\.");
+    }
+
     public static String createOrderMessage(Order order) {
         return escapeMarkdownV2(String.format(FORMAT, "Заказ", order.getOrderNumber()) +
                 String.format(FORMAT, "Наименование", order.getShipName()) +

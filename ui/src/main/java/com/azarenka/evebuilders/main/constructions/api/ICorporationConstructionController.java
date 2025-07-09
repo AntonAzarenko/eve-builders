@@ -22,5 +22,6 @@ public interface ICorporationConstructionController {
 
     void discardOrder(DistributedOrder order);
 
-    void updateOrder(String orderNumber);
+    boolean sendOrderForApproval(DistributedOrder orderNumber);
+
 }

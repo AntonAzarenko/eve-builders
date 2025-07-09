@@ -15,6 +15,7 @@
     <name>eve-builders</name>
     <description>eve-builders</description>
     <modules>
+        <module>db</module>
         <module>domain</module>
         <module>repository</module>
         <module>service</module>

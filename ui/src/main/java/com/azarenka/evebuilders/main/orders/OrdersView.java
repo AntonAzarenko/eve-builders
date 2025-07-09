@@ -169,7 +169,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
     private void openOrderInfo() {
         String orderNumber = grid.getSelectionModel().getFirstSelectedItem().get().getOrderNumber();
         var orders = controller.getDistributedOrdersByOrderNumber(orderNumber);
-        OrderDetailsWindow orderDetailsWindow = new OrderDetailsWindow(orders);
+        OrderDetailsWindow orderDetailsWindow = new OrderDetailsWindow(controller, orders, orderNumber);
         orderDetailsWindow.open();
     }
 

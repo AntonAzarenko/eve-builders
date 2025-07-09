@@ -8,5 +8,5 @@ public enum RequestOrderStatusEnum {
     IN_PROGRESS,
     COMPLETED,
     SUSPENDED,
-    REJECT;
+    REJECTED;
 }

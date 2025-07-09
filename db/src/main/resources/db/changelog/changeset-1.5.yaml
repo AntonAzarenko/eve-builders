@@ -185,9 +185,11 @@ databaseChangeLog:
               DROP FUNCTION map_roles_to_text;
       rollback:
         - sql:
+            splitStatements: false
+            stripComments: true
             sql: |
               -- Временная функция для обратного преобразования
-              CREATE OR REPLACE FUNCTION map_roles_to_smallint(text[]) RETURNS smallint[] AS $$
+              CREATE OR REPLACE FUNCTION map_roles_to_smallint(text[]) RETURNS smallint[] AS $func$
               DECLARE
                 result smallint[];
                 val text;
@@ -204,10 +206,160 @@ databaseChangeLog:
                 END LOOP;
                 RETURN result;
               END;
-              $$ LANGUAGE plpgsql;
-
+              $func$ LANGUAGE plpgsql;
+              
               ALTER TABLE builders.user_info
                 ALTER COLUMN roles TYPE smallint[]
                 USING map_roles_to_smallint(roles);
-
+              
               DROP FUNCTION map_roles_to_smallint(text[]);
+
+  - changeSet:
+      id: 2025-07-06-00
+      comment: rename-distributed-oder-table
+      author: anton
+      changes:
+        - renameTable:
+            schemaName: builders
+            oldTableName: distributed_oder
+            newTableName: distributed_order
+      rollback:
+        - renameTable:
+            schemaName: builders
+            oldTableName: distributed_order
+            newTableName: distributed_oder
+
+  - changeSet:
+      id: 2025-07-06-01
+      comment: convert-distributed_orders-enums
+      author: anton
+      changes:
+        # Удаляем ограничение, если есть
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.distributed_order
+              DROP CONSTRAINT IF EXISTS distributed_oder_status_check;
+
+        # Меняем тип smallint -> varchar
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.distributed_order
+              ALTER COLUMN status TYPE VARCHAR(50)
+              USING status::VARCHAR;
+
+        # Обновляем значения
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              UPDATE builders.distributed_order
+              SET status = CASE
+                WHEN status = '0' THEN 'NEW'
+                WHEN status = '1' THEN 'IN_PROGRESS'
+                WHEN status = '2' THEN 'COMPLETED'
+                WHEN status = '3' THEN 'DISCARDED'
+                WHEN status = '4' THEN 'EXPIRED'
+                WHEN status = '5' THEN 'STOPPED'
+                ELSE status
+              END;
+
+      rollback:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.request
+              DROP CONSTRAINT IF EXISTS distributed_order_status_check;
+              
+              UPDATE builders.distributed_order
+              SET status = CASE
+                WHEN status = 'NEW' THEN 0
+                WHEN status = 'IN_PROGRESS' THEN 1
+                WHEN status = 'COMPLETED' THEN 2
+                WHEN status = 'DISCARDED' THEN 3
+                WHEN status = 'EXPIRED' THEN 4
+                WHEN status = 'STOPPED' THEN 5
+                WHEN status = 'WAITING_FOR_APPROVAL' THEN 6
+                ELSE NULL
+              END;
+
+              ALTER TABLE builders.distributed_order
+              ALTER COLUMN status TYPE SMALLINT
+              USING status::SMALLINT;
+
+  - changeSet:
+      id: 2025-07-06-02
+      comment: convert-distributed_orders-enums
+      author: anton
+      changes:
+        # Удаляем ограничение
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.distributed_order
+              DROP CONSTRAINT IF EXISTS distributed_oder_order_rights_check;
+
+        # Теперь изменим тип поля
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.distributed_order
+              ALTER COLUMN order_rights TYPE VARCHAR(50)
+              USING order_rights::VARCHAR;
+
+        # Сначала заменим числовые значения на строки
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              UPDATE builders.distributed_order
+              SET order_rights = CASE
+                WHEN order_rights = '0' THEN 'CORPORATION'
+                WHEN order_rights = '1' THEN 'GROUP'
+                WHEN order_rights = '2' THEN 'PERSONAL'
+                ELSE NULL
+              END;
+
+      rollback:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              -- Приводим все строки к числам
+              UPDATE builders.distributed_order
+              SET order_rights = CASE
+                WHEN order_rights = 'CORPORATION' THEN '0'
+                WHEN order_rights = 'GROUP' THEN '1'
+                WHEN order_rights = 'PERSONAL' THEN '2'
+              ELSE NULL
+              END
+              WHERE order_rights IN ('CORPORATION', 'GROUP', 'PERSONAL');
+
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DO $$
+              BEGIN
+                IF EXISTS (
+                  SELECT 1
+                  FROM information_schema.columns
+                  WHERE table_schema = 'builders'
+                    AND table_name = 'distributed_order'
+                    AND column_name = 'order_rights'
+                    AND data_type = 'character varying'
+                ) THEN
+                  EXECUTE 'ALTER TABLE builders.distributed_order
+                           ALTER COLUMN order_rights
+                           SET DATA TYPE SMALLINT
+                           USING order_rights::smallint';
+                END IF;
+              END;
+              $$; 
+     

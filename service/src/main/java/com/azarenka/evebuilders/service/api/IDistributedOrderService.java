@@ -1,9 +1,9 @@
 package com.azarenka.evebuilders.service.api;
 
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.db.DistributedOrder;
 
 import java.util.List;
 
@@ -21,11 +21,13 @@ public interface IDistributedOrderService {
 
     List<String> validateRequest(TelegramRequestOrder telegramRequestOrder);
 
-    void sendMessage(String message);
-
     List<DistributedOrder> getAllOrders();
 
     List<DistributedOrder> getOrdersByOrderNumber(String orderNumber);
 
     void discardOrder(DistributedOrder order);
+
+    void updateStatus(DistributedOrder distributedOrder, OrderStatusEnum status);
+
+    boolean sendOrderForApproval(DistributedOrder distributedOrder, OrderStatusEnum orderStatusEnum);
 }

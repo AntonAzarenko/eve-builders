@@ -7,5 +7,6 @@ public enum OrderStatusEnum {
     COMPLETED,
     DISCARDED,
     EXPIRED,
-    STOPPED;
+    STOPPED,
+    WAITING_FOR_APPROVAL;
 }

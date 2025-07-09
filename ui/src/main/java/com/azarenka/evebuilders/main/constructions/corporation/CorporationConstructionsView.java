@@ -12,7 +12,6 @@ import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
-import com.azarenka.evebuilders.main.constructions.FinishOrderWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.vaadin.flow.component.UI;
@@ -111,7 +110,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 event -> {
                     Optional<DistributedOrder> optional = grid.getSelectionModel().getFirstSelectedItem();
                    optional.ifPresent(order-> {
-                       controller.updateOrder(order.getOrderNumber());
+                       controller.sendOrderForApproval(order);
                    });
                    /* if (selectedItems.size() == 1) {
                         FinishOrderWindow finishOrderWindow = new FinishOrderWindow(selectedItems.get(0), controller,

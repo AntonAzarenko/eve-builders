@@ -29,8 +29,8 @@ public class SubmitRequestOrderWindow extends CommonDialogComponent implements L
 
     private BigDecimalField cost;
     private final Binder<Integer> binder = new Binder<>();
-    private final String headerTitle = getTranslation("window.header.finish.order");
-    private final String headerLabel = getTranslation("label.finish_order.count");
+    private final String headerTitle = getTranslation("window.header.submit.request");
+    private final String headerLabel = getTranslation("label.submit.request.cost");
 
     private final RequestOrder order;
     private final IRequestsController controller;
@@ -45,17 +45,18 @@ public class SubmitRequestOrderWindow extends CommonDialogComponent implements L
         setHeaderTitle(headerTitle);
         add(initContent());
         getFooter().add(iniButtonsLayout(), createCloseButton());
-        VaadinUtils.addComponentId(this, "finish-order-window");
+        VaadinUtils.addComponentId(this, "submit-request-window");
     }
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        cost.setLabel(getTranslation("label.finish_order.count"));
+        cost.setLabel(getTranslation("label.submit.request.cost"));
     }
 
     private VerticalLayout initContent() {
         cost = new BigDecimalField();
         cost.setLabel(headerLabel);
+        cost.setWidthFull();
         binder.forField(cost)
             .withValidator(new RequiredValidator(REQUIRED_FIELD_VALUE))
             .bind(value -> BigDecimal.valueOf(value), (bean, fieldValue) -> fieldValue.toString());
