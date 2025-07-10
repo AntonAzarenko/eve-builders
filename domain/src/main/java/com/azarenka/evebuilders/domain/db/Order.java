@@ -4,6 +4,8 @@ import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -40,6 +42,7 @@ public class Order {
     @Column(name = "blue_print")
     private boolean bluePrint;
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private OrderStatusEnum orderStatus;
     @Column(name = "created_by")
     private String createdBy;
@@ -54,6 +57,7 @@ public class Order {
     @Column(name = "request_id")
     private String requestId;
     @Column(name = "order_rights")
+    @Enumerated(EnumType.STRING)
     private OrderRights orderRights;
     @Column(name = "rightsholder")
     private String rightsholder;

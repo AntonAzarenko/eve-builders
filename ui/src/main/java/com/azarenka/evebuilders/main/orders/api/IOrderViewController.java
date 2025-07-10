@@ -27,4 +27,8 @@ public interface IOrderViewController {
     IFitLoaderService getFitLoaderService();
 
     List<DistributedOrder> getDistributedOrdersByOrderNumber(String orderNumber);
+
+    void checkOrder(DistributedOrder distributedOrder);
+
+    void completeOrder(DistributedOrder distributedOrder);
 }

@@ -2,6 +2,9 @@ package com.azarenka.evebuilders.domain.db;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -42,6 +45,7 @@ public class RequestOrder {
     @Column(name = "finish_date")
     private LocalDate finishDate;
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private RequestOrderStatusEnum requestStatus;
 
     public RequestOrderStatusEnum getRequestStatus() {

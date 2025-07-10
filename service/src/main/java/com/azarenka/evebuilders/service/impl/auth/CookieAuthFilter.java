@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -44,21 +46,22 @@ public class CookieAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             String uid = extractUidFromCookie(request);
             if (uid != null) {
                 UserToken token = userTokenService.findByUserId(uid);
                 if (token != null) {
-                    if (token.getExpiresAt().isBefore(LocalDateTime.now().plusSeconds(60))) {
-                        token = tokenRefresherService.refresh(token);
-                    }
                     User user = userService.getByUserId(uid).orElseThrow();
+                    if (token.getExpiresAt().isBefore(LocalDateTime.now().plusSeconds(60))) {
+                        tokenRefresherService.refresh(token);
+                        LOGGER.info("User {} token refreshed.", user.getUsername());
+                    }
                     EveUserPrincipal principal = new EveUserPrincipal(user, Map.of());
-                    UsernamePasswordAuthenticationToken authentication =
+                    UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    LOGGER.info("User {} restored from cookie.", user.getUsername());
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
         }

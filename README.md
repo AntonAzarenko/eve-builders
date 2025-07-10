@@ -4,6 +4,32 @@
 
 # Release notes
 
+## Version 1.5.1
+Release Date: 2025-07-10
+
+### HOT FIX
+- Fix issue related to disability to assembly order with wrong name in fit modules validation order window and permission to check contracts
+- 
+## Version 1.5.0
+Release Date: 2025-07-09
+
+## Persistent Login
+- Implemented cookie.
+  - Users no longer need to log in repeatedly — session cookies now persist for **7 days**.
+
+## Contract Validation
+- Added automatic **contract validator**.
+  - When users submit contracts, the system now validates them automatically before acceptance.
+
+## Database Migrations
+- Performed internal migration of several database columns to ensure correct data types and improved consistency.
+
+## Request System Improvements
+- Reworked the **request submission flow** for coordinators:
+  - Improved stability and fixed issues related to request creation.
+- Updated EVE mail notification logic:
+  - Coordinators now receive **in-game mail** when their request has been accepted.
+
 ## Version 1.4.1.1
 Release Date: 2025-06-24
 

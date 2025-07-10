@@ -50,7 +50,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private static final String REQUIRED_FIELD_VALUE = "error.message.required_value";
 
     private final IntegerField countShipsField = new IntegerField(getTranslation("management.label.count"));
-    private final BigDecimalField costField = new BigDecimalField(getTranslation("management.label.cost"));
     private final ComboBox<OrderType> orderScopeField = new ComboBox(getTranslation("management.label.type"));
     private final ComboBox<PriorityOption> priorityField = new ComboBox(getTranslation("management.label.priority"));
     private final ComboBox<Fit> fitField = new ComboBox(getTranslation("management.label.fit"));
@@ -59,6 +58,8 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private final DatePicker datePickerField = new DatePicker();
     private RequiredValidator requiredValidator = new RequiredValidator(getTranslation(REQUIRED_FIELD_VALUE));
     private final Div imageContainer = new Div();
+    private Button applyButton;
+    private Button clearButton;
 
     private RequestOrder request = new RequestOrder();
     private ComboBox<InvGroup> groupsComboBox;
@@ -87,14 +88,14 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         if (text != null && !text.isEmpty()) {
             boolean upload = controller.uploadFit(text);
             if (!upload) {
-                Notification.show("Не получилось загрузить фит, проверте данные и попробуйте еще раз!",
+                Notification.show(getTranslation("message.notification.fit_can_not_load"),
                         5000, Notification.Position.MIDDLE);
             } else {
-                Notification.show("Фит загружен",
+                Notification.show(getTranslation("message.notification.fit_loaded"),
                         5000, Notification.Position.MIDDLE);
             }
         } else {
-            Notification.show("Буфер обмена пуст", 5000, Notification.Position.MIDDLE);
+            Notification.show(getTranslation("message.notification.clipboard_empty"), 5000, Notification.Position.MIDDLE);
         }
         refresh();
     }
@@ -110,10 +111,13 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         groupsComboBox.setLabel(getTranslation("management.label_groups"));
         paramentersSpan.setText(getTranslation("management.label.parameters"));
         countShipsField.setLabel(getTranslation("management.label.count"));
-        costField.setLabel(getTranslation("management.label.cost"));
         orderScopeField.setLabel(getTranslation("management.label.type"));
         priorityField.setLabel(getTranslation("management.label.priority"));
         fitField.setLabel(getTranslation("management.label.fit"));
+        categoryComboBox.setLabel(getTranslation("management.category"));
+        applyButton.setTooltipText(getTranslation("message.button_tooltip.apply"));
+        clearButton.setTooltipText(getTranslation("message.button_tooltip.erase"));
+        datePickerField.setLabel(getTranslation("management.label.finish_date_order"));
         var selectedType = orderScopeField.getValue();
         orderScopeField.setItems(OrderType.values());
         orderScopeField.setValue(selectedType);
@@ -138,7 +142,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 layout,
                 initFitLoadFitButtonLayout(),
                 countShipsField,
-                costField,
                 orderScopeField,
                 priorityField,
                 datePickerField,
@@ -167,19 +170,18 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         initGroupCombobox();
         initItemsCombobox();
         initCountShipsField();
-        initCostField();
         initPriorityField();
         initTypeField();
         initFitField();
         initDataPickerLayout();
-        VaadinUtils.setPadding("5px", categoryComboBox, groupsComboBox, itemsComboBox, countShipsField, costField,
+        VaadinUtils.setPadding("5px", categoryComboBox, groupsComboBox, itemsComboBox, countShipsField,
                 orderScopeField, priorityField, fitField, datePickerField);
         updateFieldsStatus();
     }
 
     private void initCategoryCombobox() {
         categoryComboBox = new ComboBox<>();
-        categoryComboBox.setLabel("Категория");
+        categoryComboBox.setLabel(getTranslation("management.category"));
         categoryComboBox.addThemeVariants(ComboBoxVariant.LUMO_SMALL);
         categoryComboBox.setItems(GroupTypeEnum.MODULES.getValues());
         categoryComboBox.setClearButtonVisible(true);
@@ -256,15 +258,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 .bind(RequestOrder::getCount, RequestOrder::setCount);
     }
 
-    private void initCostField() {
-        costField.setWidthFull();
-        costField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        binder.forField(costField)
-                .withValidator(requiredValidator)
-                .withValidator(value -> value.compareTo(BigDecimal.ZERO) > 0, getTranslation("errors.message.zero_value"))
-                .bind(RequestOrder::getPrice, RequestOrder::setPrice);
-    }
-
     private void initPriorityField() {
         priorityField.setWidthFull();
         priorityField.setItems(PriorityOption.values());
@@ -306,7 +299,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     }
 
     private HorizontalLayout initFitLoadFitButtonLayout() {
-        loadButton.setTooltipText("Insert from clipboard");
+        loadButton.setTooltipText(getTranslation("message.button_tooltip.insert_from_clipboard"));
         HorizontalLayout layout = new HorizontalLayout(fitField, loadButton, showFitButton);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.STRETCH);
         layout.setAlignItems(FlexComponent.Alignment.END);
@@ -341,9 +334,10 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 new FitView(fitById, controller.getFitLoaderService()).open();
             }
         });
+        showFitButton.setTooltipText(getTranslation("message.button.tooltip.show_fit"));
         fitField.addValueChangeListener(event -> {
             Fit fit = event.getValue();
-            if (Objects.nonNull(fit)) {
+            if (Objects.nonNull(fit) && Objects.nonNull(fitField.getId()) && Objects.nonNull(fit.getGroupId())) {
                 categoryComboBox.setValue(GroupTypeEnum.SHIPS.name());
                 List<InvGroup> invGroupsById = controller.getInvGroupsById(GroupTypeEnum.SHIPS.getGroupId());
                 List<InvType> typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream()
@@ -383,11 +377,13 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     }
 
     private HorizontalLayout initButtonsLayout() {
-        Button applyButton = new Button(VaadinIcon.CHECK.create());
+        applyButton = new Button(VaadinIcon.CHECK.create());
+        applyButton.setTooltipText(getTranslation("message.button_tooltip.apply"));
         applyButton.addClickListener(event -> {
             clickApplyButton();
         });
-        Button clearButton = new Button(VaadinIcon.ERASER.create());
+        clearButton = new Button(VaadinIcon.ERASER.create());
+        clearButton.setTooltipText(getTranslation("message.button_tooltip.erase"));
         clearButton.addClickListener(event -> clearFields());
         HorizontalLayout layout = new HorizontalLayout(applyButton, clearButton);
         layout.setWidthFull();
@@ -445,7 +441,6 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
 
     private void clearFields() {
         countShipsField.clear();
-        costField.clear();
         orderScopeField.clear();
         priorityField.clear();
         fitField.clear();

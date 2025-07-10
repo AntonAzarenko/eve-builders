@@ -10,10 +10,9 @@ import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
-import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
-import com.azarenka.evebuilders.main.constructions.FinishOrderWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
+import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -32,7 +31,6 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.annotation.security.RolesAllowed;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +39,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "corporation", layout = MenuConstructionPage.class)
 @PageTitle("Constructions")
@@ -73,9 +73,9 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private HorizontalLayout initFilterLayout() {
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
-                .withStatusFilter()
-                .withTypeOrderFilter()
-                .build();
+            .withStatusFilter()
+            .withTypeOrderFilter()
+            .build();
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
         fitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
             Optional<DistributedOrder> first = grid.getSelectedItems().stream().findFirst();
@@ -86,7 +86,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                         new FitView(fit, controller.getFitLoaderService()).open();
                     } else {
                         Notification notification = new Notification("Фит для этого заказа не загружен",
-                                3000, Notification.Position.MIDDLE);
+                            3000, Notification.Position.MIDDLE);
                         notification.open();
                     }
                 }
@@ -94,7 +94,8 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         });
         showFullOrder = new Button(VaadinIcon.PRESENTATION.create());
         showFullOrder.addClickListener(event ->
-                new DistributedOrderDetailsWindow(grid.getSelectionModel().getSelectedItems().stream().findFirst().get()).open());
+            new DistributedOrderDetailsWindow(
+                grid.getSelectionModel().getSelectedItems().stream().findFirst().get()).open());
         filterButton.setTooltipText(getTranslation("message.button.tooltip.filter_window"));
         fitButton.setTooltipText(getTranslation("message.button.tooltip.show_fit"));
         showFullOrder.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
@@ -108,21 +109,27 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private HorizontalLayout initToolBarLayout() {
         updateStatusOrderButton = new Button(getTranslation("button.finish_order"), VaadinIcon.CASH.create(),
-                event -> {
-                    List<DistributedOrder> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
-                    if (selectedItems.size() == 1) {
-                        FinishOrderWindow finishOrderWindow = new FinishOrderWindow(selectedItems.get(0), controller,
-                                save -> UI.getCurrent().refreshCurrentRoute(true));
-                        finishOrderWindow.open();
+            event -> {
+                Optional<DistributedOrder> optional = grid.getSelectionModel().getFirstSelectedItem();
+                optional.ifPresent(order -> {
+                    boolean b = controller.sendOrderForApproval(order);
+                    if (b) {
+                        new NotificationWindow("Ошибка", String.format(getTranslation("message.notification.contact_found",
+                            order.getOrderNumber()))).open();
+                    } else {
+                        new NotificationWindow("Ошибка", String.format(getTranslation("message.notification.contact_not_found"),
+                            order.getOrderNumber())).open();
                     }
-                }
+                });
+            }
         );
         updateStatusOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        buildButton = new Button(getTranslation("button.build_order"), VaadinIcon.CALC_BOOK.create(), event -> openBuildTab());
+        buildButton =
+            new Button(getTranslation("button.build_order"), VaadinIcon.CALC_BOOK.create(), event -> openBuildTab());
         buildButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         searchField = new SearchComponent(getTranslation("order.search.placeholder"),
-                event -> searchByText(searchField.getValue()),
-                event -> clearSearch()
+            event -> searchByText(searchField.getValue()),
+            event -> clearSearch()
         );
         HorizontalLayout layout = new HorizontalLayout(updateStatusOrderButton, buildButton, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
@@ -142,13 +149,13 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
                 long daysLeft = ChronoUnit.DAYS.between(now, deadLineDate);
                 if (daysLeft < 0) {
                     new NotificationWindow("Warning", "До даты завершения осталось " + daysLeft + ".\n " +
-                            "Вы не можете отменить заказ так как заказ уже просрочен")
-                            .open();
+                        "Вы не можете отменить заказ так как заказ уже просрочен")
+                        .open();
                 } else {
                     if (daysLeft < halfDays) {
                         new NotificationWindow("Warning", "До даты завершения осталось " + daysLeft + ".\n " +
-                                "Вы не можете отменить заказ так как прошло более половины времени с момента создания заказа")
-                                .open();
+                            "Вы не можете отменить заказ так как прошло более половины времени с момента создания заказа")
+                            .open();
                     } else {
                         controller.discardOrder(order);
                         UI.getCurrent().refreshCurrentRoute(true);
@@ -186,11 +193,14 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             Collection<DistributedOrder> items = dataProvider.getItems();
             String lowerCaseValue = value.trim().toLowerCase();
             List<DistributedOrder> list = items.stream()
-                    .filter(item -> (
-                            item.getOrderNumber() != null && item.getOrderNumber().toLowerCase().contains(lowerCaseValue)) ||
-                            (item.getShipName() != null && item.getShipName().toLowerCase().contains(lowerCaseValue)) ||
-                            (item.getOrderStatus() != null && item.getOrderStatus().name().toLowerCase().contains(lowerCaseValue)))
-                    .toList();
+                .filter(item -> (
+                    item.getOrderNumber() != null && item.getOrderNumber().toLowerCase().contains(lowerCaseValue)) ||
+                    (item.getShipName() != null && item.getShipName().toLowerCase().contains(lowerCaseValue)) ||
+                    (item.getOrderStatus() != null && item.getOrderStatus()
+                        .name()
+                        .toLowerCase()
+                        .contains(lowerCaseValue)))
+                .toList();
             dataProvider = DataProvider.ofCollection(list);
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
@@ -242,7 +252,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private void updateButtonsStatus() {
         List<DistributedOrder> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
         boolean isUpdateButtonEnabled = !selectedItems.isEmpty()
-                && !selectedItems.get(0).getCount().equals(selectedItems.get(0).getCountReady());
+            && !selectedItems.get(0).getCount().equals(selectedItems.get(0).getCountReady());
         updateStatusOrderButton.setEnabled(isUpdateButtonEnabled);
         buildButton.setEnabled(isUpdateButtonEnabled);
         fitButton.setEnabled(!selectedItems.isEmpty());

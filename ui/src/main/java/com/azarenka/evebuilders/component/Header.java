@@ -135,6 +135,8 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
             getUI().ifPresent(ui -> ui.setLocale(new Locale(event.getValue().toLowerCase())));
             getUI().ifPresent(ui -> ui.navigate(UI.getCurrent().getInternals().getActiveViewLocation().getPath()));
             userService.updateLanguage(event.getValue().toLowerCase());
+            UI.getCurrent().refreshCurrentRoute(true);
+            getUI().ifPresent(ui -> ui.getPage().reload());
         });
         Optional<User> byUsername = userService.getByUsername(SecurityUtils.getUserName());
         byUsername.ifPresent(value -> localeComboboxField.setValue(value.getLanguage()));

@@ -1,22 +1,28 @@
 package com.azarenka.evebuilders.service.impl;
 
+import static com.azarenka.evebuilders.service.impl.MailMessageFormatterConstants.MESSAGE_ADMIN_COORDINATOR_FORMATTER;
+
 import com.azarenka.evebuilders.domain.db.Order;
-import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.Role;
+import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.service.api.IEveMailService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.integration.IEveMailIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
-public class MailService implements IEveMailService {
+public class MailService implements IEveMailService, IOrderStatusToStringConverter {
 
     private static final String COORDINATOR_STATUS_SUBJECT = "Статус Заявки Обновлен";
-    private static final String MESSAGE_FORMATTER = "Заявка:\n\tID='%s',\n\tНаименование=%s,\n\tСтатус=%s";
-
+    private static final String SERVER = "https://industry.scan-stakan.com/login";
     @Autowired
     private IEveMailIntegrationService integrationService;
     @Autowired
@@ -29,33 +35,48 @@ public class MailService implements IEveMailService {
         var userName = SecurityUtils.getUserName();
         var sender = userService.getByUsername(userName).get();
         var userToken = userService.getUserToken();
-        var requestById = requestOrderService.getRequestById(order.getRequestId());
-        var recipient = userService.getByUsername(requestById.getCreatedBy()).get();
-        integrationService.sendMail(userToken, sender.getCharacterId(), recipient.getCharacterId(),
-                COORDINATOR_STATUS_SUBJECT, String.format(MESSAGE_FORMATTER, requestById.getId(),
-                        requestById.getItemName(), convertStatus(requestById.getRequestStatus())));
+        var requestOrder = requestOrderService.getRequestById(order.getRequestId());
+        var coordinators = getUsersByRole(Role.ROLE_COORDINATOR);
+        coordinators.forEach(coordinator -> {
+            integrationService.sendMail(userToken, sender.getCharacterId(), coordinator.getCharacterId(),
+                COORDINATOR_STATUS_SUBJECT,
+                String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
+                    requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
+                    convertRequestStatus(requestOrder.getRequestStatus())));
+        });
     }
 
-    private String convertStatus(RequestOrderStatusEnum statusEnum) {
-        switch (statusEnum) {
-            case SUBMITTED -> {
-                return "На рассмотрении";
-            }
-            case APPROVED -> {
-                return "Принят";
-            }
-            case COMPLETED -> {
-                return "Завершен";
-            }
-            case SUSPENDED -> {
-                return "Приостановлен";
-            }
-            case REJECT -> {
-                return "Отклонен";
-            }
-            default -> {
-                return StringUtils.EMPTY;
-            }
-        }
+    @Override
+    public void sendMailToAdmin(RequestOrder requestOrder) {
+        var userName = SecurityUtils.getUserName();
+        var sender = userService.getByUsername(userName).get();
+        var userToken = userService.getUserToken();
+        var admins = getUsersByRole(Role.ROLE_ADMIN);
+        admins.forEach(admin -> {
+            integrationService.sendMail(userToken, sender.getCharacterId(), admin.getCharacterId(),
+                COORDINATOR_STATUS_SUBJECT,
+                String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
+                    requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
+                    convertRequestStatus(requestOrder.getRequestStatus())));
+        });
+    }
+
+    @Override
+    public void sendMailToCoordinator(RequestOrder requestOrder) {
+        var userName = SecurityUtils.getUserName();
+        var sender = userService.getByUsername(userName).get();
+        var userToken = userService.getUserToken();
+        var coordinators = getUsersByRole(Role.ROLE_COORDINATOR);
+        coordinators.forEach(coordinator -> {
+            integrationService.sendMail(userToken, sender.getCharacterId(), coordinator.getCharacterId(),
+                COORDINATOR_STATUS_SUBJECT,
+                String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
+                    requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
+                    convertRequestStatus(requestOrder.getRequestStatus())));
+        });
+    }
+
+    private List<UserDto> getUsersByRole(Role role) {
+        return userService.getUsersDto().stream().filter(u -> u.getRoles().contains(role)).toList();
     }
 }

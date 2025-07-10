@@ -1,15 +1,18 @@
 package com.azarenka.evebuilders.main.constructions.corporation;
 
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
+import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,6 +33,8 @@ public class CorporationConstructionController implements ICorporationConstructi
     private IDistributedOrderService distributedOrderService;
     @Autowired
     private ITelegramIntegrationService telegramIntegrationService;
+    @Autowired
+    private ICorporationService corporationService;
 
     @Override
     public List<DistributedOrder> getOrderList(OrderFilter filter) {
@@ -50,8 +55,8 @@ public class CorporationConstructionController implements ICorporationConstructi
     public void saveOrder(DistributedOrder distributedOrder, Integer value) {
         distributedOrderService.update(distributedOrder, value);
         telegramIntegrationService.sendMessage(
-                TelegramMessageCreatorService.createFinishOrderMessage(
-                        distributedOrder, value, SecurityUtils.getUserName()), threadRequestId);
+            TelegramMessageCreatorService.createFinishOrderMessage(
+                distributedOrder, value, SecurityUtils.getUserName()), threadRequestId);
     }
 
     public IFitLoaderService getFitLoaderService() {
@@ -59,7 +64,12 @@ public class CorporationConstructionController implements ICorporationConstructi
     }
 
     @Override
-    public void discardOrder(DistributedOrder order) {
-        distributedOrderService.discardOrder(order);
+    public void discardOrder(DistributedOrder distributedOrder) {
+        distributedOrderService.discardOrder(distributedOrder);
+    }
+
+    @Override
+    public boolean sendOrderForApproval(DistributedOrder distributedOrder) {
+       return distributedOrderService.sendOrderForApproval(distributedOrder, OrderStatusEnum.WAITING_FOR_APPROVAL);
     }
 }

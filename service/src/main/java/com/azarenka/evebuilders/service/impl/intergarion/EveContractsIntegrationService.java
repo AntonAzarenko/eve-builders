@@ -5,12 +5,17 @@ import com.azarenka.evebuilders.domain.dto.ContractItem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
+
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
+import reactor.core.publisher.Mono;
 
 @Component
 public class EveContractsIntegrationService extends EveAbstractIntegrationConnection{
@@ -21,6 +26,8 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
     private String corpContractsUrl;
     @Value("${eve.corporation.contracts.items.url}")
     private String corpContractsItemsUrl;
+    @Value("${eve.character.contracts.url}")
+    private String characterContractsItemsUrl;
 
     public EveContractsIntegrationService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -36,7 +43,6 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {
@@ -44,6 +50,22 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
         }
     }
 
+    public List<Contract> getCharacterContracts(String accessToken, long characterId) {
+        var json = webClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(characterContractsItemsUrl)
+                .build(Map.of("character_id", characterId)))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
+        try {
+            return objectMapper.readValue(json, new TypeReference<>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse character contracts", e);
+        }
+    }
 
     public List<ContractItem> getContractItems(String accessToken, long corporationId, long contractId) {
         var json = webClient.get()
@@ -57,7 +79,6 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
-
         try {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (Exception e) {

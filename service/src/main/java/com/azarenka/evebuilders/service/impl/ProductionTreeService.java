@@ -22,18 +22,14 @@ public class ProductionTreeService implements IProductionTreeService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionTreeService.class);
 
-    private final InvTypesRepository repository;
-
+    @Autowired
+    private InvTypesRepository repository;
     @Autowired
     private EveMaterialsDataService eveMaterialsDataService;
     @Autowired
     private StaticMaterialLoader loader;
     @Autowired
     private ProductionTreeCache treeCache;
-
-    public ProductionTreeService(InvTypesRepository repository) {
-        this.repository = repository;
-    }
 
     public ProductionNode buildProductionTreeCached(String typeName, int quantity) {
         ProductionTreeCacheKey key = new ProductionTreeCacheKey(typeName, quantity);
@@ -45,31 +41,6 @@ public class ProductionTreeService implements IProductionTreeService {
         treeCache.put(key, node);
         return node;
     }
-
-/*    @Override
-    public ProductionNode buildProductionTree(String typeName, int quantity) {
-        MaterialType baseType = eveMaterialsDataService.getTypeByName(typeName);
-        ProductionNode root = new ProductionNode();
-        root.setTypeName(typeName);
-        root.setQuantity(quantity);
-        root.setMaterialType(baseType);
-        List<MaterialInfo> materials = resolveMaterials(baseType, typeName);
-        if (materials.isEmpty()) {
-            return root;
-        }
-        for (MaterialInfo mat : materials) {
-            int inputPerBatch = mat.getQuantity();
-            int outputPerBatch = mat.getOutputQuantity() != null ? mat.getOutputQuantity() : 1;
-            int batches = (int) Math.ceil((double) quantity / outputPerBatch);
-            int totalQty = inputPerBatch * batches;
-            ProductionNode child = buildProductionTree(mat.getMaterialName(), inputPerBatch);
-            child.setQuantity(totalQty);
-            child.setBlueprintName(mat.getBlueprintName());
-            child.setMaterialType(eveMaterialsDataService.getTypeByName(mat.getMaterialName()));
-            root.getChildren().add(child);
-        }
-        return root;
-    }*/
 
     public List<MaterialInfo> resolveMaterials(MaterialType baseType, String typeName) {
         return switch (baseType) {

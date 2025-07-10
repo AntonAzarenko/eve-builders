@@ -8,6 +8,8 @@ import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
+import com.azarenka.evebuilders.service.api.IAuditService;
+import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
@@ -15,6 +17,8 @@ import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationServ
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,9 @@ import java.util.UUID;
 @Service
 public class DistributedOrderService implements IDistributedOrderService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DistributedOrderService.class);
+
+
     @Value("${app.telegram_thread_request_id}")
     private String threadRequestId;
 
@@ -41,6 +48,10 @@ public class DistributedOrderService implements IDistributedOrderService {
     private IOrderService orderService;
     @Autowired
     private ITelegramIntegrationService telegramIntegrationService;
+    @Autowired
+    private IAuditService auditService;
+    @Autowired
+    private IContractService contractService;
 
     @Override
     @Transactional
@@ -62,7 +73,9 @@ public class DistributedOrderService implements IDistributedOrderService {
         }
         shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
         orderService.updateOrder(shipOrderDto);
-        sendMessage(TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName));
+        telegramIntegrationService.sendMessage(
+            TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName),
+            threadRequestId);
         return save;
     }
 
@@ -81,14 +94,37 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public void update(DistributedOrder distributedOrder, Integer value) {
-        int ready = distributedOrder.getCountReady() + value;
+        Integer ready = distributedOrder.getCountReady() + value;
         distributedOrder.setCountReady(ready);
-        if (distributedOrder.getCount() == ready) {
+        if (distributedOrder.getCount().equals(ready)) {
             distributedOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
             distributedOrder.setFinishedDate(LocalDate.now());
         }
         distributedOrderRepository.save(distributedOrder);
         updateShipOrder(distributedOrder.getOrderNumber(), value);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(DistributedOrder distributedOrder, OrderStatusEnum status) {
+        distributedOrder.setOrderStatus(status);
+        distributedOrderRepository.save(distributedOrder);
+    }
+
+    @Override
+    @Transactional
+    public boolean sendOrderForApproval(DistributedOrder distributedOrder, OrderStatusEnum orderStatusEnum) {
+        var username = SecurityUtils.getUserName();
+        boolean contractExists = contractService.isContractExists(distributedOrder);
+        if (contractExists) {
+            LOGGER.info("Sending order for approval from UserName={}. OrderNumber={}", username,
+                distributedOrder.getOrderNumber());
+            updateStatus(distributedOrder, orderStatusEnum);
+            telegramIntegrationService.sendMessage(
+                TelegramMessageCreatorService.createWaitingForApprovalMessage(distributedOrder, username), threadRequestId);
+            return true;
+        }
+       return false;
     }
 
     @Override
@@ -118,11 +154,6 @@ public class DistributedOrderService implements IDistributedOrderService {
             }
         }
         return errors;
-    }
-
-    @Override
-    public void sendMessage(String message) {
-        telegramIntegrationService.sendMessage(message, threadRequestId);
     }
 
     @Override

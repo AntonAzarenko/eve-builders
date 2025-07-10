@@ -1,9 +1,11 @@
 package com.azarenka.evebuilders.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Contract {
     @JsonProperty("contract_id")
     private long contractId;
@@ -19,6 +21,17 @@ public class Contract {
 
     @JsonProperty("type")
     private String type;
+
+    @JsonProperty("price")
+    private Double price;
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
     public long getContractId() {
         return contractId;

@@ -21,4 +21,7 @@ public interface ICorporationConstructionController {
     IFitLoaderService getFitLoaderService();
 
     void discardOrder(DistributedOrder order);
+
+    boolean sendOrderForApproval(DistributedOrder orderNumber);
+
 }
