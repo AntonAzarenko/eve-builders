@@ -27,7 +27,7 @@ public class EvePortraitService {
                     .uri(portraitUrl)
                     .retrieve()
                     .onStatus(
-                            status -> !status.is2xxSuccessful(), // Перехват любых неудачных статусов (например, 4xx или 5xx)
+                            status -> !status.is2xxSuccessful(),
                             clientResponse -> Mono.error(new RuntimeException(
                                     "Ошибка при запросе портрета: " + clientResponse.statusCode()
                             ))

@@ -62,11 +62,11 @@ spring:
             client-secret: ${EVE.CLIENTSECRET}
             scope:
               - publicData
+              - esi-characters.read_contacts.v1
               - esi-assets.read_assets.v1
               - esi-mail.send_mail.v1
               - esi-contracts.read_corporation_contracts.v1
               - esi-contracts.read_character_contracts.v1
-              - esi-characters.read_contacts.v1
             authorization-grant-type: authorization_code
             redirect-uri: ${eve.redirectUri}
             client-name: EVE Online
@@ -97,7 +97,7 @@ eve:
     assets:
       url: /v5/characters/{characterId}/assets
     contracts:
-      url: /v1/characters/{character_id}/contracts/
+      url: /v1/characters/{character_id}/contracts
     uri: https://esi.evetech.net/latest/characters/%s
   clientId: ${EVE.CLIENTID}
   clientSecret: ${EVE.CLIENTSECRET}

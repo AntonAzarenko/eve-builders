@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.util.List;
+import java.util.Objects;
 
 public class OrderContractReportWindow extends CommonDialogComponent {
 
@@ -22,12 +23,18 @@ public class OrderContractReportWindow extends CommonDialogComponent {
 
     private void initContent() {
         reports.forEach(report -> {
+            if(Objects.nonNull(report.getContract())){
             add(createLayout("Contract: ", String.valueOf(report.getContract().getContractId())));
             add(createLayout("Valid: ", String.valueOf(report.isValid())));
             add(createLayout("Count: ", String.valueOf(report.getCountItems())));
             add(createLayout("ErrorMessages: ",
                 report.getValidateErrorMessages().isEmpty() ? "Not Found" : String.join(",\n",
                     report.getValidateErrorMessages())));
+            } else {
+                add(createLayout("ErrorMessages: ",
+                    report.getValidateErrorMessages().isEmpty() ? "Not Found" : String.join(",\n",
+                        report.getValidateErrorMessages())));
+            }
         });
     }
 
