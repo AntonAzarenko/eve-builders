@@ -9,7 +9,7 @@ Release Date: 2025-07-10
 
 ### HOT FIX
 - Fix issue related validation order window and permission to check contracts
-- 
+  
 ## Version 1.5.0
 Release Date: 2025-07-09
 
