@@ -1,8 +1,11 @@
 package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.AuditOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
@@ -12,6 +15,7 @@ import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
+import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
@@ -36,7 +40,6 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DistributedOrderService.class);
 
-
     @Value("${app.telegram_thread_request_id}")
     private String threadRequestId;
 
@@ -52,6 +55,8 @@ public class DistributedOrderService implements IDistributedOrderService {
     private IAuditService auditService;
     @Autowired
     private IContractService contractService;
+    @Autowired
+    private IRequestOrderService requestOrderService;
 
     @Override
     @Transactional
@@ -68,10 +73,13 @@ public class DistributedOrderService implements IDistributedOrderService {
             distributedOrder = buildDistributedOrder(shipOrderDto, count, userName);
         }
         DistributedOrder save = distributedOrderRepository.save(distributedOrder);
+        shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
         if (shipOrderDto.getOrderStatus() == OrderStatusEnum.NEW) {
             shipOrderDto.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
         }
-        shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
+        if (shipOrderDto.getCount().equals(shipOrderDto.getInProgressCount())) {
+            shipOrderDto.setOrderStatus(OrderStatusEnum.DISTRIBUTED);
+        }
         orderService.updateOrder(shipOrderDto);
         telegramIntegrationService.sendMessage(
             TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName),
@@ -94,7 +102,8 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public void update(DistributedOrder distributedOrder, Integer value) {
-        Integer ready = distributedOrder.getCountReady() + value;
+        Integer wasReady = distributedOrder.getCountReady();
+        Integer ready = wasReady + value;
         distributedOrder.setCountReady(ready);
         if (distributedOrder.getCount().equals(ready)) {
             distributedOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
@@ -102,13 +111,18 @@ public class DistributedOrderService implements IDistributedOrderService {
         }
         distributedOrderRepository.save(distributedOrder);
         updateShipOrder(distributedOrder.getOrderNumber(), value);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
+            String.format("Count was changed from %s to %s", wasReady, ready), distributedOrder.getUserName());
     }
 
     @Override
     @Transactional
     public void updateStatus(DistributedOrder distributedOrder, OrderStatusEnum status) {
+        OrderStatusEnum oldStatus = distributedOrder.getOrderStatus();
         distributedOrder.setOrderStatus(status);
         distributedOrderRepository.save(distributedOrder);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
+            String.format("Status was changed from %s to %s", oldStatus, status), distributedOrder.getUserName());
     }
 
     @Override
@@ -121,10 +135,13 @@ public class DistributedOrderService implements IDistributedOrderService {
                 distributedOrder.getOrderNumber());
             updateStatus(distributedOrder, orderStatusEnum);
             telegramIntegrationService.sendMessage(
-                TelegramMessageCreatorService.createWaitingForApprovalMessage(distributedOrder, username), threadRequestId);
+                TelegramMessageCreatorService.createWaitingForApprovalMessage(distributedOrder, username),
+                threadRequestId);
+            auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
+                String.format("Try to send %s items", distributedOrder.getCount()), username);
             return true;
         }
-       return false;
+        return false;
     }
 
     @Override
@@ -171,7 +188,7 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public void discardOrder(DistributedOrder order) {
-        distributedOrderRepository.delete(order);
+        updateStatus(order, OrderStatusEnum.DISCARDED);
         var originalOrder = orderService.getByOrderNumber(order.getOrderNumber());
         int inProgressCount = originalOrder.getInProgressCount() - order.getCount();
         originalOrder.setInProgressCount(inProgressCount);
@@ -182,6 +199,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         telegramIntegrationService.sendMessage(
             TelegramMessageCreatorService.createDiscardOrderMessage(order, SecurityUtils.getUserName()),
             threadRequestId);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.DISCARDED, order.getOrderNumber(), "", order.getUserName());
     }
 
     private void updateShipOrder(String orderId, int readyCount) {
@@ -193,6 +211,11 @@ public class DistributedOrderService implements IDistributedOrderService {
         order.setUpdatedBy(SecurityUtils.getUserName());
         if (order.getCount().equals(countReady)) {
             order.setOrderStatus(OrderStatusEnum.COMPLETED);
+            if (Objects.nonNull(order.getRequestId()) && !order.getRequestId().isEmpty()) {
+                RequestOrder requestOrder = requestOrderService.getRequestById(order.getRequestId());
+                requestOrder.setRequestStatus(RequestOrderStatusEnum.COMPLETED);
+                requestOrderService.update(requestOrder);
+            }
         }
         orderService.updateOrder(order);
     }
@@ -209,7 +232,6 @@ public class DistributedOrderService implements IDistributedOrderService {
         distributedOrder.setCountReady(0);
         distributedOrder.setShipName(shipOrderDto.getItemName());
         distributedOrder.setOrderRights(shipOrderDto.getOrderRights());
-        distributedOrder.setOrderStatus(shipOrderDto.getOrderStatus());
         distributedOrder.setFinishedDate(shipOrderDto.getFinishDate());
         distributedOrder.setCreatedDate(shipOrderDto.getCreatedDate());
         distributedOrder.setCategory(shipOrderDto.getCategory());

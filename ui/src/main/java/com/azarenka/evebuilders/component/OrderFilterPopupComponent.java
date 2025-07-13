@@ -19,6 +19,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.IntegerField;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class OrderFilterPopupComponent extends Div {
@@ -65,7 +68,7 @@ public class OrderFilterPopupComponent extends Div {
             filter.setStatuses(statusesCheckboxGroup.getSelectedItems().stream().toList());
             filter.setShipType(typeOrderCombobox.getSelectedItems().stream().toList());
             filter.setMinFreeCount(countFreeField.getValue());
-            filter.setDistributed(Objects.nonNull(radioButtonGroup.getValue()) && radioButtonGroup.getValue().equals("Полностью"));
+            filter.setDistributed(Objects.isNull(radioButtonGroup.getValue()) ? null : radioButtonGroup.getValue().equals("Полностью"));
         });
         applyButton.addClickListener(listener);
     }
@@ -136,10 +139,10 @@ public class OrderFilterPopupComponent extends Div {
         super.add(typesOrderLayout);
     }
 
-    private void initStatusesLayout() {
-        OrderStatusEnum[] statuses = OrderStatusEnum.values();
+    private void initStatusesLayout(OrderStatusEnum... statuses) {
+        List<OrderStatusEnum> list = Arrays.asList(statuses);
         statusesCheckboxGroup.setLabel("Статусы");
-        statusesCheckboxGroup.setItems(statuses);
+        statusesCheckboxGroup.setItems(list);
         statusesCheckboxGroup.setItemLabelGenerator(OrderStatusEnum::name);
         statusesCheckboxGroup.select(statuses);
         VerticalLayout statusesLayout = VaadinUtils.initCommonVerticalLayout();
@@ -159,8 +162,8 @@ public class OrderFilterPopupComponent extends Div {
             this.clickListener = clickListener;
         }
 
-        public OrderFilterBuilder withStatusFilter() {
-            initStatusesLayout();
+        public OrderFilterBuilder withStatusFilter(OrderStatusEnum... statuses) {
+            initStatusesLayout(statuses);
             return this;
         }
 

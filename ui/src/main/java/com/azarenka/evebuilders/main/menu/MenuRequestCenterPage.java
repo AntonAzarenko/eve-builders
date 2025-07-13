@@ -27,8 +27,6 @@ import java.util.Map;
 public class MenuRequestCenterPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
     public MenuRequestCenterPage() {
-        addTabIfAllowed(getTranslation("tab.request.create_request"), CreateRequestView.class,
-                new Role[]{Role.ROLE_COORDINATOR}, VaadinIcon.RECORDS.create());
         addTabIfAllowed(getTranslation("tab.request.my_request"), CoordinatorRequestsView.class,
                 new Role[]{Role.ROLE_COORDINATOR}, VaadinIcon.HOME_O.create());
         addTabIfAllowed(getTranslation("tab.request.group_request"), RequestsView.class,
@@ -39,8 +37,6 @@ public class MenuRequestCenterPage extends NavigationParentViewWithTabs implemen
     public void localeChange(LocaleChangeEvent event) {
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasCoordinatorPermission()) {
-            tabMap.get(CreateRequestView.class).updateLabel(getTranslation("tab.request.create_request"),
-                    VaadinIcon.RECORDS.create());
             tabMap.get(CoordinatorRequestsView.class).updateLabel(getTranslation("tab.request.my_request"),
                     VaadinIcon.HOME_O.create());
         }

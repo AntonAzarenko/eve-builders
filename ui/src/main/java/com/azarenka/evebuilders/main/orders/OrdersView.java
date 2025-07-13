@@ -13,6 +13,7 @@ import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -43,7 +44,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class OrdersView extends View implements LocaleChangeObserver {
+public class OrdersView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
 
     private final IOrderViewController controller;
     private ListDataProvider<ShipOrderDto> dataProvider;
@@ -150,7 +151,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
 
     private HorizontalLayout initFilterLayout() {
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
-            .withStatusFilter()
+            .withStatusFilter(OrderStatusEnum.values())
             .withTypeOrderFilter()
             .withCountFreeFilter()
             .withDistributedFilter()
@@ -230,7 +231,7 @@ public class OrdersView extends View implements LocaleChangeObserver {
 
     private void addColumns() {
         addColumn(ShipOrderDto::getOrderNumber, "130px");
-        addColumn(value -> value.getOrderStatus().name(), "130px");
+        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
         addColumn(ShipOrderDto::getItemName, "150px");
         addNumberColumn(ShipOrderDto::getCount, "90px");
         addAmountColumn(order -> formatIsk(order.getPrice()), "160px");

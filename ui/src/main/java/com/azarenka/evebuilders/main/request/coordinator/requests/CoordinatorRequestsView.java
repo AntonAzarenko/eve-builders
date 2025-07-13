@@ -6,13 +6,16 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
+import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
 import com.azarenka.evebuilders.main.request.api.IRequestsController;
+import com.azarenka.evebuilders.main.request.create.CreateRequestView;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -20,13 +23,17 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Collection;
-import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -38,23 +45,65 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
     private final IRequestsController controller;
+    private final ICreateRequestController createRequestController;
     private Button submitButton;
     private Button suspendedRequestButton;
     private Button continueRequestButton;
+    private Button createRequestButton;
+    private Button repeatRequestButton;
+    private Button removeRequestButton;
+    private Button editButton;
 
-    public CoordinatorRequestsView(@Autowired IRequestsController controller) {
+    public CoordinatorRequestsView(@Autowired IRequestsController controller,
+                                   @Autowired ICreateRequestController createRequestController) {
         this.controller = controller;
+        this.createRequestController = createRequestController;
         initMainLayout();
     }
 
     private void initMainLayout() {
         super.getStyle().set("padding", "0px 5px 0px 5px");
-        add(initToolBarLayout(), initGrid());
+        add(initSearchFieldLayout(), initToolBarLayout(), initGrid());
         updateStatusButton();
     }
 
     private HorizontalLayout initToolBarLayout() {
         suspendedRequestButton = new Button(getTranslation("button.request_suspended"));
+        createRequestButton = new Button(getTranslation("button.request_create"));
+        createRequestButton.addClickListener(event -> {
+            var createRequestView = new CreateRequestView(createRequestController);
+            createRequestView.open();
+        });
+        repeatRequestButton = new Button(getTranslation("button.request_repeat"));
+        repeatRequestButton.setTooltipText(getTranslation("message.button_tooltip.repeat"));
+        repeatRequestButton.addClickListener(event -> {
+            Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+            if (firstSelectedItem.isPresent()) {
+                RequestOrder order = firstSelectedItem.get();
+                order.setId(null);
+                order.setRequestStatus(RequestOrderStatusEnum.CREATED);
+                moveOrderToParameters(order);
+                var createRequestView = new CreateRequestView(createRequestController);
+                createRequestView.open();
+            }
+        });
+        removeRequestButton = new Button(getTranslation("button.request_remove"));
+        removeRequestButton.setTooltipText(getTranslation("message.button_tooltip.remove"));
+        removeRequestButton.addClickListener(event -> {
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
+                if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED ||
+                    order.getRequestStatus() == RequestOrderStatusEnum.CREATED) {
+                    createRequestController.removeRequest(order.getId());
+                    var message = String.format(getTranslation("message.notification.request_removed"),
+                        order.getItemName());
+                    Notification.show(message);
+                    UI.getCurrent().refreshCurrentRoute(true);
+                } else {
+                    Notification.show(String.format(getTranslation("message.notification.request_can_not_removed"),
+                        order.getItemName()), 3000, Notification.Position.MIDDLE);
+                }
+            });
+        });
         suspendedRequestButton.addClickListener(event -> {
             var requestOrder = grid.getSelectedItems().stream().findFirst().get();
             requestOrder.setRequestStatus(RequestOrderStatusEnum.SUSPENDED);
@@ -80,14 +129,33 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         submitButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         continueRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         suspendedRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        createRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        repeatRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        removeRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        editButton = new Button(getTranslation("button.request_edit"));
+        editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
+        editButton.addClickListener(event -> {
+            Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+            firstSelectedItem.ifPresent(this::moveOrderToParameters);
+            var createRequestView = new CreateRequestView(createRequestController);
+            createRequestView.open();
+        });
+        var layout = new HorizontalLayout(createRequestButton, editButton, repeatRequestButton, submitButton,
+            suspendedRequestButton, continueRequestButton, removeRequestButton);
+        layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+        layout.setWidthFull();
+        return layout;
+    }
+
+    private HorizontalLayout initSearchFieldLayout() {
         searchField = new SearchComponent(getTranslation("order.search.placeholder"),
             event -> searchByText(searchField.getValue()),
             event -> clearSearch()
         );
-        var layout = new HorizontalLayout(submitButton, suspendedRequestButton, continueRequestButton, searchField);
-        layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-        layout.setWidthFull();
-        return layout;
+        HorizontalLayout horizontalLayout = new HorizontalLayout(searchField);
+        horizontalLayout.setWidthFull();
+        horizontalLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        return horizontalLayout;
     }
 
     private Grid<RequestOrder> initGrid() {
@@ -131,20 +199,21 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private void addColumns() {
-        addColumn(RequestOrder::getId);
+        addColumn(RequestOrder::getId).setWidth("320px");
         addColumn(value -> convertRequestStatus(value.getRequestStatus()))
-            .setWidth("200px");
-        addColumn(RequestOrder::getItemName).setWidth("200px");
-        addColumn(RequestOrder::getPriority).setWidth("100px");
-        addNumberColumn(RequestOrder::getCount).setWidth("100px");
-        addAmountColumn(RequestOrder::getPrice);
-        addColumn(RequestOrder::getCreatedBy);
-        addColumn(order -> order.getCreatedDate().toString()).setWidth("200px");
+            .setWidth("135px");
+        addColumn(RequestOrder::getItemName).setWidth("145px");
+        addColumn(RequestOrder::getPriority).setWidth("115px");
+        addNumberColumn(RequestOrder::getCount).setWidth("90px");
+        addAmountColumn(order -> formatIsk(order.getPrice())).setWidth("175px");
+        addColumn(RequestOrder::getCreatedBy).setWidth("141px");
+        addColumn(order -> order.getCreatedDate().toString()).setWidth("190px");
         addColumn(order -> order.getFinishDate().toString());
     }
 
-    private Grid.Column<RequestOrder> addAmountColumn(ValueProvider<RequestOrder, BigDecimal> provider) {
+    private Grid.Column<RequestOrder> addAmountColumn(ValueProvider<RequestOrder, ?> provider) {
         Grid.Column<RequestOrder> column = grid.addColumn(provider);
+        column.setTextAlign(ColumnTextAlign.END);
         return column;
     }
 
@@ -185,10 +254,16 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             suspendedRequestButton.setEnabled(selected && (requestStatus == RequestOrderStatusEnum.SUBMITTED ||
                 requestStatus == RequestOrderStatusEnum.CREATED));
             continueRequestButton.setEnabled(selected && requestStatus == RequestOrderStatusEnum.SUSPENDED);
+            repeatRequestButton.setEnabled(selected);
+            removeRequestButton.setEnabled(selected && requestStatus == RequestOrderStatusEnum.CREATED);
+            editButton.setEnabled(selected && requestStatus == RequestOrderStatusEnum.CREATED);
         } else {
             submitButton.setEnabled(false);
             suspendedRequestButton.setEnabled(false);
             continueRequestButton.setEnabled(false);
+            repeatRequestButton.setEnabled(false);
+            removeRequestButton.setEnabled(false);
+            editButton.setEnabled(false);
         }
     }
 
@@ -197,5 +272,21 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             .stream()
             .findFirst()
             .orElse(null);
+    }
+
+    private void moveOrderToParameters(RequestOrder order) {
+        VaadinSession.getCurrent().setAttribute("requestOrder", order);
+        UI.getCurrent().refreshCurrentRoute(true);
+    }
+
+    private String formatIsk(BigDecimal value) {
+        if (Objects.isNull(value)) {
+            return "";
+        }
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
+        symbols.setGroupingSeparator(' ');
+        df.setDecimalFormatSymbols(symbols);
+        return df.format(value) + " ISK";
     }
 }

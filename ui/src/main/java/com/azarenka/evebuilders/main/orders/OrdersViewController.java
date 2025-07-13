@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
-import com.azarenka.evebuilders.domain.dto.Contract;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.api.IContractService;
@@ -15,19 +15,20 @@ import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
 import com.azarenka.evebuilders.service.util.ImageService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.textfield.IntegerField;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
-@Scope(scopeName = "prototype")
 public class OrdersViewController implements IOrderViewController {
 
     @Autowired
@@ -43,7 +44,10 @@ public class OrdersViewController implements IOrderViewController {
 
     @Override
     public List<ShipOrderDto> getOrderList(OrderFilter filter) {
-        return orderService.getOrderList(filter);
+        return orderService.getOrderList(filter)
+            .stream()
+            .sorted(Comparator.comparing(ShipOrderDto::getCreatedDate, Comparator.reverseOrder()))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -82,37 +86,49 @@ public class OrdersViewController implements IOrderViewController {
     @Override
     public void checkOrder(DistributedOrder distributedOrder) {
         var contractReports = contractService.getContractReport(distributedOrder);
-        contractReports.forEach(contractReport -> {
-            if (contractReport.isValid()) {
-                var readyCount = contractReport.getCountItems();
-                distributedOrderService.update(distributedOrder, readyCount);
-            }
-        });
-
-        new OrderContractReportWindow(contractReports, distributedOrder).open();
+        new OrderContractReportWindow(contractReports, distributedOrder, this).open();
     }
 
     @Override
-    public void completeOrder(DistributedOrder distributedOrder) {
-        var contractReports = contractService.getContractReport(distributedOrder);
-        ConfirmDialog confirmDialog = new ConfirmDialog(
-            "Confirmation Window",
-            "Action Required",
-            String.format("Are you sure you want to move to COMPLETE status all contracts \n %s",
-            contractReports.stream()
-                .filter(report -> Objects.nonNull(report.getContract()))
-                .map(ContractValidationReport::getContract)
-                .map(Contract::getContractId)
-                .map(String::valueOf)
-                .collect(Collectors.joining("\n"))),
-            event -> {
-                contractReports.forEach(contractReport -> {
-                    if (contractReport.isValid()) {
-                        var readyCount = contractReport.getCountItems();
-                        distributedOrderService.update(distributedOrder, readyCount);
-                    }
-                });
+    public void completeOrder(DistributedOrder distributedOrder, boolean applyEntire,
+                              List<ContractValidationReport> contractReports) {
+        if (applyEntire) {
+            showCompleterOrderWindow(distributedOrder);
+        } else {
+            contractReports.forEach(contract -> {
+                showCompleterReportsWindow(distributedOrder, contract);
             });
+        }
+    }
+
+    private void showCompleterOrderWindow(DistributedOrder order) {
+        var confirmDialog = new ConfirmDialog(
+            "Confirmation Window",
+            String.format("Are you sure you want to COMPLETE this order for  %s", order.getUserName()), "Ok",
+            event -> {
+                var readyCount = order.getCount();
+                distributedOrderService.update(order, readyCount);
+                UI.getCurrent().refreshCurrentRoute(true);
+            });
+        confirmDialog.open();
+    }
+
+    private void showCompleterReportsWindow(DistributedOrder distributedOrder,
+                                            ContractValidationReport contractReport) {
+        var confirmDialog = new ConfirmDialog();
+        confirmDialog.setHeader("Confirmation Window");
+        confirmDialog.setText(
+            String.format("Are you sure you want to move to COMPLETE status for \n %s",
+                contractReport.getContract().getContractId()));
+        confirmDialog.setConfirmText("Принять");
+        confirmDialog.addConfirmListener(event -> {
+            var readyCount = contractReport.getCountItems();
+            distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+            distributedOrderService.update(distributedOrder, readyCount);
+            UI.getCurrent().refreshCurrentRoute(true);
+        });
+        confirmDialog.setCancelText("Cancel");
+        confirmDialog.addCancelListener(event -> confirmDialog.close());
         confirmDialog.open();
     }
 }

@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.service.util;
 
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -34,6 +35,38 @@ public interface IOrderStatusToStringConverter extends LocaleChangeObserver {
             }
             case REJECTED -> {
                 return getTranslation("label.rejected");
+            }
+            default -> {
+                return StringUtils.EMPTY;
+            }
+        }
+    }
+
+    default String convertOrderStatus(OrderStatusEnum statusEnum) {
+        switch (statusEnum) {
+            case NEW -> {
+                return getTranslation("label.created");
+            }
+            case IN_PROGRESS -> {
+                return getTranslation("label.in_progress");
+            }
+            case DISTRIBUTED -> {
+                return getTranslation("label.distributed");
+            }
+            case COMPLETED -> {
+                return getTranslation("label.completed");
+            }
+            case DISCARDED -> {
+                return getTranslation("label.discarded");
+            }
+            case WAITING_FOR_APPROVAL -> {
+                return getTranslation("label.waiting_for_approval");
+            }
+            case EXPIRED -> {
+                return getTranslation("label.expired");
+            }
+            case STOPPED -> {
+                return getTranslation("label.stopped");
             }
             default -> {
                 return StringUtils.EMPTY;
