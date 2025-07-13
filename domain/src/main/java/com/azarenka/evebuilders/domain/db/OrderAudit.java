@@ -1,7 +1,5 @@
 package com.azarenka.evebuilders.domain.db;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -9,6 +7,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -22,7 +22,8 @@ public class OrderAudit {
     @Column(name = "order_number")
     private String orderNumber;
     @Column(name = "status")
-    private OrderStatusEnum status;
+    @Enumerated(EnumType.STRING)
+    private AuditOrderStatusEnum status;
     @Column(name = "reason")
     private String reason;
     @Column(name = "created_by")
@@ -32,7 +33,7 @@ public class OrderAudit {
     @Column(name = "updated_by")
     private String updatedBy;
     @Column(name = "updated_date")
-    private LocalDate updatedDate;
+    private LocalDate updatedDate = LocalDate.now();
 
     public String getOrderNumber() {
         return orderNumber;
@@ -50,11 +51,11 @@ public class OrderAudit {
         this.id = id;
     }
 
-    public OrderStatusEnum getStatus() {
+    public AuditOrderStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatusEnum status) {
+    public void setStatus(AuditOrderStatusEnum status) {
         this.status = status;
     }
 

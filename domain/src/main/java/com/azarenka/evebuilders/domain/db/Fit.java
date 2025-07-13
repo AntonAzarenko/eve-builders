@@ -1,7 +1,12 @@
 package com.azarenka.evebuilders.domain.db;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -20,6 +25,53 @@ public class Fit {
     @Column(name = "text_fit", columnDefinition = "TEXT", nullable = false)
     @Lob
     private String textFit;
+
+    @Column(name = "created_by", nullable = false)
+    @ColumnDefault("'SYSTEM'")
+    private String createdBy = "System";
+    @CreationTimestamp
+    @ColumnDefault("'now()'")
+    @Column(name = "created_date")
+    private LocalDate createdDate = LocalDate.now();
+    @ColumnDefault("'SYSTEM'")
+    @Column(name = "updated_by")
+    private String updatedBy = "SYSTEM";
+    @ColumnDefault("'now()'")
+    @Column(name = "updated_date")
+    @UpdateTimestamp
+    private LocalDate updatedDate = LocalDate.now();
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public LocalDate getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public LocalDate getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(LocalDate updatedDate) {
+        this.updatedDate = updatedDate;
+    }
 
     public String getId() {
         return id;

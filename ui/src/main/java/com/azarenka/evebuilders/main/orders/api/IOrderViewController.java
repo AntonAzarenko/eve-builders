@@ -1,11 +1,12 @@
 package com.azarenka.evebuilders.main.orders.api;
 
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
-import com.azarenka.evebuilders.domain.db.OrderFilter;
-import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.textfield.IntegerField;
 
@@ -30,5 +31,6 @@ public interface IOrderViewController {
 
     void checkOrder(DistributedOrder distributedOrder);
 
-    void completeOrder(DistributedOrder distributedOrder);
+    void completeOrder(DistributedOrder distributedOrder, boolean applyEntire,
+                       List<ContractValidationReport> contractReports);
 }

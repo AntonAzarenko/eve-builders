@@ -14,9 +14,11 @@ import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
+import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -45,7 +47,7 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "corporation", layout = MenuConstructionPage.class)
 @PageTitle("Constructions")
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_USER"})
-public class CorporationConstructionsView extends View implements LocaleChangeObserver {
+public class CorporationConstructionsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
 
     private ListDataProvider<DistributedOrder> dataProvider;
     private Grid<DistributedOrder> grid;
@@ -73,7 +75,8 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private HorizontalLayout initFilterLayout() {
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
-            .withStatusFilter()
+            .withStatusFilter(OrderStatusEnum.NEW, OrderStatusEnum.IN_PROGRESS, OrderStatusEnum.COMPLETED,
+                OrderStatusEnum.WAITING_FOR_APPROVAL, OrderStatusEnum.DISCARDED)
             .withTypeOrderFilter()
             .build();
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
@@ -112,13 +115,19 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             event -> {
                 Optional<DistributedOrder> optional = grid.getSelectionModel().getFirstSelectedItem();
                 optional.ifPresent(order -> {
-                    boolean b = controller.sendOrderForApproval(order);
-                    if (b) {
-                        new NotificationWindow("Ошибка", String.format(getTranslation("message.notification.contact_found",
-                            order.getOrderNumber()))).open();
+                    boolean exists = controller.sendOrderForApproval(order);
+                    if (exists) {
+                        var confirmDialog = new ConfirmDialog();
+                        confirmDialog.setHeader("Ok");
+                        confirmDialog.setText(String.format(getTranslation("message.notification.contact_found"),
+                            order.getOrderNumber()));
+                        confirmDialog.setConfirmText("Ok");
+                        confirmDialog.addConfirmListener(e -> UI.getCurrent().refreshCurrentRoute(true));
+                        confirmDialog.open();
                     } else {
-                        new NotificationWindow("Ошибка", String.format(getTranslation("message.notification.contact_not_found"),
-                            order.getOrderNumber())).open();
+                        new NotificationWindow("Ошибка",
+                            String.format(getTranslation("message.notification.contact_not_found"),
+                                order.getOrderNumber())).open();
                     }
                 });
             }
@@ -213,7 +222,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private void addColumns() {
         addColumn(DistributedOrder::getOrderNumber, "130px");
-        addColumn(value -> value.getOrderStatus().name(), "130px");
+        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
         addColumn(DistributedOrder::getShipName, "150px");
         addNumberColumn(DistributedOrder::getCount, "130px");
         addNumberColumn(DistributedOrder::getCountReady, "130px");
@@ -250,14 +259,24 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private void updateButtonsStatus() {
-        List<DistributedOrder> selectedItems = grid.getSelectionModel().getSelectedItems().stream().toList();
-        boolean isUpdateButtonEnabled = !selectedItems.isEmpty()
-            && !selectedItems.get(0).getCount().equals(selectedItems.get(0).getCountReady());
-        updateStatusOrderButton.setEnabled(isUpdateButtonEnabled);
-        buildButton.setEnabled(isUpdateButtonEnabled);
-        fitButton.setEnabled(!selectedItems.isEmpty());
-        showFullOrder.setEnabled(!selectedItems.isEmpty());
-        discardOrderButton.setEnabled(!selectedItems.isEmpty());
+        Optional<DistributedOrder> selectedItem = grid.getSelectionModel().getFirstSelectedItem();
+        if (selectedItem.isPresent()) {
+            var distributedOrder = selectedItem.get();
+            updateStatusOrderButton.setEnabled(
+                distributedOrder.getOrderStatus() == OrderStatusEnum.IN_PROGRESS
+                    || distributedOrder.getOrderStatus() == OrderStatusEnum.NEW);
+            buildButton.setEnabled(true);
+            fitButton.setEnabled(true);
+            showFullOrder.setEnabled(true);
+            discardOrderButton.setEnabled(true);
+        } else {
+            fitButton.setEnabled(false);
+            showFullOrder.setEnabled(false);
+            discardOrderButton.setEnabled(false);
+            discardOrderButton.setEnabled(false);
+            updateStatusOrderButton.setEnabled(false);
+            buildButton.setEnabled(false);
+        }
     }
 
     @Override

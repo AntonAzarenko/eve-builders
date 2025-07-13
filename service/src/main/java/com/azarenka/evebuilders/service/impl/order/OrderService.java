@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.AuditOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
@@ -10,6 +11,7 @@ import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.repository.database.properties.IDestinationRepository;
 import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
+import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
@@ -40,6 +42,8 @@ public class OrderService implements IOrderService {
     private IReceiverRepository receiverRepository;
     @Autowired
     private IOrderRepository orderRepository;
+    @Autowired
+    private IAuditService auditService;
     @Autowired
     private ITelegramIntegrationService telegramIntegrationService;
     @Value("${app.telegram_thread_ping_id}")
@@ -72,6 +76,7 @@ public class OrderService implements IOrderService {
         var savedOrder = orderRepository.save(order);
         LOGGER.info("Creating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderNumber,
             order.getShipName(), userName);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.CREATED, orderNumber, order.getRequestId(), userName);
         return savedOrder;
     }
 
@@ -97,6 +102,7 @@ public class OrderService implements IOrderService {
         var userName = SecurityUtils.getUserName();
         orderRepository.update(status, id);
         LOGGER.info("Order status. Updated. OrderID={}, OrderStatus={}, UserName={}", id, status, userName);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, id, "", userName);
     }
 
     @Override
@@ -111,6 +117,7 @@ public class OrderService implements IOrderService {
         order = orderRepository.save(order);
         LOGGER.info("Updating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderDto.getOrderNumber(),
             orderDto.getItemName(), userName);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.DISTRIBUTED, orderDto.getOrderNumber(), "", userName);
         return order;
     }
 

@@ -4,6 +4,25 @@
 
 # Release notes
 
+## Version 1.5.2
+Release Date: 2025-07-13
+
+## Contract Submission Fixes
+- Fixed an issue causing **duplicate contract submissions** when users repeatedly clicked the "Submit Contract" button.
+- Resolved logic issues preventing proper contract validation on submission.
+
+## Request Management Enhancements
+- Added **"Force Close Request"** button — available even if validation failed.
+- Added **"Close Request Without Contract"** button — useful when no contract was created.
+- Fully refactored **request creation logic**:
+  - Improved stability and behavior.
+  - Updated input columns in the request creation form.
+
+## UI and UX Improvements
+- Fixed incorrect **price display** and adjusted font sizes for better readability.
+- Corrected filter behavior in **Orders** and **Production** tabs — status filtering now works as expected.
+- Added **sorting by creation date** to order-related tables.
+
 ## Version 1.5.1
 Release Date: 2025-07-10
 

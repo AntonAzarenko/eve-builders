@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.impl;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.AuditOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.OrderAudit;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderAuditRepository;
 import com.azarenka.evebuilders.repository.database.IOrderAuditRepository;
@@ -20,12 +20,14 @@ public class AuditService implements IAuditService {
     private IDistributedOrderAuditRepository distributedOrderAuditRepository;
 
     @Override
-    public void writeOrderAudit(OrderStatusEnum status, String orderNumber, String reason, String userName) {
+    public void writeOrderAudit(AuditOrderStatusEnum status, String orderNumber, String reason, String userName) {
         var orderAudit = new OrderAudit();
         orderAudit.setId(UUID.randomUUID().toString());
         orderAudit.setOrderNumber(orderNumber);
+        orderAudit.setStatus(status);
         orderAudit.setCreatedBy(userName);
         orderAudit.setReason(reason);
+        orderAudit.setUpdatedBy(userName);
         orderAuditRepository.save(orderAudit);
     }
 }

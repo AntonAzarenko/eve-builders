@@ -20,8 +20,6 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery.B;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +30,6 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
     private ListDataProvider<DistributedOrder> dataProvider;
     private IOrderViewController controller;
     private Button checkOrderButton;
-    private Button completeButton;
 
     public OrderDetailsWindow(IOrderViewController controller, List<DistributedOrder> orders, String orderNumber) {
         super.applyCommonProperties("order_info", true);
@@ -52,7 +49,6 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
         Optional<DistributedOrder> selectedItem = grid.getSelectionModel().getFirstSelectedItem();
         var isSelected = selectedItem.isPresent();
         checkOrderButton.setEnabled(isSelected && selectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED);
-        completeButton.setEnabled(isSelected && selectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED);
     }
 
     private Grid<DistributedOrder> initGrid() {
@@ -86,19 +82,11 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
         checkOrderButton.addClickListener(event -> {
             Optional<DistributedOrder> distributedOrderOptional = grid.getSelectionModel().getFirstSelectedItem();
             distributedOrderOptional.ifPresent(distributedOrder -> {
-                    controller.checkOrder(distributedOrderOptional.get());
+                controller.checkOrder(distributedOrderOptional.get());
             });
         });
-        completeButton = new Button(VaadinIcon.COMPILE.create());
-        completeButton.addClickListener(event -> {
-            Optional<DistributedOrder> distributedOrderOptional = grid.getSelectionModel().getFirstSelectedItem();
-            distributedOrderOptional.ifPresent(distributedOrder -> {
-                controller.completeOrder(distributedOrderOptional.get());
-            });
-        });
-        adminsLayout.add(checkOrderButton, completeButton);
+        adminsLayout.add(checkOrderButton);
         checkOrderButton.setVisible(BuilderPermission.hasAdminPermission());
-        completeButton.setVisible(BuilderPermission.hasAdminPermission());
         return layout;
     }
 

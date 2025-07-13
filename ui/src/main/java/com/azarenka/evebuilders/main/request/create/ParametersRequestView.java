@@ -13,6 +13,7 @@ import com.azarenka.evebuilders.validators.RequiredValidator;
 import com.azarenka.evebuilders.validators.StubValidator;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.ComboBoxVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -127,6 +128,10 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         requiredValidator = new RequiredValidator(getTranslation(REQUIRED_FIELD_VALUE));
     }
 
+    public boolean isValid() {
+        return binder.validate().isOk();
+    }
+
     private void initContent() {
         initOrderFieldsLayout();
         Div parameterCard = new Div();
@@ -138,14 +143,14 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         HorizontalLayout layout = new HorizontalLayout(categoryComboBox, groupsComboBox, itemsComboBox, imageContainer);
         layout.setWidthFull();
         layout.getStyle().set("flex-wrap", "wrap");
+        initButtonsLayout();
         mainLayout.add(
                 layout,
                 initFitLoadFitButtonLayout(),
                 countShipsField,
                 orderScopeField,
                 priorityField,
-                datePickerField,
-                initButtonsLayout()
+                datePickerField
         );
         parameterCard.add(paramentersSpan, new Hr(), mainLayout);
         add(initHeaderLayout(), parameterCard);
@@ -247,8 +252,8 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
                 .bind((this::buildInvType),
                         (shipOrder, invType) -> shipOrder.setItemName(invType.getTypeName()));
     }
-
     //init order creation fields
+
     private void initCountShipsField() {
         countShipsField.setWidthFull();
         countShipsField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
@@ -310,7 +315,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private void initFitField() {
         fitDataProvider = DataProvider.ofCollection(controller.gitAllFits());
         fitField.setWidthFull();
-        fitField.setItemLabelGenerator(Fit::getName);
+        fitField.setItemLabelGenerator(fit -> String.format("%s - %s", fit.getName(), fit.getCreatedBy()));
         fitField.setItems(fitDataProvider);
         binder.forField(fitField)
                 .withValidator(StringUtils.isNotBlank(categoryComboBox.getValue())
@@ -385,6 +390,8 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         clearButton = new Button(VaadinIcon.ERASER.create());
         clearButton.setTooltipText(getTranslation("message.button_tooltip.erase"));
         clearButton.addClickListener(event -> clearFields());
+        clearButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        applyButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         HorizontalLayout layout = new HorizontalLayout(applyButton, clearButton);
         layout.setWidthFull();
         layout.setMargin(false);
@@ -424,7 +431,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     }
 
     private void clickApplyButton() {
-        if (binder.validate().isOk()) {
+        if (isValid()) {
             try {
                 binder.writeBean(request);
                 controller.createRequest(request);
@@ -449,7 +456,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         groupsComboBox.clear();
         itemsComboBox.clear();
         imageContainer.removeAll();
-        VaadinSession.getCurrent().setAttribute("originalOrder", null);
+        VaadinSession.getCurrent().setAttribute("requestOrder", null);
     }
 
     private Image createImage(InvType invType) {
@@ -493,5 +500,13 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
         InvGroup invGroup = groupsComboBox.getValue();
         groupsComboBox.setEnabled(StringUtils.isNotBlank(value));
         itemsComboBox.setEnabled(Objects.nonNull(invGroup));
+    }
+
+    public Button getApplyButton() {
+        return applyButton;
+    }
+
+    public Button getClearButton() {
+        return clearButton;
     }
 }
