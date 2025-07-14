@@ -143,7 +143,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         layout.setWidthFull();
         splitLayout.addToPrimary(layout);
         splitLayout.addToSecondary(metadataLayout);
-        splitLayout.setSplitterPosition(70);
+        splitLayout.setSplitterPosition(80);
         splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
         splitLayout.setSizeFull();
         return splitLayout;
@@ -233,7 +233,8 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         addColumn(ShipOrderDto::getOrderNumber, "130px");
         addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
         addColumn(ShipOrderDto::getItemName, "150px");
-        addNumberColumn(ShipOrderDto::getCount, "90px");
+        addNumberColumn(ShipOrderDto::getCount, "110px");
+        addNumberColumn(order -> order.getCount() - order.getInProgressCount(), "90px");
         addAmountColumn(order -> formatIsk(order.getPrice()), "160px");
     }
 
@@ -272,7 +273,8 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         grid.getColumns().get(1).setHeader(getTranslation("table.column.status"));
         grid.getColumns().get(2).setHeader(getTranslation("table.column.nomination"));
         grid.getColumns().get(3).setHeader(getTranslation("table.column.count"));
-        grid.getColumns().get(4).setHeader(getTranslation("table.column.price"));
+        grid.getColumns().get(4).setHeader(getTranslation("table.column.count_free"));
+        grid.getColumns().get(5).setHeader(getTranslation("table.column.price"));
         takeAnOrderButton.setText(getTranslation("button.take_an_order"));
         searchField.setPlaceholder(getTranslation("order.search.placeholder"));
         filterButton.setTooltipText(getTranslation("message.button.tooltip.filter_window"));
@@ -280,14 +282,14 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
     }
 
     private String formatIsk(BigDecimal value) {
-        if (value == null) {
-            return "";
+        if (Objects.nonNull(value)) {
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
+            symbols.setGroupingSeparator(' ');
+            df.setDecimalFormatSymbols(symbols);
+            return df.format(value) + " ISK";
         }
-        DecimalFormat df = new DecimalFormat("#,##0.00");
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
-        symbols.setGroupingSeparator(' ');
-        df.setDecimalFormatSymbols(symbols);
-        return df.format(value) + " ISK";
+        return "";
     }
 
     private boolean isEditPermitted() {

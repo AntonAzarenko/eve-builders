@@ -31,4 +31,6 @@ public interface ICreateRequestController {
     IFitLoaderService getFitLoaderService();
 
     List<RequestOrder> getRequestOrders();
+
+    Fit getFitById(String id);
 }

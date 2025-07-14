@@ -4,6 +4,18 @@
 
 # Release notes
 
+## Version 1.5.3
+Release Date: 2025-07-14
+
+## Request Tab Enhancements
+- Improved **visual layout and usability** of the Request tab.
+- Added **context menu** (right-click on grid row) that mirrors all available action buttons.
+- Implemented **ship fit display** directly in the Request tab for better clarity.
+
+## UI Improvements
+- Added **badge indicator** on the main menu tab `Orders` showing the number of orders with `NEW` status.
+- Introduced new **"Available Quantity" column** to display the number of unassigned ships.
+
 ## Version 1.5.2
 Release Date: 2025-07-13
 

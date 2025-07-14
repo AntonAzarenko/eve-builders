@@ -34,12 +34,14 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     private final DrawerToggle drawerToggle = new DrawerToggle();
     private final MainWidgetController controller;
     private int countSubmittedRequests;
+    private int countNewOrders;
 
     public MainWidget(MainWidgetController controller) {
         this.controller = controller;
         countSubmittedRequests = controller.countRequests();
-        addTabIfAllowed(getTranslation("menu.tab.orders"), OrdersPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create());
+        countNewOrders = controller.countNewOrders();
+        addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), OrdersPage.class,
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(), countNewOrders);
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
                 new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.FACTORY.create());
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
@@ -68,7 +70,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         countSubmittedRequests = controller.countRequests();
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasUserPermission() || BuilderPermission.hasAdminPermission()) {
-            tabMap.get(OrdersPage.class).updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create());
+            tabMap.get(OrdersPage.class).updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
             tabMap.get(MenuConstructionPage.class).updateLabel(getTranslation("menu.tab.construction"), VaadinIcon.FACTORY.create());
         }
         if (BuilderPermission.hasAdminPermission()) {

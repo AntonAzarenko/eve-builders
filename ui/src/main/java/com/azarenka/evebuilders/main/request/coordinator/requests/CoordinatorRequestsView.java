@@ -3,8 +3,10 @@ package com.azarenka.evebuilders.main.request.coordinator.requests;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
+import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
 import com.azarenka.evebuilders.main.request.api.IRequestsController;
@@ -15,6 +17,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -31,9 +36,11 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -54,6 +61,15 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private Button removeRequestButton;
     private Button editButton;
 
+    private GridMenuItem<RequestOrder> createItem;
+    private GridMenuItem<RequestOrder> editItem;
+    private GridMenuItem<RequestOrder> repeatItem;
+    private GridMenuItem<RequestOrder> removeItem;
+    private GridMenuItem<RequestOrder> submitItem;
+    private GridMenuItem<RequestOrder> suspendedItem;
+    private GridMenuItem<RequestOrder> continueItem;
+    private GridMenuItem<RequestOrder> fitItem;
+
     public CoordinatorRequestsView(@Autowired IRequestsController controller,
                                    @Autowired ICreateRequestController createRequestController) {
         this.controller = controller;
@@ -70,78 +86,35 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private HorizontalLayout initToolBarLayout() {
         suspendedRequestButton = new Button(getTranslation("button.request_suspended"));
         createRequestButton = new Button(getTranslation("button.request_create"));
-        createRequestButton.addClickListener(event -> {
-            var createRequestView = new CreateRequestView(createRequestController);
-            createRequestView.open();
-        });
+        createRequestButton.addClickListener(event -> clickCreateButton());
         repeatRequestButton = new Button(getTranslation("button.request_repeat"));
         repeatRequestButton.setTooltipText(getTranslation("message.button_tooltip.repeat"));
-        repeatRequestButton.addClickListener(event -> {
-            Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
-            if (firstSelectedItem.isPresent()) {
-                RequestOrder order = firstSelectedItem.get();
-                order.setId(null);
-                order.setRequestStatus(RequestOrderStatusEnum.CREATED);
-                moveOrderToParameters(order);
-                var createRequestView = new CreateRequestView(createRequestController);
-                createRequestView.open();
-            }
-        });
+        repeatRequestButton.addClickListener(event -> clickRepeatButton());
         removeRequestButton = new Button(getTranslation("button.request_remove"));
         removeRequestButton.setTooltipText(getTranslation("message.button_tooltip.remove"));
-        removeRequestButton.addClickListener(event -> {
-            grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
-                if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED ||
-                    order.getRequestStatus() == RequestOrderStatusEnum.CREATED) {
-                    createRequestController.removeRequest(order.getId());
-                    var message = String.format(getTranslation("message.notification.request_removed"),
-                        order.getItemName());
-                    Notification.show(message);
-                    UI.getCurrent().refreshCurrentRoute(true);
-                } else {
-                    Notification.show(String.format(getTranslation("message.notification.request_can_not_removed"),
-                        order.getItemName()), 3000, Notification.Position.MIDDLE);
-                }
-            });
-        });
-        suspendedRequestButton.addClickListener(event -> {
-            var requestOrder = grid.getSelectedItems().stream().findFirst().get();
-            requestOrder.setRequestStatus(RequestOrderStatusEnum.SUSPENDED);
-            controller.updateRequest(requestOrder);
-            UI.getCurrent().refreshCurrentRoute(true);
-        });
+        removeRequestButton.addClickListener(event ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickRemoveButton));
+        suspendedRequestButton.addClickListener(event ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickSuspendOrderButton));
         continueRequestButton = new Button("button.request_continue");
-        continueRequestButton.addClickListener(event -> {
-            var requestOrder = grid.getSelectedItems().stream().findFirst().get();
-            requestOrder.setRequestStatus(
-                Objects.nonNull(requestOrder.getPrice()) && !requestOrder.getPrice().equals(BigDecimal.ZERO) ?
-                    RequestOrderStatusEnum.SUBMITTED : RequestOrderStatusEnum.CREATED);
-            controller.updateRequest(requestOrder);
-            UI.getCurrent().refreshCurrentRoute(true);
-        });
+        continueRequestButton.addClickListener(event ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickContinueButton));
         submitButton = new Button(getTranslation("button.submit"));
-        submitButton.addClickListener(event -> {
-            var requestOrder = grid.getSelectedItems().stream().findFirst().get();
-            requestOrder.setRequestStatus(RequestOrderStatusEnum.APPROVED);
-            controller.updateRequest(requestOrder);
-            UI.getCurrent().refreshCurrentRoute(true);
-        });
+        submitButton.addClickListener(event ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickSubmitButton));
         submitButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        editButton = new Button(getTranslation("button.request_edit"));
+        editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
+        editButton.addClickListener(event ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickEditButton));
+        var layout = new HorizontalLayout(createRequestButton, editButton, repeatRequestButton, submitButton,
+            suspendedRequestButton, continueRequestButton, removeRequestButton);
         continueRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         suspendedRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         createRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         repeatRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         removeRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
-        editButton = new Button(getTranslation("button.request_edit"));
-        editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
-        editButton.addClickListener(event -> {
-            Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
-            firstSelectedItem.ifPresent(this::moveOrderToParameters);
-            var createRequestView = new CreateRequestView(createRequestController);
-            createRequestView.open();
-        });
-        var layout = new HorizontalLayout(createRequestButton, editButton, repeatRequestButton, submitButton,
-            suspendedRequestButton, continueRequestButton, removeRequestButton);
+        editButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
@@ -152,7 +125,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             event -> searchByText(searchField.getValue()),
             event -> clearSearch()
         );
-        HorizontalLayout horizontalLayout = new HorizontalLayout(searchField);
+        var horizontalLayout = new HorizontalLayout(searchField);
         horizontalLayout.setWidthFull();
         horizontalLayout.setJustifyContentMode(JustifyContentMode.CENTER);
         return horizontalLayout;
@@ -169,12 +142,102 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         grid.addSelectionListener(event -> {
             updateStatusButton();
         });
+        createContextMenu(grid);
         return grid;
     }
+
+    private void createContextMenu(Grid<RequestOrder> grid) {
+        var gridContextMenu = new GridContextMenu<>(grid);
+        submitItem = gridContextMenu.addItem(getTranslation("button.submit"), e -> clickRepeatButton());
+        suspendedItem = gridContextMenu.addItem(getTranslation("button.request_suspended"),
+            e -> e.getItem().ifPresent(this::clickSuspendOrderButton));
+        continueItem = gridContextMenu.addItem(getTranslation("button.request_continue"),
+            e -> e.getItem().ifPresent(this::clickContinueButton));
+        gridContextMenu.add(new Hr());
+        createItem = gridContextMenu.addItem(getTranslation("button.request_create"), e -> clickCreateButton());
+        fitItem = gridContextMenu.addItem(getTranslation("button.request_fit"), e -> e.getItem().ifPresent(this::clickFitButton));
+        gridContextMenu.add(new Hr());
+        editItem = gridContextMenu.addItem(getTranslation("button.request_edit"),
+            e -> e.getItem().ifPresent(this::clickEditButton));
+        repeatItem = gridContextMenu.addItem(getTranslation("button.request_repeat"), e -> clickRepeatButton());
+        removeItem = gridContextMenu.addItem(getTranslation("button.request_remove"),
+            e -> e.getItem().ifPresent(this::clickRemoveButton));
+        gridContextMenu.addGridContextMenuOpenedListener(event -> {
+            gridContextMenu.setVisible(true);
+            event.getItem().ifPresent(grid::select);
+            updateMenuItems(event.getItem());
+        });
+    }
+
+    private void clickCreateButton() {
+        var createRequestView = new CreateRequestView(createRequestController);
+        createRequestView.open();
+    }
+
 
     private void clearSearch() {
         searchField.clearText();
         searchByText("");
+    }
+
+    private void clickRemoveButton(RequestOrder order) {
+        if (order.getRequestStatus() == RequestOrderStatusEnum.SUBMITTED ||
+            order.getRequestStatus() == RequestOrderStatusEnum.CREATED) {
+            createRequestController.removeRequest(order.getId());
+            var message = String.format(getTranslation("message.notification.request_removed"),
+                order.getItemName());
+            Notification.show(message);
+            UI.getCurrent().refreshCurrentRoute(true);
+        } else {
+            Notification.show(String.format(getTranslation("message.notification.request_can_not_removed"),
+                order.getItemName()), 3000, Notification.Position.MIDDLE);
+        }
+    }
+
+    private void clickRepeatButton() {
+        Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+        if (firstSelectedItem.isPresent()) {
+            RequestOrder order = firstSelectedItem.get();
+            order.setId(null);
+            order.setRequestStatus(RequestOrderStatusEnum.CREATED);
+            moveOrderToParameters(order);
+            var createRequestView = new CreateRequestView(createRequestController);
+            createRequestView.open();
+        }
+    }
+
+    private void clickSuspendOrderButton(RequestOrder order) {
+        order.setRequestStatus(RequestOrderStatusEnum.SUSPENDED);
+        controller.updateRequest(order);
+        UI.getCurrent().refreshCurrentRoute(true);
+    }
+
+    private void clickEditButton(RequestOrder order) {
+        moveOrderToParameters(order);
+        var createRequestView = new CreateRequestView(createRequestController);
+        createRequestView.open();
+    }
+
+    private void clickContinueButton(RequestOrder order) {
+        order.setRequestStatus(
+            Objects.nonNull(order.getPrice()) && !order.getPrice().equals(BigDecimal.ZERO) ?
+                RequestOrderStatusEnum.SUBMITTED : RequestOrderStatusEnum.CREATED);
+        controller.updateRequest(order);
+        UI.getCurrent().refreshCurrentRoute(true);
+    }
+
+    private void clickSubmitButton(RequestOrder order) {
+        order.setRequestStatus(RequestOrderStatusEnum.APPROVED);
+        controller.updateRequest(order);
+        UI.getCurrent().refreshCurrentRoute(true);
+    }
+
+    private void clickFitButton(RequestOrder order) {
+        String fitId = order.getFitId();
+        if (fitId != null && !fitId.isEmpty()) {
+            Fit fit = createRequestController.getFitById(fitId);
+            new FitView(fit, createRequestController.getFitLoaderService()).open();
+        }
     }
 
     private void searchByText(String value) {
@@ -243,6 +306,14 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         submitButton.setText(getTranslation("button.submit"));
         suspendedRequestButton.setText(getTranslation("button.request_suspended"));
         continueRequestButton.setText(getTranslation("button.request_continue"));
+        createItem.setText(getTranslation("button.request_create"));
+        editItem.setText(getTranslation("button.request_edit"));
+        repeatItem.setText(getTranslation("button.request_repeat"));
+        removeItem.setText(getTranslation("button.request_remove"));
+        submitItem.setText(getTranslation("button.submit"));
+        suspendedItem.setText(getTranslation("button.request_suspended"));
+        continueItem.setText(getTranslation("button.request_continue"));
+        fitItem.setText(getTranslation("button.request_fit"));
     }
 
     private void updateStatusButton() {
@@ -264,6 +335,32 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             repeatRequestButton.setEnabled(false);
             removeRequestButton.setEnabled(false);
             editButton.setEnabled(false);
+        }
+    }
+
+    private void updateMenuItems(Optional<RequestOrder> orderOptional) {
+        Set<RequestOrder> selected = grid.getSelectedItems();
+        if (orderOptional.isPresent() && selected.contains(orderOptional.get())) {
+            var request = orderOptional.get();
+            var requestStatus = request.getRequestStatus();
+            createItem.setEnabled(true);
+            repeatItem.setEnabled(true);
+            removeItem.setEnabled(requestStatus == RequestOrderStatusEnum.CREATED);
+            suspendedItem.setEnabled(requestStatus == RequestOrderStatusEnum.SUBMITTED ||
+                requestStatus == RequestOrderStatusEnum.CREATED);
+            editItem.setEnabled(requestStatus == RequestOrderStatusEnum.CREATED);
+            submitItem.setEnabled(requestStatus == RequestOrderStatusEnum.SUBMITTED);
+            continueItem.setEnabled(requestStatus == RequestOrderStatusEnum.SUSPENDED);
+            fitItem.setEnabled(Objects.nonNull(request.getFitId()));
+        } else {
+            createItem.setVisible(true);
+            repeatItem.setEnabled(false);
+            removeItem.setEnabled(false);
+            suspendedItem.setEnabled(false);
+            editItem.setEnabled(false);
+            submitItem.setEnabled(false);
+            continueItem.setEnabled(false);
+            fitItem.setEnabled(false);
         }
     }
 

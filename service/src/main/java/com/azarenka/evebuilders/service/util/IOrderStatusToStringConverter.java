@@ -45,7 +45,7 @@ public interface IOrderStatusToStringConverter extends LocaleChangeObserver {
     default String convertOrderStatus(OrderStatusEnum statusEnum) {
         switch (statusEnum) {
             case NEW -> {
-                return getTranslation("label.created");
+                return getTranslation("label.new");
             }
             case IN_PROGRESS -> {
                 return getTranslation("label.in_progress");
