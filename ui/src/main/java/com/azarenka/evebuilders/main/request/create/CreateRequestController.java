@@ -81,4 +81,9 @@ public class CreateRequestController implements ICreateRequestController {
     public List<RequestOrder> getRequestOrders() {
         return requestOrderService.getAllRequestOrders();
     }
+
+    @Override
+    public Fit getFitById(String id) {
+        return fitLoaderService.getFitById(id);
+    }
 }

@@ -9,6 +9,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.theme.Theme;
 
 import java.util.Locale;
 import java.util.Optional;

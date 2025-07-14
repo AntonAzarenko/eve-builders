@@ -6,7 +6,10 @@ import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
@@ -21,7 +24,12 @@ public class FitView extends CommonDialogComponent {
 
     public FitView(Fit fit, IFitLoaderService fitLoaderService) {
         this.fitLoaderService = fitLoaderService;
-        super.setHeaderTitle(fit.getId());
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        Span created = new Span(String.format("Загружено: %s", fit.getCreatedBy()));
+        created.getStyle().set("font-size", "10px");
+        super.setHeaderTitle(String.format("Fit: %s", fit.getId()));
+        add(created);
         super.applyCommonProperties("fit-window", true);
         this.fit = fit;
         this.fitComponent = new FitComponent(fit);
