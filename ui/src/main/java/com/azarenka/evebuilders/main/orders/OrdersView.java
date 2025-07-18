@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.main.orders;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
+import com.azarenka.evebuilders.component.RadialMenuComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
@@ -17,6 +18,7 @@ import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -97,7 +99,11 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
             event -> searchByText(searchField.getValue()),
             event -> clearSearch()
         );
-        HorizontalLayout layout = new HorizontalLayout(takeAnOrderButton, searchField);
+        Button button = new Button();
+        Dialog dialog = new Dialog();
+        dialog.add(new RadialMenuComponent());
+        button.addClickListener(e -> dialog.open());
+        HorizontalLayout layout = new HorizontalLayout(takeAnOrderButton,button, searchField);
         layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         layout.setWidthFull();
         layout.getStyle().set("padding", "0px 5px 0px 5px");
@@ -143,14 +149,16 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         layout.setWidthFull();
         splitLayout.addToPrimary(layout);
         splitLayout.addToSecondary(metadataLayout);
-        splitLayout.setSplitterPosition(80);
+        splitLayout.setSplitterPosition(70);
         splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
         splitLayout.setSizeFull();
         return splitLayout;
     }
 
     private HorizontalLayout initFilterLayout() {
-        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
+        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event ->
+                applyFilter(), controller::saveFilter)
+            .withLoadedFilter(controller.getFilter())
             .withStatusFilter(OrderStatusEnum.values())
             .withTypeOrderFilter()
             .withCountFreeFilter()
@@ -231,9 +239,9 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
 
     private void addColumns() {
         addColumn(ShipOrderDto::getOrderNumber, "130px");
-        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
+        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "130px");
         addColumn(ShipOrderDto::getItemName, "150px");
-        addNumberColumn(ShipOrderDto::getCount, "110px");
+        addNumberColumn(ShipOrderDto::getCount, "100px");
         addNumberColumn(order -> order.getCount() - order.getInProgressCount(), "90px");
         addAmountColumn(order -> formatIsk(order.getPrice()), "160px");
     }

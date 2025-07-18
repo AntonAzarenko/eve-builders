@@ -15,8 +15,8 @@ public class OrderSpecification {
             if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
                 predicate = cb.and(predicate, root.get("orderStatus").in(filter.getStatuses()));
             }
-            if (filter.getTypesOrder() != null && !filter.getTypesOrder().isEmpty()) {
-                predicate = cb.and(predicate, root.get("category").in(filter.getTypesOrder()));
+            if (filter.getOrderTypes() != null && !filter.getOrderTypes().isEmpty()) {
+                predicate = cb.and(predicate, root.get("category").in(filter.getOrderTypes()));
             }
             if (filter.getMinFreeCount() != null && filter.getMinFreeCount() > 0) {
                 Expression<Integer> countExpr = root.get("count");
@@ -46,8 +46,8 @@ public class OrderSpecification {
             if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
                 predicate = cb.and(predicate, root.get("orderStatus").in(filter.getStatuses()));
             }
-            if (filter.getTypesOrder() != null && !filter.getTypesOrder().isEmpty()) {
-                predicate = cb.and(predicate, root.get("category").in(filter.getTypesOrder()));
+            if (filter.getOrderTypes() != null && !filter.getOrderTypes().isEmpty()) {
+                predicate = cb.and(predicate, root.get("category").in(filter.getOrderTypes()));
             }
             if (filter.getMinFreeCount() != null && filter.getMinFreeCount() > 0) {
                 Expression<Integer> countExpr = root.get("count");

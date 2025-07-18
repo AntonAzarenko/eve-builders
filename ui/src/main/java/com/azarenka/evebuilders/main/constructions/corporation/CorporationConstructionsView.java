@@ -74,7 +74,8 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private HorizontalLayout initFilterLayout() {
-        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
+        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter(),
+                filter -> controller.saveFilter(filter))
             .withStatusFilter(OrderStatusEnum.NEW, OrderStatusEnum.IN_PROGRESS, OrderStatusEnum.COMPLETED,
                 OrderStatusEnum.WAITING_FOR_APPROVAL, OrderStatusEnum.DISCARDED)
             .withTypeOrderFilter()
