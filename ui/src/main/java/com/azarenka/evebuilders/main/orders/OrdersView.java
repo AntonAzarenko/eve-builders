@@ -99,11 +99,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
             event -> searchByText(searchField.getValue()),
             event -> clearSearch()
         );
-        Button button = new Button();
-        Dialog dialog = new Dialog();
-        dialog.add(new RadialMenuComponent());
-        button.addClickListener(e -> dialog.open());
-        HorizontalLayout layout = new HorizontalLayout(takeAnOrderButton,button, searchField);
+        HorizontalLayout layout = new HorizontalLayout(takeAnOrderButton, searchField);
         layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         layout.setWidthFull();
         layout.getStyle().set("padding", "0px 5px 0px 5px");
@@ -157,12 +153,18 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
 
     private HorizontalLayout initFilterLayout() {
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event ->
-                applyFilter(), controller::saveFilter)
+                applyFilter(), controller::saveFilter, controller::getFilter)
             .withLoadedFilter(controller.getFilter())
-            .withStatusFilter(OrderStatusEnum.values())
+            .withStatusFilter(OrderStatusEnum.NEW,
+                OrderStatusEnum.IN_PROGRESS,
+                OrderStatusEnum.DISTRIBUTED,
+                OrderStatusEnum.COMPLETED,
+                OrderStatusEnum.EXPIRED,
+                OrderStatusEnum.STOPPED,
+                OrderStatusEnum.DISCARDED)
+            .withDistributedFilter()
             .withTypeOrderFilter()
             .withCountFreeFilter()
-            .withDistributedFilter()
             .build();
         getUI().ifPresent(ui -> ui.add(orderFilterPopupComponent));
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
@@ -172,6 +174,9 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         editOrderButton.setTooltipText(getTranslation("message.button.tooltip.edit_order"));
         orderInfoButton = new Button(VaadinIcon.INFO.create(), event -> openOrderInfo());
         orderInfoButton.setTooltipText(getTranslation("message.button.tooltip.order_info"));
+        orderInfoButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        editOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        filterButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         return new HorizontalLayout(filterButton, editOrderButton, orderInfoButton);
     }
 
