@@ -4,6 +4,13 @@
 
 # Release notes
 
+## Version 1.5.4
+Release Date: 2025-07-18
+
+## UI and UX Improvements
+- Reimplement filter logic
+- add functionality to save personal filter
+
 ## Version 1.5.3
 Release Date: 2025-07-14
 
