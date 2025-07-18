@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionC
 import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.ImageService;
@@ -35,6 +36,8 @@ public class CorporationConstructionController implements ICorporationConstructi
     private ITelegramIntegrationService telegramIntegrationService;
     @Autowired
     private ICorporationService corporationService;
+    @Autowired
+    private IOrderFilterService orderFilterService;
 
     @Override
     public List<DistributedOrder> getOrderList(OrderFilter filter) {
@@ -71,5 +74,15 @@ public class CorporationConstructionController implements ICorporationConstructi
     @Override
     public boolean sendOrderForApproval(DistributedOrder distributedOrder) {
        return distributedOrderService.sendOrderForApproval(distributedOrder, OrderStatusEnum.WAITING_FOR_APPROVAL);
+    }
+
+    @Override
+    public void saveFilter(OrderFilter filter) {
+        orderFilterService.saveFilter(filter);
+    }
+
+    @Override
+    public OrderFilter getFilter() {
+        return orderFilterService.getOrderFilter();
     }
 }

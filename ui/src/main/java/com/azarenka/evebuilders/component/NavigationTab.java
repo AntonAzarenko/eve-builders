@@ -37,8 +37,12 @@ public class NavigationTab extends Tab {
         layout.add(icon, labelSpan);
         if (badgeCount > 0) {
             Span badge = new Span(String.valueOf(badgeCount));
-            badge.getElement().getThemeList().add("badge primary small");
+            badge.getElement().getThemeList().add("badge pill small contrast");
+            //badge.getStyle().set("margin-inline-start", "var(--lumo-space-s)");
             badge.getStyle().set("margin-left", "-10px");
+            var counterLabel = String.format("%d new orders", badgeCount);
+            badge.getElement().setAttribute("aria-label", counterLabel);
+            badge.getElement().setAttribute("title", counterLabel);
             layout.add(badge);
         }
         add(layout);

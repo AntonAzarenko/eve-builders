@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.main.orders;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
+import com.azarenka.evebuilders.component.RadialMenuComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
@@ -17,6 +18,7 @@ import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -143,18 +145,26 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         layout.setWidthFull();
         splitLayout.addToPrimary(layout);
         splitLayout.addToSecondary(metadataLayout);
-        splitLayout.setSplitterPosition(80);
+        splitLayout.setSplitterPosition(70);
         splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
         splitLayout.setSizeFull();
         return splitLayout;
     }
 
     private HorizontalLayout initFilterLayout() {
-        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter())
-            .withStatusFilter(OrderStatusEnum.values())
+        orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event ->
+                applyFilter(), controller::saveFilter, controller::getFilter)
+            .withLoadedFilter(controller.getFilter())
+            .withStatusFilter(OrderStatusEnum.NEW,
+                OrderStatusEnum.IN_PROGRESS,
+                OrderStatusEnum.DISTRIBUTED,
+                OrderStatusEnum.COMPLETED,
+                OrderStatusEnum.EXPIRED,
+                OrderStatusEnum.STOPPED,
+                OrderStatusEnum.DISCARDED)
+            .withDistributedFilter()
             .withTypeOrderFilter()
             .withCountFreeFilter()
-            .withDistributedFilter()
             .build();
         getUI().ifPresent(ui -> ui.add(orderFilterPopupComponent));
         filterButton = orderFilterPopupComponent.getOpenFilterButton();
@@ -164,6 +174,9 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
         editOrderButton.setTooltipText(getTranslation("message.button.tooltip.edit_order"));
         orderInfoButton = new Button(VaadinIcon.INFO.create(), event -> openOrderInfo());
         orderInfoButton.setTooltipText(getTranslation("message.button.tooltip.order_info"));
+        orderInfoButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        editOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        filterButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         return new HorizontalLayout(filterButton, editOrderButton, orderInfoButton);
     }
 
@@ -231,9 +244,9 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
 
     private void addColumns() {
         addColumn(ShipOrderDto::getOrderNumber, "130px");
-        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
+        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "130px");
         addColumn(ShipOrderDto::getItemName, "150px");
-        addNumberColumn(ShipOrderDto::getCount, "110px");
+        addNumberColumn(ShipOrderDto::getCount, "100px");
         addNumberColumn(order -> order.getCount() - order.getInProgressCount(), "90px");
         addAmountColumn(order -> formatIsk(order.getPrice()), "160px");
     }

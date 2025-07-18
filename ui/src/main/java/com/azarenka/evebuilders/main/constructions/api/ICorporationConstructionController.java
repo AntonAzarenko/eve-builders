@@ -24,4 +24,7 @@ public interface ICorporationConstructionController {
 
     boolean sendOrderForApproval(DistributedOrder orderNumber);
 
+    void saveFilter(OrderFilter filter);
+
+    OrderFilter getFilter();
 }

@@ -11,6 +11,7 @@ import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
@@ -41,6 +42,8 @@ public class OrdersViewController implements IOrderViewController {
     private IDistributedOrderService distributedOrderService;
     @Autowired
     private IContractService contractService;
+    @Autowired
+    private IOrderFilterService orderFilterService;
 
     @Override
     public List<ShipOrderDto> getOrderList(OrderFilter filter) {
@@ -99,6 +102,16 @@ public class OrdersViewController implements IOrderViewController {
                 showCompleterReportsWindow(distributedOrder, contract);
             });
         }
+    }
+
+    @Override
+    public void saveFilter(OrderFilter filter) {
+        orderFilterService.saveFilter(filter);
+    }
+
+    @Override
+    public OrderFilter getFilter() {
+        return orderFilterService.getOrderFilter();
     }
 
     private void showCompleterOrderWindow(DistributedOrder order) {

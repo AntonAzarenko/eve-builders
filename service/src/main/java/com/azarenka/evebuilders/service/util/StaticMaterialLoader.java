@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.util;
 
-import com.azarenka.evebuilders.domain.ModuleSlot;
+import com.azarenka.evebuilders.domain.ModuleSlotEnum;
 import com.azarenka.evebuilders.domain.dto.file.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
@@ -104,7 +104,7 @@ public class StaticMaterialLoader {
         return byTypeId.values();
     }
 
-    public ModuleSlot resolveSlotByTypeName(String typeName) {
+    public ModuleSlotEnum resolveSlotByTypeName(String typeName) {
         return slotResolver.resolveSlotByTypeName(typeName);
     }
 
@@ -160,24 +160,24 @@ public class StaticMaterialLoader {
 
         private static final int SLOT_ATTRIBUTE_ID = 1374;
 
-        private static final Map<Integer, ModuleSlot> SLOT_FLAGS = Map.ofEntries(
-                Map.entry(11, ModuleSlot.HIGH_SLOT),
-                Map.entry(12, ModuleSlot.HIGH_SLOT),
-                Map.entry(13, ModuleSlot.HIGH_SLOT),
-                Map.entry(19, ModuleSlot.MIDDLE_SLOT),
-                Map.entry(20, ModuleSlot.MIDDLE_SLOT),
-                Map.entry(21, ModuleSlot.MIDDLE_SLOT),
-                Map.entry(27, ModuleSlot.LOW_SLOT),
-                Map.entry(28, ModuleSlot.LOW_SLOT),
-                Map.entry(92, ModuleSlot.RIG),
-                Map.entry(125, ModuleSlot.SUBSYSTEM)
+        private static final Map<Integer, ModuleSlotEnum> SLOT_FLAGS = Map.ofEntries(
+                Map.entry(11, ModuleSlotEnum.HIGH_SLOT),
+                Map.entry(12, ModuleSlotEnum.HIGH_SLOT),
+                Map.entry(13, ModuleSlotEnum.HIGH_SLOT),
+                Map.entry(19, ModuleSlotEnum.MIDDLE_SLOT),
+                Map.entry(20, ModuleSlotEnum.MIDDLE_SLOT),
+                Map.entry(21, ModuleSlotEnum.MIDDLE_SLOT),
+                Map.entry(27, ModuleSlotEnum.LOW_SLOT),
+                Map.entry(28, ModuleSlotEnum.LOW_SLOT),
+                Map.entry(92, ModuleSlotEnum.RIG),
+                Map.entry(125, ModuleSlotEnum.SUBSYSTEM)
         );
 
-        public ModuleSlot resolveSlotByTypeName(String typeName) {
-            if (typeName == null) return ModuleSlot.UNKNOWN;
+        public ModuleSlotEnum resolveSlotByTypeName(String typeName) {
+            if (typeName == null) return ModuleSlotEnum.UNKNOWN;
 
             TypeInfo type = byTypeName.get(typeName);
-            if (type == null) return ModuleSlot.UNKNOWN;
+            if (type == null) return ModuleSlotEnum.UNKNOWN;
 
             int typeID = type.getTypeID();
 
@@ -187,7 +187,7 @@ public class StaticMaterialLoader {
                 for (TypeDogmaAttribute attr : attrs) {
                     if (attr.attributeID == SLOT_ATTRIBUTE_ID && attr.valueFloat != null) {
                         int flag = attr.valueFloat.intValue();
-                        ModuleSlot slot = SLOT_FLAGS.get(flag);
+                        ModuleSlotEnum slot = SLOT_FLAGS.get(flag);
                         if (slot != null) return slot;
                     }
                 }
@@ -195,16 +195,16 @@ public class StaticMaterialLoader {
 
             // 2. Fallback по effectID
             List<Integer> effects = typeEffects.getOrDefault(typeID, List.of());
-            if (effects.contains(11)) return ModuleSlot.HIGH_SLOT;
-            if (effects.contains(13)) return ModuleSlot.MIDDLE_SLOT;
-            if (effects.contains(12)) return ModuleSlot.LOW_SLOT;
-            if (effects.contains(2663)) return ModuleSlot.RIG;
-            if (effects.contains(3772)) return ModuleSlot.SUBSYSTEM;
+            if (effects.contains(11)) return ModuleSlotEnum.HIGH_SLOT;
+            if (effects.contains(13)) return ModuleSlotEnum.MIDDLE_SLOT;
+            if (effects.contains(12)) return ModuleSlotEnum.LOW_SLOT;
+            if (effects.contains(2663)) return ModuleSlotEnum.RIG;
+            if (effects.contains(3772)) return ModuleSlotEnum.SUBSYSTEM;
 
             return switch (type.getCategoryID()) {
-                case 8 -> ModuleSlot.CHARGE;
-                case 18 -> ModuleSlot.DRONE_BAY;
-                default -> ModuleSlot.CARGO;
+                case 8 -> ModuleSlotEnum.CHARGE;
+                case 18 -> ModuleSlotEnum.DRONE_BAY;
+                default -> ModuleSlotEnum.CARGO;
             };
         }
     }

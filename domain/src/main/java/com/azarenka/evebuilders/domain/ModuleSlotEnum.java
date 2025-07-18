@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.domain;
 
-public enum ModuleSlot {
+public enum ModuleSlotEnum {
 
     CARGO(0),
     LOW_SLOT(16),
@@ -14,7 +14,7 @@ public enum ModuleSlot {
 
     private final Integer attributeId;
 
-    ModuleSlot(Integer attributeId) {
+    ModuleSlotEnum(Integer attributeId) {
         this.attributeId = attributeId;
     }
 
@@ -22,8 +22,8 @@ public enum ModuleSlot {
         return attributeId;
     }
 
-    public static ModuleSlot getSlot(Integer attributeId) {
-        for (ModuleSlot slot : ModuleSlot.values()) {
+    public static ModuleSlotEnum getSlot(Integer attributeId) {
+        for (ModuleSlotEnum slot : ModuleSlotEnum.values()) {
             if (slot.getAttributeId().equals(attributeId)) {
                 return slot;
             }

@@ -1,18 +1,33 @@
 package com.azarenka.evebuilders.domain.db;
 
-import com.azarenka.evebuilders.domain.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "order_filter", schema = "builders")
 public class OrderFilter {
 
+    @Id
+    @Column(name = "id", nullable = false, unique = true)
     private String userId;
+    @Column(name = "statuses")
+    @Enumerated(EnumType.STRING)
     private List<OrderStatusEnum> statuses;
-    private List<String> typeOrder;
+    @Column(name = "types")
+    private List<String> orderTypes;
+    @Column(name = "min_count")
     private Integer minFreeCount;
+    @Column(name = "is_distributed")
     private Boolean isDistributed;
 
     public OrderFilter() {
@@ -21,7 +36,7 @@ public class OrderFilter {
     public OrderFilter(OrderFilter orderFilter) {
         this.userId = orderFilter.getUserId();
         this.statuses = orderFilter.getStatuses();
-        this.typeOrder = orderFilter.getTypesOrder();
+        this.orderTypes = orderFilter.getOrderTypes();
         this.minFreeCount = orderFilter.getMinFreeCount();
         this.isDistributed = orderFilter.isDistributed();
     }
@@ -42,12 +57,12 @@ public class OrderFilter {
         this.statuses = statuses;
     }
 
-    public List<String> getTypesOrder() {
-        return typeOrder;
+    public List<String> getOrderTypes() {
+        return orderTypes;
     }
 
-    public void setShipType(List<String> shipType) {
-        typeOrder = shipType;
+    public void setOrderTypes(List<String> shipType) {
+        orderTypes = shipType;
     }
 
     public Integer getMinFreeCount() {
@@ -75,13 +90,13 @@ public class OrderFilter {
         OrderFilter that = (OrderFilter) o;
 
         return new EqualsBuilder()
-                .append(getTypesOrder(), that.typeOrder).append(minFreeCount, that.minFreeCount).append(isDistributed,
+                .append(getOrderTypes(), that.orderTypes).append(minFreeCount, that.minFreeCount).append(isDistributed,
                         that.isDistributed).append(statuses, that.statuses).isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(statuses).append(typeOrder).append(minFreeCount).append(isDistributed).toHashCode();
+                .append(statuses).append(orderTypes).append(minFreeCount).append(isDistributed).toHashCode();
     }
 }

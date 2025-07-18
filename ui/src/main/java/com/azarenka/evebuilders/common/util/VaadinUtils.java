@@ -7,6 +7,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
@@ -75,6 +77,15 @@ public class VaadinUtils {
         grid.setItems(dataProvider);
         applyGridProperties(grid, id);
         return grid;
+    }
+
+    public static void showNotification(String message) {
+        Notification notification = new Notification();
+        notification.addThemeVariants(NotificationVariant.LUMO_CONTRAST);
+        notification.setText(message);
+        notification.setPosition(Position.MIDDLE);
+        notification.setDuration(2000);
+        notification.open();
     }
 
     public static void copyToClipboard(Component component, String text, String message) {

@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.domain.db;
 
-import com.azarenka.evebuilders.domain.ModuleSlot;
+import com.azarenka.evebuilders.domain.ModuleSlotEnum;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,7 +13,7 @@ public class Module {
     @Column(name = "name")
     private String moduleName;
     @Column(name = "moduleType", nullable = false)
-    private ModuleSlot moduleSlot;
+    private ModuleSlotEnum moduleSlotEnum;
     @ManyToOne
     @JoinColumn(name = "fit_id", nullable = false)
     private Fit fit;
@@ -21,10 +21,10 @@ public class Module {
     public Module() {
     }
 
-    public Module(String id, String moduleName, ModuleSlot moduleSlot) {
+    public Module(String id, String moduleName, ModuleSlotEnum moduleSlotEnum) {
         this.id = id;
         this.moduleName = moduleName;
-        this.moduleSlot = moduleSlot;
+        this.moduleSlotEnum = moduleSlotEnum;
     }
 
     public String getId() {
@@ -35,12 +35,12 @@ public class Module {
         this.id = id;
     }
 
-    public ModuleSlot getModuleSlot() {
-        return moduleSlot;
+    public ModuleSlotEnum getModuleSlot() {
+        return moduleSlotEnum;
     }
 
-    public void setModuleSlot(ModuleSlot moduleSlot) {
-        this.moduleSlot = moduleSlot;
+    public void setModuleSlot(ModuleSlotEnum moduleSlotEnum) {
+        this.moduleSlotEnum = moduleSlotEnum;
     }
 
     public Fit getFit() {

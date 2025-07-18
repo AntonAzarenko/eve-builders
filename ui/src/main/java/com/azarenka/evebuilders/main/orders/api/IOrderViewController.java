@@ -33,4 +33,8 @@ public interface IOrderViewController {
 
     void completeOrder(DistributedOrder distributedOrder, boolean applyEntire,
                        List<ContractValidationReport> contractReports);
+
+    void saveFilter(OrderFilter filter);
+
+    OrderFilter getFilter();
 }
