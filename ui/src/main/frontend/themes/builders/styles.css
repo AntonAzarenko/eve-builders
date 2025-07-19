@@ -1,4 +1,5 @@
 @import 'components/custom-components.css';
+@import 'components/loading-indicator.css';
 
 vaadin-context-menu-overlay::part(overlay) {
     padding: 0;

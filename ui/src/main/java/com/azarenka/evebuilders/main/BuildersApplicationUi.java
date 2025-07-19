@@ -6,7 +6,9 @@ import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.Theme;
@@ -29,5 +31,10 @@ public class BuildersApplicationUi extends AppLayout {
         super.onAttach(attachEvent);
         Optional<User> byUsername = userService.getByUsername(SecurityUtils.getUserName());
         byUsername.ifPresent(value -> VaadinSession.getCurrent().setLocale(new Locale(value.getLanguage())));
+        UI current = UI.getCurrent();
+        if (current != null) {
+            LoadingIndicatorConfiguration loadingIndicatorConfiguration = current.getLoadingIndicatorConfiguration();
+            loadingIndicatorConfiguration.setApplyDefaultTheme(false);
+        }
     }
 }

@@ -131,3 +131,9 @@ logging:
     org.springframework.transaction.interceptor: INFO
     org.springframework.orm.jpa: INFO
     #org.springframework.security: DEBUG
+
+vaadin:
+  loading-indicator:
+    first-delay: 600
+    second-delay: -1
+    third-delay: -1
