@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.main.menu;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
-import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
+import com.azarenka.evebuilders.main.constructions.assembly.BuilderConstructionView;
 import com.azarenka.evebuilders.main.constructions.corporation.CorporationConstructionsView;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;

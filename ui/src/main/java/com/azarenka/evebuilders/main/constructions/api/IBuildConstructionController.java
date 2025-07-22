@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.constructions.api;
 
+import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
@@ -22,4 +23,8 @@ public interface IBuildConstructionController {
     List<InvType> getTypesByGroupIds(List<Integer> groupIds);
 
     ImageService getImageService();
+
+    List<ItemDto> getMinerals();
+
+    List<ItemDto> getMinerals(List<String> expectedMaterials);
 }

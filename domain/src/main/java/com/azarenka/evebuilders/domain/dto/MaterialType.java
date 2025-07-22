@@ -14,5 +14,6 @@ public enum MaterialType {
     FUEL,
     MATERIAL,
     MODULE,
+    INTERMEDIATE,
     UNKNOWN
 }

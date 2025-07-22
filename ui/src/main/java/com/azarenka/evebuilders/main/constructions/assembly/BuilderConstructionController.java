@@ -1,5 +1,6 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
+import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
@@ -8,6 +9,7 @@ import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionControl
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IProductionTreeService;
 import com.azarenka.evebuilders.service.impl.EveMaterialsDataService;
+import com.azarenka.evebuilders.service.impl.inventory.AssetService;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,8 @@ public class BuilderConstructionController implements IBuildConstructionControll
     private IProductionTreeService productionTreeService;
     @Autowired
     private IEveMaterialDataService dataService;
+    @Autowired
+    private AssetService assetService;
 
     @Override
     public Image getImageByInvTypeName(String name) {
@@ -54,5 +58,15 @@ public class BuilderConstructionController implements IBuildConstructionControll
 
     public ImageService getImageService() {
         return imageService;
+    }
+
+    @Override
+    public List<ItemDto> getMinerals() {
+        return assetService.getMinerals();
+    }
+
+    @Override
+    public List<ItemDto> getMinerals(List<String> expectedMaterials) {
+        return assetService.getMinerals(expectedMaterials);
     }
 }

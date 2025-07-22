@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UserTokenService implements IUserTokenService {
 
@@ -28,6 +30,11 @@ public class UserTokenService implements IUserTokenService {
     @Override
     public UserToken findByUserId(String uid) {
         return repository.findById(uid).orElse(null);
+    }
+
+    @Override
+    public Optional<UserToken> getByUserId(String uid) {
+        return repository.findById(uid);
     }
 
     @Override

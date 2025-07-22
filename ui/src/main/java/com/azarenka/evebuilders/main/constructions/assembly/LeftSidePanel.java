@@ -1,12 +1,14 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
+import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Image;
@@ -18,7 +20,9 @@ import com.vaadin.flow.component.shared.SelectionPreservationMode;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class LeftSidePanel extends View {
 
@@ -30,6 +34,7 @@ public class LeftSidePanel extends View {
     private Button listViewButton;
     private Button treeViewButton;
     private Button summorizeViewButton;
+    private Button showMineralsButton;
     private ViewMode stateViewMode;
     private HorizontalLayout leftSideToolbar;
 
@@ -52,6 +57,7 @@ public class LeftSidePanel extends View {
         leftSideToolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         leftSideToolbar.setWidthFull();
         stateViewMode = ViewMode.TREE;
+        showMineralsButton = new Button("Show Minerals");
         listViewButton = new Button(VaadinIcon.LIST.create());
         treeViewButton = new Button(VaadinIcon.ARCHIVES.create());
         summorizeViewButton = new Button(VaadinIcon.ABACUS.create());
@@ -61,7 +67,29 @@ public class LeftSidePanel extends View {
         listViewButton.addClickListener(event -> changeViewMode(ViewMode.LIST));
         treeViewButton.addClickListener(event -> changeViewMode(ViewMode.TREE));
         summorizeViewButton.addClickListener(event -> changeViewMode(ViewMode.SUMMARY));
-        leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton);
+        showMineralsButton.addClickListener(event -> {
+            Dialog dialog = new Dialog();
+            dialog.setWidth("500px");
+            dialog.setHeight("500px");
+            List<ItemDto> minerals = controller.getMinerals(assemblyState.getRootNodes().stream()    // List<ProductionNode> корней
+                .flatMap(LeftSidePanel::deepStream)  // разворачиваем всё дерево
+                .map(ProductionNode::getTypeName)
+                .toList());
+            minerals.forEach(dto -> {
+                dialog.add(new HorizontalLayout(new Span(String.valueOf(dto.getInvType().getTypeName())), new Span(
+                    String.valueOf(dto.getAsset().getQuantity()))), new Span(dto.getUserName()));
+            });
+            dialog.open();
+        });
+        leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton);
+    }
+
+    private static Stream<ProductionNode> deepStream(ProductionNode node) {
+        return Stream.concat(
+            Stream.of(node),
+            node.getChildren().stream()
+                .flatMap(LeftSidePanel::deepStream)
+        );
     }
 
     private void changeViewMode(ViewMode viewMode) {
@@ -100,7 +128,7 @@ public class LeftSidePanel extends View {
                 .setHeader("Компонент")
                 .setAutoWidth(true)
                 .setResizable(true);
-        grid.addColumn(value -> assemblyState.recalculateBaseValue(value, value.getQuantity()))
+        grid.addColumn(value -> value.getFinalQuantity())
                 .setHeader("Кол-во")
                 .setWidth("100px");
         grid.addThemeVariants(GridVariant.LUMO_COMPACT);
@@ -136,8 +164,11 @@ public class LeftSidePanel extends View {
     }
 
     private void collectAll(ProductionNode node, Map<String, Integer> map) {
+        if (assemblyState.getExcludedNodes().contains(node)) {
+            return;
+        }
         if (node.getChildren().isEmpty()) {
-            int adjusted = assemblyState.recalculateBaseValue(node, node.getQuantity());
+            int adjusted = node.getFinalQuantity();
             map.merge(node.getTypeName(), adjusted, Integer::sum);
         }
         node.getChildren().forEach(child -> collectAll(child, map));

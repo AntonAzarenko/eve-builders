@@ -12,7 +12,7 @@ import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
-import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
+import com.azarenka.evebuilders.main.constructions.assembly.BuilderConstructionView;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;

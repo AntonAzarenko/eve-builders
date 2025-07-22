@@ -75,4 +75,14 @@ public class UserService implements IUserService {
             userRepository.save(user);
         });
     }
+
+    @Override
+    public List<User> getAlters() {
+       return userRepository.findAltsByMainUsername(SecurityUtils.getUserName());
+    }
+
+    @Override
+    public User getByCharacterId(String id) {
+        return userRepository.findByCharacterId(id).orElse(null);
+    }
 }

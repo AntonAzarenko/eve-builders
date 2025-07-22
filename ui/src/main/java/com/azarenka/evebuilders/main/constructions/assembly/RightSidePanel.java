@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;

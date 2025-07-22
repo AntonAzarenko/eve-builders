@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.vaadin.flow.component.html.Paragraph;

@@ -11,12 +11,22 @@ public class ProductionNode {
     private MaterialType materialType;
     private int producedQuantity;
     private int excessQuantity;
+    private int finalQuantity;
+    private int efficiency;
     private List<ProductionNode> children = new ArrayList<>();
 
     private ProductionNode parent;
 
     private boolean stageHeader;
     private int stage;
+
+    public int getFinalQuantity() {
+        return finalQuantity;
+    }
+
+    public void setFinalQuantity(int finalQuantity) {
+        this.finalQuantity = finalQuantity;
+    }
 
     public boolean isStageHeader() {
         return stageHeader;
@@ -36,6 +46,14 @@ public class ProductionNode {
 
     public ProductionNode getParent() {
         return parent;
+    }
+
+    public int getEfficiency() {
+        return efficiency;
+    }
+
+    public void setEfficiency(int efficiency) {
+        this.efficiency = efficiency;
     }
 
     public void setParent(ProductionNode parent) {

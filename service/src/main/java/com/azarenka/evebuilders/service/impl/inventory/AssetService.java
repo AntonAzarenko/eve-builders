@@ -1,24 +1,32 @@
 package com.azarenka.evebuilders.service.impl.inventory;
 
-import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.db.Asset;
+import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.sqllite.EveIcon;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.repository.litesql.EveIconRepository;
 import com.azarenka.evebuilders.repository.litesql.InvTypesRepository;
 import com.azarenka.evebuilders.service.api.IUserService;
+import com.azarenka.evebuilders.service.api.IUserTokenService;
+import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
-import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.util.retry.Retry;
 
 @Service
 public class AssetService {
@@ -30,19 +38,40 @@ public class AssetService {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IUserTokenService tokenService;
+    @Autowired
+    private TokenRefreshService tokenRefreshService;
 
     private final InvTypesRepository itemRepository;
     private final EveIconRepository eveIconRepository;
 
     public AssetService(InvTypesRepository itemRepository, EveIconRepository eveIconRepository) {
         this.webClient = WebClient.builder()
-                .baseUrl("https://esi.evetech.net")
-                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
-                        .responseTimeout(Duration.ofMinutes(2))
-                ))
-                .build();
+            .baseUrl("https://esi.evetech.net")
+            .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+                .responseTimeout(Duration.ofMinutes(2))
+            ))
+            .build();
         this.itemRepository = itemRepository;
         this.eveIconRepository = eveIconRepository;
+    }
+
+    public List<ItemDto> getMinerals(List<String> expectedMaterials) {
+        List<Integer> mineralTypeIds = itemRepository.findTypeIdsByNames(expectedMaterials);
+        var mainCharacterId = userService.getCharacterId();
+        var mainUserToken = userService.getUserToken();
+        var alters = userService.getAlters();
+        List<ItemDto> allAssets = new ArrayList<>();
+        allAssets.addAll(findAssets(SecurityUtils.getUserName(), mainCharacterId, mainUserToken, mineralTypeIds));
+        alters.forEach(alter -> {
+            var updatedAccessToken = tokenRefreshService
+                .refreshTokenIfNeeded(alter.getUid())
+                .defaultIfEmpty(tokenService.getUserToken(alter.getUid()))
+                .block();
+            allAssets.addAll(findAssets(alter.getUsername(), alter.getCharacterId(), updatedAccessToken, mineralTypeIds));
+        });
+        return allAssets;
     }
 
     public List<ItemDto> getMinerals() {
@@ -54,17 +83,17 @@ public class AssetService {
         for (int page = 1; page <= totalPages; page++) {
             int finalPage = page;
             List<Asset> assetsPage = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(apiUrl)
-                            .queryParam("datasource", "tranquility")
-                            .queryParam("page", finalPage) // Укажите страницу, если необходимо
-                            .build(characterId))
-                    .header("Authorization", "Bearer " + userToken)
-                    .retrieve()
-                    .bodyToFlux(Asset.class)
-                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(10)))
-                    .collectList()
-                    .block();
+                .uri(uriBuilder -> uriBuilder
+                    .path(apiUrl)
+                    .queryParam("datasource", "tranquility")
+                    .queryParam("page", finalPage) // Укажите страницу, если необходимо
+                    .build(characterId))
+                .header("Authorization", "Bearer " + userToken)
+                .retrieve()
+                .bodyToFlux(Asset.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(10)))
+                .collectList()
+                .block();
             if (assetsPage != null) {
                 allAssets.addAll(assetsPage);
             }
@@ -73,64 +102,126 @@ public class AssetService {
         List<Integer> mineralTypeIds = itemRepository.findMineralTypeIds();
 
         List<Asset> temp = allAssets.stream()
-                .filter(asset -> mineralTypeIds.contains(asset.getTypeId()))
-                .toList();
+            .filter(asset -> mineralTypeIds.contains(asset.getTypeId()))
+            .toList();
         temp = groupAssetsByTypeIdAndSumQuantity(temp);
         List<InvType> invTypes = itemRepository.findByTypeIDIn(temp.stream().map(Asset::getTypeId).toList());
         List<EveIcon> eveIcons = eveIconRepository.findByIconIdIn(invTypes.stream().map(InvType::getIconID).toList());
         return temp.stream()
-                .map(asset -> {
-                    // Ищем InvType для текущего Asset
-                    InvType invType = invTypes.stream()
-                            .filter(type -> type.getTypeID().equals(asset.getTypeId()))
-                            .findFirst()
-                            .orElse(null);
+            .map(asset -> {
+                // Ищем InvType для текущего Asset
+                InvType invType = invTypes.stream()
+                    .filter(type -> type.getTypeID().equals(asset.getTypeId()))
+                    .findFirst()
+                    .orElse(null);
 
-                    // Ищем EveIcon для текущего InvType
-                    EveIcon eveIcon = (invType != null) ? eveIcons.stream()
-                            .filter(icon -> icon.getIconId().equals(invType.getIconID()))
-                            .findFirst()
-                            .orElse(null) : null;
+                // Ищем EveIcon для текущего InvType
+                EveIcon eveIcon = (invType != null) ? eveIcons.stream()
+                    .filter(icon -> icon.getIconId().equals(invType.getIconID()))
+                    .findFirst()
+                    .orElse(null) : null;
 
-                    // Создаем ItemDto
-                    ItemDto dto = new ItemDto();
-                    dto.setAsset(asset);
-                    dto.setInvType(invType);
-                    dto.setEveIcon(eveIcon);
+                // Создаем ItemDto
+                ItemDto dto = new ItemDto();
+                dto.setAsset(asset);
+                dto.setInvType(invType);
+                dto.setEveIcon(eveIcon);
 
-                    return dto;
-                })
-                .toList();
+                return dto;
+            })
+            .toList();
     }
 
     private int getTotalPages(String characterId, String accessToken) {
         WebClient.ResponseSpec responseSpec = webClient.get()
-                .uri("https://esi.evetech.net/latest/characters/{characterId}/assets/?datasource=tranquility&page=1",
-                        characterId)
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve();
+            .uri("https://esi.evetech.net/latest/characters/{characterId}/assets/?datasource=tranquility&page=1",
+                characterId)
+            .header("Authorization", "Bearer " + accessToken)
+            .retrieve();
 
         return responseSpec.toBodilessEntity()
-                .block()
-                .getHeaders()
-                .getFirst("X-Pages") != null
-                ? Integer.parseInt(responseSpec.toBodilessEntity().block().getHeaders().getFirst("X-Pages"))
-                : 1;
+            .block()
+            .getHeaders()
+            .getFirst("X-Pages") != null
+            ? Integer.parseInt(responseSpec.toBodilessEntity().block().getHeaders().getFirst("X-Pages"))
+            : 1;
     }
 
     public List<Asset> groupAssetsByTypeIdAndSumQuantity(List<Asset> assets) {
         return assets.stream()
-                .collect(Collectors.groupingBy(
-                        Asset::getTypeId,
-                        Collectors.summingInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
-                ))
-                .entrySet().stream()
-                .map(entry -> {
-                    Asset asset = new Asset();
-                    asset.setTypeId(entry.getKey());
-                    asset.setQuantity(entry.getValue());
-                    return asset;
-                })
-                .toList();
+            .collect(Collectors.groupingBy(
+                Asset::getTypeId,
+                Collectors.summingInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
+            ))
+            .entrySet().stream()
+            .map(entry -> {
+                Asset asset = new Asset();
+                asset.setTypeId(entry.getKey());
+                asset.setQuantity(entry.getValue());
+                return asset;
+            })
+            .toList();
+    }
+
+    private List<ItemDto> findAssets(String userName, String characterId, String userToken,
+                                     List<Integer> mineralTypeIds) {
+        int totalPages = getTotalPages(characterId, userToken);
+        List<Asset> allAssets = new ArrayList<>();
+        for (int page = 1; page <= totalPages; page++) {
+            int finalPage = page;
+            List<Asset> assetsPage = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path(apiUrl)
+                    .queryParam("datasource", "tranquility")
+                    .queryParam("page", finalPage) // Укажите страницу, если необходимо
+                    .build(characterId))
+                .header("Authorization", "Bearer " + userToken)
+                .retrieve()
+                .bodyToFlux(Asset.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(10)))
+                .collectList()
+                .block();
+            if (assetsPage != null) {
+                allAssets.addAll(assetsPage);
+            }
+        }
+
+        List<Asset> temp = allAssets.stream()
+            .filter(asset -> mineralTypeIds.contains(asset.getTypeId()))
+            .toList();
+        temp = groupAssetsByTypeIdAndSumQuantity(temp);
+        List<InvType> invTypes = itemRepository.findByTypeIDIn(temp.stream().map(Asset::getTypeId).toList());
+        List<EveIcon> eveIcons = eveIconRepository.findByIconIdIn(invTypes.stream().map(InvType::getIconID).toList());
+        return temp.stream()
+            .map(asset -> {
+                // Ищем InvType для текущего Asset
+                InvType invType = invTypes.stream()
+                    .filter(type -> type.getTypeID().equals(asset.getTypeId()))
+                    .findFirst()
+                    .orElse(null);
+
+                // Ищем EveIcon для текущего InvType
+                EveIcon eveIcon = (invType != null) ? eveIcons.stream()
+                    .filter(icon -> icon.getIconId().equals(invType.getIconID()))
+                    .findFirst()
+                    .orElse(null) : null;
+
+                // Создаем ItemDto
+                ItemDto dto = new ItemDto();
+                dto.setAsset(asset);
+                dto.setInvType(invType);
+                dto.setEveIcon(eveIcon);
+                dto.setUserName(userName);
+                return dto;
+            })
+            .toList();
+    }
+
+    public Mono<Void> refreshAllAltTokens(List<User> alters) {
+        return alters.stream()
+            .map(User::getUid)
+            .map(tokenRefreshService::refreshTokenIfNeeded)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Flux::merge))
+            .then();
     }
 }

@@ -2,6 +2,8 @@ package com.azarenka.evebuilders.domain.sqllite;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -11,36 +13,47 @@ public class InvType {
 
     @Id
     @Column(name = "typeID", updatable = false, insertable = false)
+    @JsonProperty("typeID")
     private Integer typeID;
 
+    @JsonProperty("typeName")
     @Column(name = "typeName", updatable = false, insertable = false)
     private String typeName;
 
     @Column(name = "groupID", updatable = false, insertable = false)
+    @JsonProperty("groupID")
     private Integer groupId;
 
     @Column(name = "description", updatable = false, insertable = false)
+    @JsonProperty("description")
     private String description;
 
     @Column(name = "mass", updatable = false, insertable = false)
+    @JsonProperty("mass")
     private Double mass;
 
     @Column(name = "volume", updatable = false, insertable = false)
+    @JsonProperty("volume")
     private Double volume;
 
     @Column(name = "capacity", updatable = false, insertable = false)
+    @JsonProperty("capacity")
     private Double capacity;
 
     @Column(name = "portionSize", updatable = false, insertable = false)
+    @JsonProperty("portionSize")
     private Integer portionSize;
 
+    @JsonProperty("raceID")
     @Column(name = "raceID", updatable = false, insertable = false)
     private String raceID;
 
     @Column(name = "basePrice", updatable = false, insertable = false)
+    @JsonProperty("basePrice")
     private String basePrice;
 
     @Column(name = "marketGroupID", updatable = false, insertable = false)
+    @JsonProperty("marketGroupID")
     private Integer marketGroupId;
 
     @Column(name = "iconID", updatable = false, insertable = false)

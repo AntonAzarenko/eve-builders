@@ -1,35 +1,36 @@
 package com.azarenka.evebuilders.component;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class PopupMenuComponent extends Div {
+import java.util.List;
+
+public class PopupMenuComponent extends VerticalLayout {
 
     private final Button openMenuButton;
     private Button applyButton;
-
-    private Icon closeIcon;
-    private String moduleName;
-    private final IntegerField integerField;
-    private String tooltip;
     private final ComponentEventListener<ClickEvent<Button>> listener;
+    private List<Component> contentComponents;
+    private Icon closeIcon;
+    private String tooltip;
 
-    public PopupMenuComponent(String moduleName, IntegerField integerField, VaadinIcon openIcon, String tooltip,
-                              ComponentEventListener<ClickEvent<Button>> clickListener) {
+    public PopupMenuComponent(String tooltip, ComponentEventListener<ClickEvent<Button>> clickListener,
+                              List<Component> contentComponents,
+                              VaadinIcon openIcon) {
         this.listener = clickListener;
         this.tooltip = tooltip;
+        this.contentComponents = contentComponents;
+        setWidth("400px");
         openMenuButton = new Button(openIcon.create());
-        this.moduleName = moduleName;
-        this.integerField = integerField;
         this.addClassName("material-popup");
         super.setVisible(false);
         initContent();
@@ -60,14 +61,23 @@ public class PopupMenuComponent extends Div {
                     }
                 });
                 openMenuButton.getElement().executeJs("""
-                            const btn = this;
-                            const popup = $0;
-                            const rect = btn.getBoundingClientRect();
-
-                            popup.style.position = 'absolute';
-                            popup.style.top = `${rect.bottom + window.scrollY}px`;
-                            popup.style.left = `${rect.left + window.scrollX}px`;
-                        """, super.getElement());
+                    const btn = this;
+                    const popup = $0;
+                    const rect = btn.getBoundingClientRect();
+                    
+                    popup.style.position = 'absolute';
+                    popup.style.top = `${rect.bottom + window.scrollY}px`;
+                    popup.style.left = `${rect.left + window.scrollX}px`;
+                    
+                    const outsideClickListener = (event) => {
+                        if (!popup.contains(event.target) && !btn.contains(event.target)) {
+                            popup.$server.closePopupFromClient();
+                            document.removeEventListener('click', outsideClickListener);
+                        }
+                    };
+                    
+                    document.addEventListener('click', outsideClickListener);
+                    """, super.getElement());
             } else {
                 super.setVisible(false);
                 super.getStyle().remove("top");
@@ -84,15 +94,21 @@ public class PopupMenuComponent extends Div {
     }
 
     private void initComponent() {
-        integerField.addKeyPressListener(Key.ENTER, keyPressEvent -> {
-            super.setVisible(false);
-        });
-        HorizontalLayout inputRow = new HorizontalLayout(integerField, applyButton);
-        inputRow.setAlignItems(FlexComponent.Alignment.END);
-        super.add(inputRow);
+        HorizontalLayout contentLayout = new HorizontalLayout();
+        contentLayout.setAlignItems(FlexComponent.Alignment.END);
+        contentComponents.forEach(contentLayout::add);
+        contentLayout.add(applyButton);
+        super.add(contentLayout);
     }
 
     public Button getOpenMenuButton() {
         return openMenuButton;
+    }
+
+    @ClientCallable
+    public void closePopupFromClient() {
+        setVisible(false);
+        getStyle().remove("top");
+        getStyle().remove("left");
     }
 }

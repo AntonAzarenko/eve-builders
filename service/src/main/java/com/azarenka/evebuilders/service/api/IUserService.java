@@ -25,4 +25,8 @@ public interface IUserService {
     List<UserDto> getUsersDto();
 
     void updateUserRoles(UserDto user, Set<Role> selectedRoles);
+
+    List<User> getAlters();
+
+    User getByCharacterId(String id);
 }
