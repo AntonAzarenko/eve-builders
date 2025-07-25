@@ -3,7 +3,15 @@ package com.azarenka.evebuilders.main.constructions.assembly;
 import com.azarenka.evebuilders.domain.dto.MaterialType;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class AssemblyState {
@@ -23,7 +31,7 @@ public class AssemblyState {
 
     public void addModule(ProductionNode root, int count) {
         renderedModules.add(root.getTypeName());
-       // efficiencyMap.put(root, 0d);
+        // efficiencyMap.put(root, 0d);
         countMap.put(root, count);
         rootNodes.add(root);
     }
@@ -83,24 +91,19 @@ public class AssemblyState {
     public int recalculateBaseValue(ProductionNode node, int value) {
         ProductionNode root = findRoot(node);
         int q = value;
-        // 1) ME BPO (лежит на parent'е узла – оставляем как у тебя)
         Double bp = efficiencyMap.get(node.getParent());
         if (bp != null && bp > 0) {
             q = ceilApply(q, bp);
         }
-        // 2) Риги
         if (rigsPercentage > 0) {
             q = ceilApply(q, rigsPercentage);
         }
-        // 3) Структура (Sotiyo base)
         if (baseSotiyoBenefitPercentage > 0) {
             q = ceilApply(q, baseSotiyoBenefitPercentage);
         }
-        // 4) Tatara (реакции/композиты)
         if (node.getMaterialType() != null && compositeTypes.contains(node.getMaterialType())) {
             q = ceilApply(q, tataraBenefitPercentage);
         }
-        // 5) rootCount — ТОЛЬКО в корне
         if (node == root) {
             int rootCount = countMap.getOrDefault(root, 1);
             q *= rootCount;
@@ -113,7 +116,8 @@ public class AssemblyState {
         recalculateTreeQuantities(node, parentAdjustedQuantity, false);
     }
 
-    private void recalculateTreeQuantities(ProductionNode node, int parentAdjustedQuantity, boolean alreadyDiscountedByParent) {
+    private void recalculateTreeQuantities(ProductionNode node, int parentAdjustedQuantity,
+                                           boolean alreadyDiscountedByParent) {
         ProductionNode root = findRoot(node);
 
         int adjustedQuantity;
@@ -125,19 +129,21 @@ public class AssemblyState {
                 : recalculateBaseValue(node, parentAdjustedQuantity);
         }
         node.setFinalQuantity(adjustedQuantity);
-        if (node.getChildren().isEmpty()) return;
-        int outPerBatch   = Math.max(1, node.getOutputQuantity());
+        if (node.getChildren().isEmpty()) {
+            return;
+        }
+        int outPerBatch = Math.max(1, node.getOutputQuantity());
         int parentBatches = (int) Math.ceil(adjustedQuantity / (double) outPerBatch);
         for (ProductionNode child : node.getChildren()) {
             String childType = child.getTypeName();
             int basePerBatch = node.getRecipeQuantityBase(childType);
-            int effPerBatch  = effPerBatchForEdge(node, childType);
+            int effPerBatch = effPerBatchForEdge(node, childType);
             int childRequired;
             if (effPerBatch == basePerBatch) {
-                int rawTotal      = parentBatches * basePerBatch;       // 1*22 или 2*22 и т.д.
+                int rawTotal = parentBatches * basePerBatch;       // 1*22 или 2*22 и т.д.
                 int discountedTot = applyAllBonusesToTotal(node, rawTotal); // -> 21 или 42
                 childRequired = discountedTot;
-                int effByTotal = (int)Math.ceil(discountedTot / (double) parentBatches);
+                int effByTotal = (int) Math.ceil(discountedTot / (double) parentBatches);
                 node.putRecipePerBatchEff(childType, effByTotal);
             } else {
                 childRequired = parentBatches * effPerBatch;
@@ -218,11 +224,14 @@ public class AssemblyState {
                             .collect(Collectors.groupingBy(ProductionNode::getTypeName));
                         for (Map.Entry<String, List<ProductionNode>> pg : groupedParents.entrySet()) {
                             List<ProductionNode> group = pg.getValue();
-                            if (group.isEmpty()) continue;
+                            if (group.isEmpty()) {
+                                continue;
+                            }
                             ProductionNode sampleParent = group.get(0);
                             int outputQty = Math.max(1, sampleParent.getOutputQuantity());
                             int basePerBatch = sampleParent.getRecipeQuantityBase(typeName);
-                            int effPerBatch  = sampleParent.getEffectivePerBatch(typeName);                            int totalDemand = group.stream()
+                            int effPerBatch = sampleParent.getEffectivePerBatch(typeName);
+                            int totalDemand = group.stream()
                                 .mapToInt(ProductionNode::getFinalQuantity)
                                 .sum();
                             int batches = (int) Math.ceil(totalDemand / (double) outputQty);
@@ -276,7 +285,9 @@ public class AssemblyState {
     }
 
     private static int ceilApply(int value, double pct) {
-        if (pct <= 0) return value;
+        if (pct <= 0) {
+            return value;
+        }
         return (int) Math.ceil(value * (1.0 - pct / 100.0));
     }
 

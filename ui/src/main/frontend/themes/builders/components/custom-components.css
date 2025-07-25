@@ -268,3 +268,44 @@ vaadin-context-menu-item:focus {
     outline: none;
     box-shadow: none;
 }
+
+.material-popup {
+    background: var(--lumo-base-color);
+    box-shadow: var(--lumo-box-shadow-s);
+    border-radius: var(--lumo-border-radius-m);
+    padding: var(--lumo-space-m);   /* внешний отступ от рамки */
+    z-index: 1000;
+    position: absolute;
+}
+
+.material-popup .popup-close-button {
+    position: absolute;
+    right: var(--lumo-space-s);
+    top: var(--lumo-space-s);
+    cursor: pointer;
+}
+
+.material-popup__frame {
+    border: 1px solid var(--lumo-contrast-20pct);
+    border-radius: var(--lumo-border-radius-m);
+    padding: var(--lumo-space-m);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.material-popup__header {
+    margin-bottom: var(--lumo-space-s);
+}
+
+.material-popup__title {
+    font-weight: 600;
+    font-size: var(--lumo-font-size-m);
+}
+
+.material-popup__divider {
+    margin: var(--lumo-space-m) 0 var(--lumo-space-s);
+}
+
+.material-popup__footer {
+    margin-top: 0;
+}

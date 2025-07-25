@@ -15,9 +15,15 @@ public class PopupMenuBuilder {
     private String tooltip = "";
     private VaadinIcon icon = VaadinIcon.ELLIPSIS_DOTS_V;
     private ComponentEventListener<ClickEvent<Button>> listener = event -> {};
+    private String title = "";
 
     public PopupMenuBuilder withComponent(Component component) {
         components.add(component);
+        return this;
+    }
+
+    public PopupMenuBuilder withTitle(String title) {
+        this.title = title;
         return this;
     }
 
@@ -37,6 +43,6 @@ public class PopupMenuBuilder {
     }
 
     public PopupMenuComponent build() {
-        return new PopupMenuComponent(tooltip, listener, components, icon);
+        return new PopupMenuComponent(title, tooltip, listener, components, icon);
     }
 }

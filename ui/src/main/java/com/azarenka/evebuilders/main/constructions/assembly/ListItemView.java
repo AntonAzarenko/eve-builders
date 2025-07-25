@@ -42,8 +42,8 @@ public class ListItemView extends View implements INumberFormater {
     }
 
     public void refresh() {
-        this.removeAll(); // Удалить всё старое содержимое
-        this.add(initContent()); // Добавить новое
+        this.removeAll();
+        this.add(initContent());
     }
 
     private VerticalLayout initContent() {
@@ -73,40 +73,42 @@ public class ListItemView extends View implements INumberFormater {
         final int[] stage = {grouped.size()};
         grouped.forEach((key, materials) -> {
             stage[0] = stage[0] - 1;
-            var materialLayout = VaadinUtils.initCommonVerticalLayout();
-            materialLayout.getStyle().set("border-top", "1px solid #e0e0e0");
-            materials.forEach((materialName, materialCount) -> {
-                var matRow = createMatRowLayout();
-                var componentLayout = new HorizontalLayout(createIcon(materialName), new Span(materialName),
-                    new Span("x " + formatNumber(materialCount)));
-                componentLayout.setWidthFull();
-                componentLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-                matRow.add(componentLayout, initRowButtonsLayout(rootNode, materialName, key, materialCount));
-                materialLayout.add(matRow);
-            });
-            var stageLabel = new Span(String.format(STAGE_HEADER_FORMATTER, "Stage", stage[0]));
-            var stageDetails = new Details(stageLabel, materialLayout);
-            stageDetails.setOpened(true);
-            stageDetails.setSummary(stageLabel);
-            stageDetails.addClassName("stage-details");
-            stageDetails.setWidthFull();
-            var copyStageMatButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.COPY);
-            var infoStageButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.INFO_CIRCLE);
-            copyStageMatButton.addClickListener(e -> {
-                StringBuilder sb = new StringBuilder();
-                materials.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
-                VaadinUtils.copyToClipboard(this, sb.toString(),
-                    String.format("Скопировано айтемов %s", materials.entrySet().stream().count()));
-            });
-            int s = stage[0];
-            infoStageButton.addClickListener(e -> {
-                new StageInfoWindow(collectProductionNodesByStage(rootNode, key), assemblyState, s,
-                    controller).open();
-            });
-            var innerDetailsLayout = createInnerDetailsLayout();
-            innerDetailsLayout.add(stageDetails, infoStageButton, copyStageMatButton);
-            innerDetailsLayout.addClassName("btn-col");
-            stagesLayout.add(innerDetailsLayout);
+            if (stage[0] != grouped.size()-1) {
+                var materialLayout = VaadinUtils.initCommonVerticalLayout();
+                materialLayout.getStyle().set("border-top", "1px solid #e0e0e0");
+                materials.forEach((materialName, materialCount) -> {
+                    var matRow = createMatRowLayout();
+                    var componentLayout = new HorizontalLayout(createIcon(materialName), new Span(materialName),
+                        new Span("x " + formatNumber(materialCount)));
+                    componentLayout.setWidthFull();
+                    componentLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
+                    matRow.add(componentLayout, initRowButtonsLayout(rootNode, materialName, key, materialCount));
+                    materialLayout.add(matRow);
+                });
+                var stageLabel = new Span(String.format(STAGE_HEADER_FORMATTER, "Stage", stage[0]));
+                var stageDetails = new Details(stageLabel, materialLayout);
+                stageDetails.setOpened(true);
+                stageDetails.setSummary(stageLabel);
+                stageDetails.addClassName("stage-details");
+                stageDetails.setWidthFull();
+                var copyStageMatButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.COPY);
+                var infoStageButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.INFO_CIRCLE);
+                copyStageMatButton.addClickListener(e -> {
+                    StringBuilder sb = new StringBuilder();
+                    materials.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
+                    VaadinUtils.copyToClipboard(this, sb.toString(),
+                        String.format("Скопировано айтемов %s", materials.entrySet().stream().count()));
+                });
+                int s = stage[0];
+                infoStageButton.addClickListener(e -> {
+                    new StageInfoWindow(collectProductionNodesByStage(rootNode, key), assemblyState, s,
+                        controller).open();
+                });
+                var innerDetailsLayout = createInnerDetailsLayout();
+                innerDetailsLayout.add(stageDetails, infoStageButton, copyStageMatButton);
+                innerDetailsLayout.addClassName("btn-col");
+                stagesLayout.add(innerDetailsLayout);
+            }
         });
         return stagesLayout;
     }
@@ -172,6 +174,7 @@ public class ListItemView extends View implements INumberFormater {
         var tooltip = "Установите улучшение чертежа для правильного отображения количества материалов";
         var efficiencyField = initEfficiencyField(productionNodes);
         return new PopupMenuBuilder().withComponent(efficiencyField)
+            .withTitle("Настройка узла")
             .withComponent(initExcludeCheckbox(productionNodes))
             .withTooltip(tooltip)
             .withIcon(VaadinIcon.COG_O)
