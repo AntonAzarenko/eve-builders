@@ -41,7 +41,9 @@ public class ProductionTreeService implements IProductionTreeService {
     }
 
     public ProductionNode buildProductionTree(String typeName, int requiredQty) {
-        TypeInfo typeInfo = loader.getByTypeName(typeName);
+        return buildProductionTreeRecursive(typeName, requiredQty, 0);
+
+        /*TypeInfo typeInfo = loader.getByTypeName(typeName);
         ProductionNode root = new ProductionNode();
         root.setTypeName(typeName);
         root.setQuantity(requiredQty);
@@ -64,6 +66,38 @@ public class ProductionTreeService implements IProductionTreeService {
                 root.getChildren().add(child);
             }
         }
+        return root;*/
+    }
+
+    private ProductionNode buildProductionTreeRecursive(String typeName, int requiredQty, int currentStage) {
+        TypeInfo typeInfo = loader.getByTypeName(typeName);
+        ProductionNode root = new ProductionNode();
+        root.setTypeName(typeName);
+        root.setQuantity(requiredQty);
+        root.setStage(currentStage);
+        if (typeInfo == null) {
+            root.setProducedQuantity(requiredQty);
+            root.setExcessQuantity(0);
+            return root;
+        }
+        int outputPerBatch = typeInfo.getOutputQuantity() > 0 ? typeInfo.getOutputQuantity() : 1;
+        root.setOutputQuantity(outputPerBatch);
+        int batches = (int) Math.ceil((double) requiredQty / outputPerBatch);
+        int produced = batches * outputPerBatch;
+        root.setProducedQuantity(produced);
+        root.setExcessQuantity(produced - requiredQty);
+        root.setMaterialType(resolveMaterialType(typeInfo.getGroupName(), typeInfo.getCategoryID()));
+        for (MaterialEntry material : typeInfo.getMaterials()) {
+            int qtyPerBatch = material.getQuantity(); // <<<< то, что нам нужно сохранить как "чистый рецепт"
+            root.putRecipePerBatch(material.getMaterialTypeName(), qtyPerBatch);
+            ProductionNode child = buildProductionTreeRecursive(
+                material.getMaterialTypeName(),
+                material.getQuantity() * batches,
+                currentStage + 1
+            );
+            child.setParent(root);
+            root.getChildren().add(child);
+        }
         return root;
     }
 
@@ -71,25 +105,25 @@ public class ProductionTreeService implements IProductionTreeService {
         return switch (categoryId) {
             case 2 -> MaterialType.MINERAL;                     // minerals
             case 4 -> switch (groupName) {
-                case "Money"                        -> MaterialType.UNKNOWN;
-                case "Mineral"                      -> MaterialType.MINERAL;
-                case "Drug"                         -> MaterialType.UNKNOWN;
-                case "Gas Isotopes"                 -> MaterialType.GAS;
-                case "Ice Product"                  -> MaterialType.ICE_PRODUCT;
-                case "Moon Materials"               -> MaterialType.MOON_MATERIAL;
-                case "Intermediate Materials"       -> MaterialType.INTERMEDIATE;
-                case "Composite"                    -> MaterialType.COMPOSITE_REACTION;
-                case "Biochemical Material"         -> MaterialType.UNKNOWN;
-                case "Salvaged Materials"           -> MaterialType.UNKNOWN;
-                case "Rogue Drone Components"       -> MaterialType.COMPONENT;
-                case "Ancient Salvage"              -> MaterialType.UNKNOWN;
-                case "Wormhole Minerals"            -> MaterialType.UNKNOWN;
-                case "Hybrid Polymers"              -> MaterialType.COMPOSITE_REACTION;
-                case "Fuel Block"                   -> MaterialType.FUEL;
-                case "Named Components"             -> MaterialType.COMPONENT;
-                case "Abyssal Materials"            -> MaterialType.COMPONENT;
-                case "Molecular-Forged Materials"   -> MaterialType.UNKNOWN;
-                default                             -> MaterialType.UNKNOWN;
+                case "Money" -> MaterialType.UNKNOWN;
+                case "Mineral" -> MaterialType.MINERAL;
+                case "Drug" -> MaterialType.UNKNOWN;
+                case "Gas Isotopes" -> MaterialType.GAS;
+                case "Ice Product" -> MaterialType.ICE_PRODUCT;
+                case "Moon Materials" -> MaterialType.MOON_MATERIAL;
+                case "Intermediate Materials" -> MaterialType.INTERMEDIATE;
+                case "Composite" -> MaterialType.COMPOSITE_REACTION;
+                case "Biochemical Material" -> MaterialType.UNKNOWN;
+                case "Salvaged Materials" -> MaterialType.UNKNOWN;
+                case "Rogue Drone Components" -> MaterialType.COMPONENT;
+                case "Ancient Salvage" -> MaterialType.UNKNOWN;
+                case "Wormhole Minerals" -> MaterialType.UNKNOWN;
+                case "Hybrid Polymers" -> MaterialType.COMPOSITE_REACTION;
+                case "Fuel Block" -> MaterialType.FUEL;
+                case "Named Components" -> MaterialType.COMPONENT;
+                case "Abyssal Materials" -> MaterialType.COMPONENT;
+                case "Molecular-Forged Materials" -> MaterialType.UNKNOWN;
+                default -> MaterialType.UNKNOWN;
             };
             case 6 -> MaterialType.SHIP;                       // all ships
             case 7 -> MaterialType.MODULE;                     // all modules

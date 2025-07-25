@@ -30,13 +30,13 @@ public class BuilderConstructionView extends View {
         this.fit = (Fit) VaadinSession.getCurrent().getAttribute("currentFit");
         setHeight("95%");
         initView();
-        new AttentionWindow().open();
     }
 
     private void initView() {
         var leftSidePanel = new LeftSidePanel(assemblyState, controller);
         var middleSidePanel = new MiddleSidePanel(controller, assemblyState, leftSidePanel);
         var rightSidePanel = new RightSidePanel(controller, middleSidePanel, order, fit);
+        rightSidePanel.setWidth("30%");
         var leftDivider = new Div();
         var rightDivider = new Div();
         leftDivider.addClassName("vertical-divider");

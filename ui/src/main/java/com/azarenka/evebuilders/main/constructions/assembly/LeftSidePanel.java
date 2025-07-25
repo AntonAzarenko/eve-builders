@@ -20,8 +20,12 @@ import com.vaadin.flow.component.shared.SelectionPreservationMode;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LeftSidePanel extends View {
@@ -71,10 +75,11 @@ public class LeftSidePanel extends View {
             Dialog dialog = new Dialog();
             dialog.setWidth("500px");
             dialog.setHeight("500px");
-            List<ItemDto> minerals = controller.getMinerals(assemblyState.getRootNodes().stream()    // List<ProductionNode> корней
-                .flatMap(LeftSidePanel::deepStream)  // разворачиваем всё дерево
-                .map(ProductionNode::getTypeName)
-                .toList());
+            List<ItemDto> minerals =
+                controller.getMinerals(assemblyState.getRootNodes().stream()    // List<ProductionNode> корней
+                    .flatMap(LeftSidePanel::deepStream)  // разворачиваем всё дерево
+                    .map(ProductionNode::getTypeName)
+                    .toList());
             minerals.forEach(dto -> {
                 dialog.add(new HorizontalLayout(new Span(String.valueOf(dto.getInvType().getTypeName())), new Span(
                     String.valueOf(dto.getAsset().getQuantity()))), new Span(dto.getUserName()));
@@ -120,17 +125,17 @@ public class LeftSidePanel extends View {
         var grid = new TreeGrid<ProductionNode>();
         grid.setWidthFull();
         grid.addComponentHierarchyColumn(node -> {
-                    Image icon = createIcon(node.getTypeName());
-                    HorizontalLayout layout = new HorizontalLayout(icon, new Span(node.getTypeName()));
-                    layout.setAlignItems(FlexComponent.Alignment.CENTER);
-                    return layout;
-                })
-                .setHeader("Компонент")
-                .setAutoWidth(true)
-                .setResizable(true);
+                Image icon = createIcon(node.getTypeName());
+                HorizontalLayout layout = new HorizontalLayout(icon, new Span(node.getTypeName()));
+                layout.setAlignItems(FlexComponent.Alignment.CENTER);
+                return layout;
+            })
+            .setHeader("Компонент")
+            .setAutoWidth(true)
+            .setResizable(true);
         grid.addColumn(value -> value.getFinalQuantity())
-                .setHeader("Кол-во")
-                .setWidth("100px");
+            .setHeader("Кол-во")
+            .setWidth("100px");
         grid.addThemeVariants(GridVariant.LUMO_COMPACT);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_COLUMN_BORDERS);
@@ -155,7 +160,7 @@ public class LeftSidePanel extends View {
             StringBuilder sb = new StringBuilder();
             aggregated.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
             VaadinUtils.copyToClipboard(summaryGrid, sb.toString(),
-                    String.format("Скопировано айтемов %s", aggregated.entrySet().stream().count()));
+                String.format("Скопировано айтемов %s", aggregated.entrySet().stream().count()));
         });
         var layout = VaadinUtils.initCommonVerticalLayout();
         layout.add(copyButton, summaryGrid);
@@ -163,23 +168,49 @@ public class LeftSidePanel extends View {
         return layout;
     }
 
-    private void collectAll(ProductionNode node, Map<String, Integer> map) {
-        if (assemblyState.getExcludedNodes().contains(node)) {
-            return;
-        }
-        if (node.getChildren().isEmpty()) {
-            int adjusted = node.getFinalQuantity();
-            map.merge(node.getTypeName(), adjusted, Integer::sum);
-        }
-        node.getChildren().forEach(child -> collectAll(child, map));
+    private Map<String, Integer> aggregateAllMaterials() {
+        Map<String, Integer> buy = new LinkedHashMap<>();
+        assemblyState.getRootNodes().forEach(rootNode -> {
+            Map<Integer, List<ProductionNode>> stageMap = assemblyState.buildStageMap(rootNode);
+            TreeMap<Integer, Map<String, Integer>> real = assemblyState.calculateRealQuantities(stageMap);
+            Map<String, Boolean> isLeaf = computeLeafFlags(stageMap);
+            Set<String> rootExcludedTypes = collectRootExcludedTypes(stageMap);
+            for (Map<String, Integer> stageQuantities : real.values()) {
+                for (Map.Entry<String, Integer> e : stageQuantities.entrySet()) {
+                    String type = e.getKey();
+                    int qty = e.getValue();
+                    boolean shouldBuy =
+                        isLeaf.getOrDefault(type, false)   // лист — покупаем
+                            || rootExcludedTypes.contains(type); // или вручную исключённый родитель — покупаем готовое
+                    if (shouldBuy && qty > 0) {
+                        buy.merge(type, qty, Integer::sum);
+                    }
+                }
+            }
+        });
+        return buy;
     }
 
-    private Map<String, Integer> aggregateAllMaterials() {
-        Map<String, Integer> aggregated = new HashMap<>();
-        for (ProductionNode root : assemblyState.getRootNodes()) {
-            collectAll(root, aggregated);
-        }
-        return aggregated;
+    private Map<String, Boolean> computeLeafFlags(Map<Integer, List<ProductionNode>> stageMap) {
+        Map<String, Boolean> isLeaf = new HashMap<>();
+        stageMap.values().forEach(list -> {
+            for (ProductionNode n : list) {
+                isLeaf.merge(
+                    n.getTypeName(),
+                    n.getChildren().isEmpty(),
+                    (oldVal, newVal) -> oldVal && newVal
+                );
+            }
+        });
+        return isLeaf;
+    }
+
+    private Set<String> collectRootExcludedTypes(Map<Integer, List<ProductionNode>> stageMap) {
+        return stageMap.values().stream()
+            .flatMap(List::stream)
+            .filter(assemblyState::isRootExcluded)
+            .map(ProductionNode::getTypeName)
+            .collect(Collectors.toSet());
     }
 
     private Image createIcon(String moduleName) {

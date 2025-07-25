@@ -21,13 +21,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class ListItemView extends View implements INumberFormater {
 
@@ -84,7 +81,7 @@ public class ListItemView extends View implements INumberFormater {
                     new Span("x " + formatNumber(materialCount)));
                 componentLayout.setWidthFull();
                 componentLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-                matRow.add(componentLayout, initRowButtonsLayout(rootNode, materialName, stage[0], materialCount));
+                matRow.add(componentLayout, initRowButtonsLayout(rootNode, materialName, key, materialCount));
                 materialLayout.add(matRow);
             });
             var stageLabel = new Span(String.format(STAGE_HEADER_FORMATTER, "Stage", stage[0]));
@@ -101,8 +98,9 @@ public class ListItemView extends View implements INumberFormater {
                 VaadinUtils.copyToClipboard(this, sb.toString(),
                     String.format("Скопировано айтемов %s", materials.entrySet().stream().count()));
             });
+            int s = stage[0];
             infoStageButton.addClickListener(e -> {
-                new StageInfoWindow(collectProductionNodesByStage(rootNode, key), assemblyState, stage[0],
+                new StageInfoWindow(collectProductionNodesByStage(rootNode, key), assemblyState, s,
                     controller).open();
             });
             var innerDetailsLayout = createInnerDetailsLayout();
@@ -117,7 +115,7 @@ public class ListItemView extends View implements INumberFormater {
                                                   Integer materialCount) {
         var copyMaterialButton = createCopyMaterialButton(materialName, materialCount);
         HorizontalLayout buttonsLayout = new HorizontalLayout();
-        buttonsLayout.add(copyMaterialButton, createPropertiesMaterialButton(rootNode, materialName));
+        buttonsLayout.add(copyMaterialButton, createPropertiesMaterialButton(rootNode, materialName, stage));
         return buttonsLayout;
     }
 
@@ -129,9 +127,9 @@ public class ListItemView extends View implements INumberFormater {
         return copyMaterialButton;
     }
 
-    private Button createPropertiesMaterialButton(ProductionNode rootNode, String materialName) {
-        boolean isNotFinalItem = doesItemNotFinal(rootNode, materialName, 1);
-        var productionNodes = findAllNodesByName(rootNode, materialName);
+    private Button createPropertiesMaterialButton(ProductionNode rootNode, String materialName, int stage) {
+        boolean isNotFinalItem = doesItemNotFinal(rootNode, materialName, stage);
+        var productionNodes = assemblyState.findAllNodesByName(rootNode, materialName);
         var menuWindow = createPopupMenuComponent(productionNodes);
         UI.getCurrent().add(menuWindow);
         var propertiesMaterialButton = menuWindow.getOpenMenuButton();
@@ -188,23 +186,8 @@ public class ListItemView extends View implements INumberFormater {
     }
 
     public Map<Integer, Map<String, Integer>> calculateStages(ProductionNode root) {
-        var stageMap = new TreeMap<Integer, Map<String, Integer>>();
-        collectStagesRecursive(root, 1, stageMap);
-        return stageMap;
-    }
-
-    private void collectStagesRecursive(ProductionNode node, int stage, Map<Integer, Map<String, Integer>> stageMap) {
-        if (!assemblyState.getExcludedNodes().contains(node) || !assemblyState.getManuallyExcludedNodes()
-            .contains(node)) {
-            node.getChildren().stream()
-                .peek(child -> {
-                    //int adjustedQty = assemblyState.recalculateBaseValue(child, child.getQuantity());
-                    stageMap
-                        .computeIfAbsent(stage, s -> new HashMap<>())
-                        .merge(child.getTypeName(), child.getFinalQuantity(), Integer::sum);
-                })
-                .forEach(child -> collectStagesRecursive(child, stage + 1, stageMap));
-        }
+        var integerListMap = assemblyState.buildStageMap(root);
+        return assemblyState.calculateRealQuantities(integerListMap);
     }
 
     public List<ProductionNode> collectProductionNodesByStage(ProductionNode root, int targetStage) {
@@ -219,24 +202,6 @@ public class ListItemView extends View implements INumberFormater {
         }
         node.getChildren().forEach(child ->
             collectRecursive(child, currentStage + 1, targetStage, result));
-    }
-
-    private List<ProductionNode> getRootNodesByStage(ProductionNode root, int targetStage) {
-        return collectProductionNodesByStage(root, targetStage).stream()
-            .collect(Collectors.toMap(
-                ProductionNode::getTypeName,
-                node -> node,
-                (existing, duplicate) -> existing))
-            .values()
-            .stream()
-            .toList();
-    }
-
-    private List<String> collectComponentsByStage(ProductionNode node, int targetStage) {
-        return collectProductionNodesByStage(node, targetStage).stream()
-            .map(ProductionNode::getTypeName)
-            .distinct()
-            .toList();
     }
 
     private boolean doesItemNotFinal(ProductionNode rootNode, String moduleName, int stage) {
@@ -289,22 +254,6 @@ public class ListItemView extends View implements INumberFormater {
             for (ProductionNode child : node.getChildren()) {
                 includeRecursively(child, excluded);
             }
-        }
-    }
-
-    public List<ProductionNode> findAllNodesByName(ProductionNode root, String targetName) {
-        List<ProductionNode> result = new ArrayList<>();
-        collectByNameRecursive(root, targetName, result);
-        return result;
-    }
-
-    private void collectByNameRecursive(ProductionNode node, String targetName, List<ProductionNode> result) {
-        if (node.getTypeName().equalsIgnoreCase(targetName)) {
-            result.add(node);
-        }
-
-        for (ProductionNode child : node.getChildren()) {
-            collectByNameRecursive(child, targetName, result);
         }
     }
 }
