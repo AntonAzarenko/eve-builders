@@ -50,9 +50,11 @@ public class ListItemView extends View implements INumberFormater {
         var listViewLayout = VaadinUtils.initCommonVerticalLayout();
         listViewLayout.setWidth("96%");
         assemblyState.getRootNodes().forEach(rootNode -> {
+            assemblyState.setBenefitsIfHas(rootNode);
             assemblyState.recalculateTreeQuantities(rootNode, rootNode.getQuantity());
             var rootHeader = new HorizontalLayout();
             rootHeader.setAlignItems(FlexComponent.Alignment.CENTER);
+            rootHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
             rootHeader.addClassName("root-header");
             var typeName = rootNode.getTypeName();
             var name = new Span(
@@ -73,7 +75,7 @@ public class ListItemView extends View implements INumberFormater {
         final int[] stage = {grouped.size()};
         grouped.forEach((key, materials) -> {
             stage[0] = stage[0] - 1;
-            if (stage[0] != grouped.size()-1) {
+            if (stage[0] != grouped.size() - 1) {
                 var materialLayout = VaadinUtils.initCommonVerticalLayout();
                 materialLayout.getStyle().set("border-top", "1px solid #e0e0e0");
                 materials.forEach((materialName, materialCount) -> {
@@ -140,7 +142,15 @@ public class ListItemView extends View implements INumberFormater {
         } else if (assemblyState.getEfficiencyMap().containsKey(productionNodes.get(0)) && isNotFinalItem) {
             propertiesMaterialButton.getStyle().set("color", "green");
         }
-        propertiesMaterialButton.setEnabled(isNotFinalItem);
+        propertiesMaterialButton.setEnabled(isNotFinalItem
+            && (Objects.nonNull(productionNodes.get(0).getMaterialType()) &&
+            !assemblyState.getCompositeTypes().contains(productionNodes.get(0).getMaterialType())));
+        if (assemblyState.isEveryBlueprintHasBenefits() && isNotFinalItem
+            && (Objects.nonNull(productionNodes.get(0).getMaterialType()) &&
+            !assemblyState.getCompositeTypes().contains(productionNodes.get(0).getMaterialType()))) {
+            productionNodes.forEach(productionNode ->
+                assemblyState.setEfficiency(productionNode, assemblyState.getEveryBlueprintBenefitsCount()));
+        }
         return propertiesMaterialButton;
     }
 

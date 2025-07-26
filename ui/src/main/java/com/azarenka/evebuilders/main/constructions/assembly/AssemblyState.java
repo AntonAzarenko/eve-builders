@@ -3,7 +3,10 @@ package com.azarenka.evebuilders.main.constructions.assembly;
 import com.azarenka.evebuilders.domain.dto.MaterialType;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,6 +29,9 @@ public class AssemblyState {
     private final double rigsPercentage = 4.2;
     private final double tataraBenefitPercentage = 2.6;
 
+    private boolean isEveryBlueprintHasBenefits = false;
+    private int everyBlueprintBenefitsCount = 0;
+
     private Set<MaterialType> compositeTypes = Set.of(MaterialType.SIMPLE_REACTION, MaterialType.COMPOSITE_REACTION,
         MaterialType.INTERMEDIATE);
 
@@ -34,6 +40,22 @@ public class AssemblyState {
         // efficiencyMap.put(root, 0d);
         countMap.put(root, count);
         rootNodes.add(root);
+    }
+
+    public boolean isEveryBlueprintHasBenefits() {
+        return isEveryBlueprintHasBenefits;
+    }
+
+    public void setEveryBlueprintHasBenefits(boolean everyBlueprintHasBenefits) {
+        isEveryBlueprintHasBenefits = everyBlueprintHasBenefits;
+    }
+
+    public int getEveryBlueprintBenefitsCount() {
+        return everyBlueprintBenefitsCount;
+    }
+
+    public void setEveryBlueprintBenefitsCount(int everyBlueprintBenefitsCount) {
+        this.everyBlueprintBenefitsCount = everyBlueprintBenefitsCount;
     }
 
     public void removeModule(ProductionNode root) {
@@ -199,6 +221,14 @@ public class AssemblyState {
         return stageMap;
     }
 
+    public Set<MaterialType> getCompositeTypes() {
+        return compositeTypes;
+    }
+
+    public void setCompositeTypes(Set<MaterialType> compositeTypes) {
+        this.compositeTypes = compositeTypes;
+    }
+
     public TreeMap<Integer, Map<String, Integer>> calculateRealQuantities(Map<Integer, List<ProductionNode>> stageMap) {
         TreeMap<Integer, Map<String, Integer>> result = new TreeMap<>();
         for (Map.Entry<Integer, List<ProductionNode>> stageEntry : stageMap.entrySet()) {
@@ -332,10 +362,42 @@ public class AssemblyState {
         return q;
     }
 
-    private void clearEff(ProductionNode node) {
+    public void clearEff(ProductionNode node) {
         node.clearRecipePerBatchEff();
         for (ProductionNode c : node.getChildren()) {
             clearEff(c);
         }
+    }
+
+    public void setBenefitsIfHas(ProductionNode node) {
+        pickEligibleParents(node).forEach(parent -> {
+            if (!rootNodes.contains(parent)) {
+                setEfficiency(node, everyBlueprintBenefitsCount);
+            }
+        });
+    }
+
+    public List<ProductionNode> pickEligibleParents(ProductionNode root) {
+        if (!isEveryBlueprintHasBenefits()) {
+            return Collections.emptyList();
+        }
+        List<ProductionNode> all = new ArrayList<>();
+        Deque<ProductionNode> stack = new ArrayDeque<>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            ProductionNode n = stack.pop();
+            all.add(n);
+            for (ProductionNode c : n.getChildren()) {
+                stack.push(c);
+            }
+        }
+        Set<MaterialType> composites = getCompositeTypes();
+        return all.stream()
+            .filter(n -> !n.getChildren().isEmpty())
+            .filter(n -> {
+                MaterialType mt = n.getMaterialType();
+                return mt != null && !composites.contains(mt);
+            })
+            .toList();
     }
 }

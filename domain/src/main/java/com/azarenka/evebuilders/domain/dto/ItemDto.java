@@ -8,13 +8,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class ItemDto {
-
     private EveIcon eveIcon;
-
     private InvType invType;
-
     private Asset asset;
-
     private String userName;
 
     public String getUserName() {

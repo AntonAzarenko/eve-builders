@@ -24,7 +24,5 @@ public interface IBuildConstructionController {
 
     ImageService getImageService();
 
-    List<ItemDto> getMinerals();
-
     List<ItemDto> getMinerals(List<String> expectedMaterials);
 }

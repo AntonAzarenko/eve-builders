@@ -1,12 +1,9 @@
 package com.azarenka.evebuilders.component;
 
-import static com.vaadin.flow.component.Shortcuts.addShortcutListener;
-
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Hr;
@@ -37,15 +34,12 @@ public class PopupMenuComponent extends VerticalLayout {
         this.tooltip = tooltip;
         this.contentComponents = contentComponents;
         this.title = title;
-
         setWidth("350px");
         setSpacing(false);
         setMargin(false);
         addClassName("material-popup");
         getStyle().set("position", "absolute"); // чтобы можно было задавать top/left с клиента
-
         openMenuButton = new Button(openIcon.create());
-
         super.setVisible(false);
         initContent();
     }
@@ -61,17 +55,14 @@ public class PopupMenuComponent extends VerticalLayout {
     private void initHeader() {
         Span titleSpan = new Span(title);
         titleSpan.addClassName("material-popup__title");
-
         closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
         closeIcon.addClassName("popup-close-button");
         closeIcon.addClickListener(e -> close());
-
         HorizontalLayout header = new HorizontalLayout(titleSpan, closeIcon);
         header.addClassName("material-popup__header");
         header.setWidthFull();
         header.setAlignItems(Alignment.CENTER);
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-
         add(header);
     }
 
@@ -85,7 +76,6 @@ public class PopupMenuComponent extends VerticalLayout {
     private void initOpenButton() {
         openMenuButton.setTooltipText(tooltip);
         openMenuButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
-
         openMenuButton.addClickListener(e -> {
             if (!super.isVisible()) {
                 super.setVisible(true);
@@ -125,24 +115,19 @@ public class PopupMenuComponent extends VerticalLayout {
         body.setPadding(false);
         body.setSpacing(true);
         body.setWidthFull();
-
         contentComponents.forEach(c -> {
             c.getElement().getStyle().set("width", "100%");
             body.add(c);
         });
-
         add(body);
-
         Hr divider = new Hr();
         divider.addClassName("material-popup__divider");
         add(divider);
-
         HorizontalLayout footer = new HorizontalLayout(applyButton);
         footer.setWidthFull();
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         footer.setPadding(false);
-add(footer);
-        //super.add(body, footer);
+        add(footer);
     }
 
     private void addEscClose() {

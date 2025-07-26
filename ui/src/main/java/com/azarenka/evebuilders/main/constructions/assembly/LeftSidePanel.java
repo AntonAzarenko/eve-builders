@@ -1,11 +1,14 @@
 package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
+import com.azarenka.evebuilders.component.PopupMenuBuilder;
+import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -17,6 +20,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.shared.SelectionPreservationMode;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 
 import java.util.HashMap;
@@ -71,13 +75,15 @@ public class LeftSidePanel extends View {
         listViewButton.addClickListener(event -> changeViewMode(ViewMode.LIST));
         treeViewButton.addClickListener(event -> changeViewMode(ViewMode.TREE));
         summorizeViewButton.addClickListener(event -> changeViewMode(ViewMode.SUMMARY));
+        var popupMenuComponent = createPopupMenuComponentForHeaderButton();
+        UI.getCurrent().add(popupMenuComponent);
         showMineralsButton.addClickListener(event -> {
             Dialog dialog = new Dialog();
             dialog.setWidth("500px");
             dialog.setHeight("500px");
             List<ItemDto> minerals =
-                controller.getMinerals(assemblyState.getRootNodes().stream()    // List<ProductionNode> корней
-                    .flatMap(LeftSidePanel::deepStream)  // разворачиваем всё дерево
+                controller.getMinerals(assemblyState.getRootNodes().stream()
+                    .flatMap(LeftSidePanel::deepStream)
                     .map(ProductionNode::getTypeName)
                     .toList());
             minerals.forEach(dto -> {
@@ -86,7 +92,8 @@ public class LeftSidePanel extends View {
             });
             dialog.open();
         });
-        leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton);
+        leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton,
+            popupMenuComponent.getOpenMenuButton());
     }
 
     private static Stream<ProductionNode> deepStream(ProductionNode node) {
@@ -179,9 +186,7 @@ public class LeftSidePanel extends View {
                 for (Map.Entry<String, Integer> e : stageQuantities.entrySet()) {
                     String type = e.getKey();
                     int qty = e.getValue();
-                    boolean shouldBuy =
-                        isLeaf.getOrDefault(type, false)   // лист — покупаем
-                            || rootExcludedTypes.contains(type); // или вручную исключённый родитель — покупаем готовое
+                    boolean shouldBuy = isLeaf.getOrDefault(type, false) || rootExcludedTypes.contains(type);
                     if (shouldBuy && qty > 0) {
                         buy.merge(type, qty, Integer::sum);
                     }
@@ -218,5 +223,23 @@ public class LeftSidePanel extends View {
         icon.setWidth("25px");
         icon.setHeight("25px");
         return icon;
+    }
+
+    private PopupMenuComponent createPopupMenuComponentForHeaderButton() {
+        var tooltip = "Установите улучшение для всех чертежей в проекте";
+        var efficiencyField = new IntegerField("Экономия материалов %");
+        efficiencyField.setValue(assemblyState.getEveryBlueprintBenefitsCount());
+        return new PopupMenuBuilder()
+            .withTitle("Настройка всех чертежей")
+            .withComponent(efficiencyField)
+            .withTooltip(tooltip)
+            .withIcon(VaadinIcon.COG_O)
+            .onApply(keyPressEvent -> {
+                var value = efficiencyField.getValue();
+                assemblyState.setEveryBlueprintBenefitsCount(value);
+                assemblyState.setEveryBlueprintHasBenefits(value > 0);
+                assemblyState.getRootNodes().forEach(assemblyState::setBenefitsIfHas);
+                changeViewMode(ViewMode.LIST);
+            }).build();
     }
 }

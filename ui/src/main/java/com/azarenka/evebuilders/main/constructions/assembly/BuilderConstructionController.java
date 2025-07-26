@@ -61,11 +61,6 @@ public class BuilderConstructionController implements IBuildConstructionControll
     }
 
     @Override
-    public List<ItemDto> getMinerals() {
-        return assetService.getMinerals();
-    }
-
-    @Override
     public List<ItemDto> getMinerals(List<String> expectedMaterials) {
         return assetService.getMinerals(expectedMaterials);
     }
