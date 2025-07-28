@@ -18,6 +18,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -31,11 +33,12 @@ public class RightSidePanel extends View {
     private final MiddleSidePanel middleSidePanel;
     private HorizontalLayout rightSideToolbar;
     private SearchComponent searchField;
+    private VerticalLayout elementsLayout;
 
     public RightSidePanel(BuilderConstructionController controller, MiddleSidePanel middleSidePanel, DistributedOrder order, Fit fit) {
         this.middleSidePanel = middleSidePanel;
         this.controller = controller;
-        //setClassName("scrollable-column");
+        //addClassName("scrollable-column");
         initToolbar();
         initPanel(order, fit);
     }
@@ -58,15 +61,18 @@ public class RightSidePanel extends View {
     }
 
     private void initPanel(DistributedOrder order, Fit fit) {
+        elementsLayout = VaadinUtils.initCommonVerticalLayout();
+        elementsLayout.addClassName("scrollable-column");
         if (Objects.nonNull(order)) {
-            add(createDraggableModule(order.getShipName()));
+            elementsLayout.add(createDraggableModule(order.getShipName()));
         }
         if (Objects.nonNull(fit)) {
             getModules(fit).stream()
                     .sorted(Comparator.naturalOrder())
                     .map(this::createDraggableModule)
-                    .forEach(this::add);
+                    .forEach(elementsLayout::add);
         }
+        add(elementsLayout);
     }
 
     private List<String> getModules(Fit fit) {
@@ -122,7 +128,7 @@ public class RightSidePanel extends View {
             var invGroupsById = controller.getInvGroupsById(typeEnum[i].getGroupId());
             var typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream().map(InvGroup::getGroupID).toList());
             Optional<InvType> optionalInvType = typesByGroupIds.stream().filter(e -> e.getTypeName().equalsIgnoreCase(value)).findFirst();
-            optionalInvType.ifPresent(invType -> add(createDraggableModule(invType.getTypeName())));
+            optionalInvType.ifPresent(invType -> elementsLayout.add(createDraggableModule(invType.getTypeName())));
         });
     }
 

@@ -35,7 +35,7 @@ public class MiddleSidePanel extends View {
         this.assemblyState = assemblyState;
         this.leftSidePanel = leftSidePanel;
         setClassName("assembly-area");
-        //setClassName("scrollable-column");
+        setClassName("scrollable-column");
         setSizeFull();
         setWidth("70%");
         initPanel();

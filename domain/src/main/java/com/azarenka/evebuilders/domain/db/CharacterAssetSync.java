@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "character_asset_sync")
+@Table(name = "character_asset_sync", schema = "builders")
 public class CharacterAssetSync {
 
     @Id
@@ -28,6 +28,38 @@ public class CharacterAssetSync {
         this.userName = userName;
         this.etag = etag;
         this.expiresAt = expiresAt;
+        this.lastSyncAt = lastSyncAt;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getEtag() {
+        return etag;
+    }
+
+    public void setEtag(String etag) {
+        this.etag = etag;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public LocalDateTime getLastSyncAt() {
+        return lastSyncAt;
+    }
+
+    public void setLastSyncAt(LocalDateTime lastSyncAt) {
         this.lastSyncAt = lastSyncAt;
     }
 }

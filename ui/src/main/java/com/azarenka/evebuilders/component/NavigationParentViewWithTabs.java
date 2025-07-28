@@ -9,6 +9,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
@@ -31,11 +32,12 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
         VaadinUtils.addComponentId(tabs, "vertical-tabs");
     }
 
-    public void addView(Class<? extends Component> viewClass, String label, Icon tabIcon) {
-        addView(viewClass, label, null, tabIcon, 0);
+    public void addView(Class<? extends Component> viewClass, String label, Icon tabIcon, String className) {
+        addView(viewClass, label, null, tabIcon, 0,  className);
     }
 
-    public void addView(Class<? extends Component> viewClass, String label, String tabId, Icon tabIcon, Integer badgeCount) {
+    public void addView(Class<? extends Component> viewClass, String label, String tabId, Icon tabIcon, Integer badgeCount, String className) {
+        this.addClassName(className);
         NavigationTab tab = new NavigationTab(viewClass, label, tabIcon, badgeCount);
         if (tabId != null) {
             tab.setId(tabId);
@@ -44,20 +46,20 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
         tabMap.put(viewClass, tab);
     }
 
-    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission, Icon tabIcon) {
+    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission, Icon tabIcon,  String className) {
         boolean hasPermission = Arrays.stream(viewPermission)
                 .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
         if (hasPermission) {
-            addView(viewClass, caption, tabIcon);
+            addView(viewClass, caption, tabIcon, className);
         }
     }
 
     public void addTabIfAllowedWithBadge(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
-                                         Icon tabIcon, Integer badgeCount) {
+                                         Icon tabIcon, Integer badgeCount, String className) {
         boolean hasPermission = Arrays.stream(viewPermission)
                 .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
         if (hasPermission) {
-            addView(viewClass, caption, null, tabIcon, badgeCount);
+            addView(viewClass, caption, null, tabIcon, badgeCount, className);
         }
     }
 

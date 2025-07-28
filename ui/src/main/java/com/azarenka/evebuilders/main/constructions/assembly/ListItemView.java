@@ -36,8 +36,10 @@ public class ListItemView extends View implements INumberFormater {
 
     public ListItemView(AssemblyState assemblyState, IBuildConstructionController controller) {
         super();
+        this.removeAll();
         this.assemblyState = assemblyState;
         this.controller = controller;
+        addClassName("scrollable-column");
         add(initContent());
     }
 
@@ -50,8 +52,8 @@ public class ListItemView extends View implements INumberFormater {
         var listViewLayout = VaadinUtils.initCommonVerticalLayout();
         listViewLayout.setWidth("96%");
         assemblyState.getRootNodes().forEach(rootNode -> {
-            assemblyState.setBenefitsIfHas(rootNode);
-            assemblyState.recalculateTreeQuantities(rootNode, rootNode.getQuantity());
+            //assemblyState.setBenefitsIfHas(rootNode);
+            //assemblyState.recalculateTreeQuantities(rootNode, rootNode.getQuantity());
             var rootHeader = new HorizontalLayout();
             rootHeader.setAlignItems(FlexComponent.Alignment.CENTER);
             rootHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
@@ -59,7 +61,7 @@ public class ListItemView extends View implements INumberFormater {
             var typeName = rootNode.getTypeName();
             var name = new Span(
                 String.format(ROOT_NODE_FORMATTER, typeName, assemblyState.getCount(rootNode)));
-            rootHeader.add(createIcon(typeName), name);
+            rootHeader.add(controller.createIcon(typeName), name);
             var rootDetails = new Details(rootHeader, buildStages(rootNode));
             rootDetails.addClassName("root-block");
             rootDetails.setOpened(true);
@@ -71,7 +73,7 @@ public class ListItemView extends View implements INumberFormater {
 
     private Component buildStages(ProductionNode rootNode) {
         var stagesLayout = VaadinUtils.initCommonVerticalLayout();
-        Map<Integer, Map<String, Integer>> grouped = calculateStages(rootNode);
+        Map<Integer, Map<String, Integer>> grouped = assemblyState.getStagesMap().get(rootNode);
         final int[] stage = {grouped.size()};
         grouped.forEach((key, materials) -> {
             stage[0] = stage[0] - 1;
@@ -194,14 +196,12 @@ public class ListItemView extends View implements INumberFormater {
                     assemblyState.getEfficiencyMap()
                         .put(productionNode, Objects.isNull(value) ? 0 : Double.valueOf(value));
                 });
+                assemblyState.recalculateStages();
                 this.refresh();
             }).build();
     }
 
-    public Map<Integer, Map<String, Integer>> calculateStages(ProductionNode root) {
-        var integerListMap = assemblyState.buildStageMap(root);
-        return assemblyState.calculateRealQuantities(integerListMap);
-    }
+
 
     public List<ProductionNode> collectProductionNodesByStage(ProductionNode root, int targetStage) {
         var result = new ArrayList<ProductionNode>();

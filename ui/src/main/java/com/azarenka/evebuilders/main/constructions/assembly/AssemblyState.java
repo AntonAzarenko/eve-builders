@@ -5,7 +5,6 @@ import com.azarenka.evebuilders.domain.dto.ProductionNode;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,8 +15,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AssemblyState {
+
 
     private final Map<ProductionNode, Double> efficiencyMap = new HashMap<>();
     private final Map<ProductionNode, Integer> countMap = new HashMap<>();
@@ -32,14 +33,32 @@ public class AssemblyState {
     private boolean isEveryBlueprintHasBenefits = false;
     private int everyBlueprintBenefitsCount = 0;
 
+    private Map<ProductionNode, Map<Integer, Map<String, Integer>>> stagesMap = new HashMap<>();
     private Set<MaterialType> compositeTypes = Set.of(MaterialType.SIMPLE_REACTION, MaterialType.COMPOSITE_REACTION,
         MaterialType.INTERMEDIATE);
 
     public void addModule(ProductionNode root, int count) {
         renderedModules.add(root.getTypeName());
-        // efficiencyMap.put(root, 0d);
         countMap.put(root, count);
         rootNodes.add(root);
+        recalculateStages();
+    }
+
+    void recalculateStages() {
+        stagesMap.clear();
+        rootNodes.forEach(node -> {
+            setBenefitsIfHas(node);
+            recalculateTreeQuantities(node, node.getQuantity());
+            stagesMap.put(node, calculateStages(node));
+        });
+    }
+
+    Stream<ProductionNode> deepStream(ProductionNode node) {
+        return Stream.concat(
+            Stream.of(node),
+            node.getChildren().stream()
+                .flatMap(this::deepStream)
+        );
     }
 
     public boolean isEveryBlueprintHasBenefits() {
@@ -64,6 +83,7 @@ public class AssemblyState {
         countMap.remove(root);
         rootNodes.remove(root);
         manuallyExcludedNodes.remove(root);
+        recalculateStages();
     }
 
     public void recalculateRoots() {
@@ -162,8 +182,8 @@ public class AssemblyState {
             int effPerBatch = effPerBatchForEdge(node, childType);
             int childRequired;
             if (effPerBatch == basePerBatch) {
-                int rawTotal = parentBatches * basePerBatch;       // 1*22 или 2*22 и т.д.
-                int discountedTot = applyAllBonusesToTotal(node, rawTotal); // -> 21 или 42
+                int rawTotal = parentBatches * basePerBatch;
+                int discountedTot = applyAllBonusesToTotal(node, rawTotal);
                 childRequired = discountedTot;
                 int effByTotal = (int) Math.ceil(discountedTot / (double) parentBatches);
                 node.putRecipePerBatchEff(childType, effByTotal);
@@ -229,6 +249,11 @@ public class AssemblyState {
         this.compositeTypes = compositeTypes;
     }
 
+    public Map<Integer, Map<String, Integer>> calculateStages(ProductionNode root) {
+        var integerListMap = buildStageMap(root);
+        return calculateRealQuantities(integerListMap);
+    }
+
     public TreeMap<Integer, Map<String, Integer>> calculateRealQuantities(Map<Integer, List<ProductionNode>> stageMap) {
         TreeMap<Integer, Map<String, Integer>> result = new TreeMap<>();
         for (Map.Entry<Integer, List<ProductionNode>> stageEntry : stageMap.entrySet()) {
@@ -266,12 +291,10 @@ public class AssemblyState {
                                 .sum();
                             int batches = (int) Math.ceil(totalDemand / (double) outputQty);
                             if (effPerBatch == basePerBatch) {
-                                // скидка на per-batch не «пробила» ceil -> дожимаем на сумме
                                 int rawTotal = batches * basePerBatch;
                                 int discounted = applyAllBonusesToTotal(sampleParent, rawTotal);
                                 requiredQtyFromParents += discounted;
                             } else {
-                                // обычный путь: скидка уже в per-batch учтена
                                 requiredQtyFromParents += batches * effPerBatch;
                             }
                         }
@@ -370,17 +393,24 @@ public class AssemblyState {
     }
 
     public void setBenefitsIfHas(ProductionNode node) {
-        pickEligibleParents(node).forEach(parent -> {
-            if (!rootNodes.contains(parent)) {
-                setEfficiency(node, everyBlueprintBenefitsCount);
-            }
-        });
+        List<ProductionNode> productionNodes = pickEligibleParents(node);
+        if (isEveryBlueprintHasBenefits) {
+            productionNodes.forEach(parent -> {
+                if (!rootNodes.contains(parent)) {
+                    setEfficiency(parent, everyBlueprintBenefitsCount);
+                }
+            });
+        } else {
+            productionNodes.forEach(pn -> {
+                if (!rootNodes.contains(pn)) {
+                    efficiencyMap.remove(pn);
+                }
+            });
+        }
+        recalculateTreeQuantities(node, node.getQuantity());
     }
 
     public List<ProductionNode> pickEligibleParents(ProductionNode root) {
-        if (!isEveryBlueprintHasBenefits()) {
-            return Collections.emptyList();
-        }
         List<ProductionNode> all = new ArrayList<>();
         Deque<ProductionNode> stack = new ArrayDeque<>();
         stack.push(root);
@@ -399,5 +429,14 @@ public class AssemblyState {
                 return mt != null && !composites.contains(mt);
             })
             .toList();
+    }
+
+    public Map<ProductionNode, Map<Integer, Map<String, Integer>>> getStagesMap() {
+        return stagesMap;
+    }
+
+    public void setStagesMap(
+        Map<ProductionNode, Map<Integer, Map<String, Integer>>> stagesMap) {
+        this.stagesMap = stagesMap;
     }
 }

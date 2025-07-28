@@ -23,9 +23,9 @@ import jakarta.annotation.security.RolesAllowed;
 public class MenuManagerPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
     public MenuManagerPage() {
-        addView(DashboardView.class, getTranslation("tab.manager.dashboard"), VaadinIcon.CROSSHAIRS.create());
-        addView(AddOrderPage.class, getTranslation("tab.manager.add_order"), VaadinIcon.DOCTOR_BRIEFCASE.create());
-        addView(PropertiesView.class, getTranslation("tab.manager.properties"), VaadinIcon.FOLDER.create());
+        addView(DashboardView.class, getTranslation("tab.manager.dashboard"), VaadinIcon.CROSSHAIRS.create(), "tab-dashboard");
+        addView(AddOrderPage.class, getTranslation("tab.manager.add_order"), VaadinIcon.DOCTOR_BRIEFCASE.create(), "tab-orders");
+        addView(PropertiesView.class, getTranslation("tab.manager.properties"), VaadinIcon.FOLDER.create(), "tab-properties");
     }
 
     @Override

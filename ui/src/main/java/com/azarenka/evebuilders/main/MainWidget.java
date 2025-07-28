@@ -41,16 +41,18 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         countSubmittedRequests = controller.countRequests();
         countNewOrders = controller.countNewOrders();
         addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), OrdersPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(), countNewOrders);
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(),
+            countNewOrders, "tab-order-menu");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.FACTORY.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.FACTORY.create()
+            , "tab-construction-menu");
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
                 new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
-                countSubmittedRequests);
+                countSubmittedRequests, "tab-request-menu");
     }
 
     @Override

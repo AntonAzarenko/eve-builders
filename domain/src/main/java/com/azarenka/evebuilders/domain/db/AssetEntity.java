@@ -33,7 +33,7 @@ public class AssetEntity {
     public AssetEntity() {
     }
 
-    public AssetEntity(String id, String userName, Long locationId, Integer quantity, Integer typeId,
+    public AssetEntity(String id, String userName,Integer typeId, Long locationId, Integer quantity,
                        LocalDateTime fetchedAt) {
         this.id = id;
         this.userName = userName;
@@ -79,7 +79,7 @@ public class AssetEntity {
         return typeId;
     }
 
-    public void setType(Integer type) {
+    public void setTypeId(Integer type) {
         this.typeId = type;
     }
 

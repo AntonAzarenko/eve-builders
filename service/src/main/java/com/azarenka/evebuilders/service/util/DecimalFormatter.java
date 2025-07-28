@@ -10,6 +10,10 @@ import java.util.Objects;
 public class DecimalFormatter {
 
     public static String formatIsk(BigDecimal value) {
+        return formatDecimalValue(value) + " ISK";
+    }
+
+    public static String formatDecimalValue(BigDecimal value) {
         if (Objects.isNull(value)) {
             return "";
         }
@@ -17,7 +21,7 @@ public class DecimalFormatter {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
         symbols.setGroupingSeparator(' ');
         df.setDecimalFormatSymbols(symbols);
-        return df.format(value) + " ISK";
+        return df.format(value);
     }
 
     public static String maybeToText(BigDecimal value) {

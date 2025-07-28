@@ -28,9 +28,9 @@ public class MenuRequestCenterPage extends NavigationParentViewWithTabs implemen
 
     public MenuRequestCenterPage() {
         addTabIfAllowed(getTranslation("tab.request.my_request"), CoordinatorRequestsView.class,
-                new Role[]{Role.ROLE_COORDINATOR}, VaadinIcon.HOME_O.create());
+                new Role[]{Role.ROLE_COORDINATOR}, VaadinIcon.HOME_O.create(), "tab-my-requests");
         addTabIfAllowed(getTranslation("tab.request.group_request"), RequestsView.class,
-                new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.LINES_LIST.create());
+                new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.LINES_LIST.create(), "tab-requests");
     }
 
     @Override

@@ -25,6 +25,7 @@ public class BuildersApplicationUi extends AppLayout {
     public BuildersApplicationUi(IEveAuthService eveAuthService, IUserService userService) {
         this.userService = userService;
         addToNavbar(new Header(eveAuthService, userService));
+        super.setClassName("app-layout");
     }
 
     @Override

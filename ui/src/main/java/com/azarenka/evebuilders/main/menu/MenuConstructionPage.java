@@ -22,11 +22,11 @@ public class MenuConstructionPage extends NavigationParentViewWithTabs implement
 
     public MenuConstructionPage() {
         addView(CorporationConstructionsView.class, getTranslation("tab.construction.corporation_orders"),
-                VaadinIcon.GLOBE_WIRE.create());
+                VaadinIcon.GLOBE_WIRE.create(), "tab-contraction");
 
         //todo will uncommited later
         //addView(PersonalConstructionView.class, getTranslation("tab.construction.personal_orders"));
-        addView(BuilderConstructionView.class, getTranslation("tab.construction.build_orders"), VaadinIcon.GLOBE_WIRE.create());
+        addView(BuilderConstructionView.class, getTranslation("tab.construction.build_orders"), VaadinIcon.GLOBE_WIRE.create(), "tab-assembly");
     }
 
     @Override

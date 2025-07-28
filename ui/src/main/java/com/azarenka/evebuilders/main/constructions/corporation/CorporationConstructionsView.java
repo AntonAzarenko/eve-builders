@@ -66,6 +66,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         this.controller = controller;
         initMainLayout();
         updateButtonsStatus();
+        addClassName("corporation-constructions-view");
     }
 
     private void initMainLayout() {

@@ -28,7 +28,7 @@ public class BuilderConstructionView extends View {
         this.controller = controller;
         this.order = (DistributedOrder) VaadinSession.getCurrent().getAttribute("currentOrder");
         this.fit = (Fit) VaadinSession.getCurrent().getAttribute("currentFit");
-        setHeight("95%");
+        addClassName("corporation-constructions-view");
         initView();
     }
 
@@ -36,7 +36,6 @@ public class BuilderConstructionView extends View {
         var leftSidePanel = new LeftSidePanel(assemblyState, controller);
         var middleSidePanel = new MiddleSidePanel(controller, assemblyState, leftSidePanel);
         var rightSidePanel = new RightSidePanel(controller, middleSidePanel, order, fit);
-        rightSidePanel.setWidth("30%");
         var leftDivider = new Div();
         var rightDivider = new Div();
         leftDivider.addClassName("vertical-divider");

@@ -4,14 +4,12 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.PopupMenuBuilder;
 import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.domain.dto.ViewMode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Image;
@@ -30,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class LeftSidePanel extends View {
 
@@ -50,7 +47,7 @@ public class LeftSidePanel extends View {
         this.assemblyState = assemblyState;
         this.controller = controller;
         setWidthFull();
-        addClassName("scrollable-column");
+        //addClassName("scrollable-column");
         init();
     }
 
@@ -78,30 +75,11 @@ public class LeftSidePanel extends View {
         var popupMenuComponent = createPopupMenuComponentForHeaderButton();
         UI.getCurrent().add(popupMenuComponent);
         showMineralsButton.addClickListener(event -> {
-            Dialog dialog = new Dialog();
-            dialog.setWidth("500px");
-            dialog.setHeight("500px");
-            List<ItemDto> minerals =
-                controller.getMinerals(assemblyState.getRootNodes().stream()
-                    .flatMap(LeftSidePanel::deepStream)
-                    .map(ProductionNode::getTypeName)
-                    .toList());
-            minerals.forEach(dto -> {
-                dialog.add(new HorizontalLayout(new Span(String.valueOf(dto.getInvType().getTypeName())), new Span(
-                    String.valueOf(dto.getAsset().getQuantity()))), new Span(dto.getUserName()));
-            });
-            dialog.open();
+            CalculationItemsWindow window = new CalculationItemsWindow(controller, assemblyState);
+            window.open();
         });
         leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton,
             popupMenuComponent.getOpenMenuButton());
-    }
-
-    private static Stream<ProductionNode> deepStream(ProductionNode node) {
-        return Stream.concat(
-            Stream.of(node),
-            node.getChildren().stream()
-                .flatMap(LeftSidePanel::deepStream)
-        );
     }
 
     private void changeViewMode(ViewMode viewMode) {
@@ -111,6 +89,7 @@ public class LeftSidePanel extends View {
 
     public void refresh() {
         removeAll();
+        assemblyState.recalculateStages();
         add(leftSideToolbar);
         switch (stateViewMode) {
             case LIST -> add(new ListItemView(assemblyState, controller));
@@ -124,6 +103,7 @@ public class LeftSidePanel extends View {
         rootNodes.clear();
         rootNodes.addAll(assemblyState.getCountMap().entrySet().stream().map(Map.Entry::getKey).toList());
         treeGrid.setItems(rootNodes, ProductionNode::getChildren);
+        treeGrid.expand(rootNodes);
         treeGrid.setSelectionPreservationMode(SelectionPreservationMode.PRESERVE_ALL);
         return treeGrid;
     }
@@ -238,8 +218,8 @@ public class LeftSidePanel extends View {
                 var value = efficiencyField.getValue();
                 assemblyState.setEveryBlueprintBenefitsCount(value);
                 assemblyState.setEveryBlueprintHasBenefits(value > 0);
-                assemblyState.getRootNodes().forEach(assemblyState::setBenefitsIfHas);
-                changeViewMode(ViewMode.LIST);
+                assemblyState.recalculateStages();
+                this.refresh();
             }).build();
     }
 }
