@@ -20,6 +20,7 @@ public class StageInfoWindow extends CommonDialogComponent implements INumberFor
 
     public StageInfoWindow(List<ProductionNode> nodeList, AssemblyState assemblyState, int stage,
                            IBuildConstructionController controller) {
+        super("stage-info-window", true);
         this.controller = controller;
         setHeaderTitle("Stage " + stage);
         super.setWidth("500px");

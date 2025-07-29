@@ -38,6 +38,7 @@ public class SubmitRequestOrderWindow extends CommonDialogComponent implements L
 
     public SubmitRequestOrderWindow(RequestOrder order, IRequestsController controller,
                                     ISaveListener listener) {
+        super("submit-request-order-window", false);
         this.order = order;
         this.listener = listener;
         this.controller = controller;

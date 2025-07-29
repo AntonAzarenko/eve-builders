@@ -16,7 +16,7 @@ public class DistributedOrderDetailsWindow extends CommonDialogComponent {
 
     //TODO rewrite this class
     public DistributedOrderDetailsWindow(DistributedOrder order) {
-
+        super("distributed-order-window", true);
         setHeaderTitle("Информация о заказе " + order.getOrderNumber());
         super.setWidth("800px");
         super.setDraggable(true);

@@ -9,6 +9,7 @@ import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -39,6 +40,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
 
     public TakeOrderWindow(ShipOrderDto shipOrderDto, IOrderViewController controller,
                            ComponentEventListener<ClickEvent<Button>> clickListener) {
+        super("take-order-window", false);
         this.shipOrderDto = shipOrderDto;
         this.controller = controller;
         this.clickListener = clickListener;
@@ -57,6 +59,7 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
                 this.close();
             }
         });
+        addButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         addButton.addClickListener(clickListener);
     }
 

@@ -23,6 +23,7 @@ public class OrderContractReportWindow extends CommonDialogComponent {
 
     public OrderContractReportWindow(List<ContractValidationReport> reports, DistributedOrder order,
                                      IOrderViewController controller) {
+        super("order_contract_report_header", true);
         this.reports = reports;
         this.order = order;
         this.controller = controller;

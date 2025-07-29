@@ -32,6 +32,7 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
     private Button checkOrderButton;
 
     public OrderDetailsWindow(IOrderViewController controller, List<DistributedOrder> orders, String orderNumber) {
+        super("order-details-window", true);
         super.applyCommonProperties("order_info", true);
         this.controller = controller;
         dataProvider = DataProvider.ofCollection(orders);

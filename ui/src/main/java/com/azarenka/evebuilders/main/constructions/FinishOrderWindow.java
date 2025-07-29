@@ -26,6 +26,7 @@ public class FinishOrderWindow extends CommonDialogComponent implements LocaleCh
 
     public FinishOrderWindow(DistributedOrder order, ICorporationConstructionController controller,
                              ISaveListener listener) {
+        super("", false);
         this.order = order;
         this.listener = listener;
         this.controller = controller;

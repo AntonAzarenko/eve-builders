@@ -3,6 +3,7 @@ package com.azarenka.evebuilders.main.constructions.assembly;
 import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.dto.CalculationItemInformation;
+import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.service.util.DecimalFormatter;
 import com.vaadin.flow.component.grid.Grid;
@@ -14,6 +15,7 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -24,12 +26,15 @@ public class CalculationItemsWindow extends CommonDialogComponent
     private Grid<CalculationItemInformation> grid;
     private final BuilderConstructionController controller;
     private final AssemblyState assemblyState;
+    private List<CalculationItemInformation> calculationItemInformationList;
 
     public CalculationItemsWindow(BuilderConstructionController controller, AssemblyState assemblyState) {
-        super();
+        super("calculations-window", true);
+        setHeaderTitle("Calculations for " + assemblyState.getRootNodes().stream().map(ProductionNode::getTypeName).collect(Collectors.joining(", ")));
         this.controller = controller;
         this.assemblyState = assemblyState;
         setSizeFull();
+        setFullscreen(true);
         initGrid();
         add(grid);
         getFooter().add(createCloseButton());

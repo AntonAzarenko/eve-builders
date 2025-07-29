@@ -9,6 +9,20 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class CommonDialogComponent extends Dialog {
 
+    private Button resizeButton;
+    private ResizeModalWindowComponent resizeModalWindowComponent;
+
+    public CommonDialogComponent(String componentId, boolean resizable) {
+        resizeModalWindowComponent = new ResizeModalWindowComponent(this);
+        resizeButton = resizeModalWindowComponent.getResizeButton();
+        super.getHeader().add(resizeButton);
+        resizeButton.setEnabled(resizable);
+        super.setDraggable(true);
+        super.setResizable(resizable);
+        super.getHeader().add(createCloseButton());
+        VaadinUtils.addComponentId(this, componentId);
+    }
+
     public void applyCommonProperties(String componentId, boolean resizable) {
         VaadinUtils.addComponentId(this, componentId);
         this.setResizable(resizable);
@@ -22,5 +36,9 @@ public class CommonDialogComponent extends Dialog {
         button.setTooltipText(getTranslation("message.button.tooltip.close"));
         button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         return button;
+    }
+
+    public void setFullscreen(boolean fullscreen) {
+        resizeModalWindowComponent.setFullscreen(fullscreen);
     }
 }

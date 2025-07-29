@@ -18,10 +18,10 @@ public class ErrorWindow extends CommonDialogComponent {
     private final String stackTrace;
 
     public ErrorWindow(String message, String stackTrace) {
+        super("error-window", true);
         this.message = message;
         this.stackTrace = stackTrace;
         super.setHeaderTitle("Error");
-        super.getHeader().add(createCloseButton());
         super.add(initRootLayout());
         super.setVisible(true);
         super.setResizable(true);

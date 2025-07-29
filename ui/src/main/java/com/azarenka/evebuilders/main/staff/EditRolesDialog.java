@@ -22,6 +22,7 @@ public class EditRolesDialog extends CommonDialogComponent {
     private final Consumer<Set<Role>> onSave;
 
     public EditRolesDialog(UserDto user, Consumer<Set<Role>> onSave) {
+        super("edit-roles-dialog", true);
         this.onSave = onSave;
         applyCommonProperties("role-change-window", false);
         super.setHeaderTitle(user.getUsername());
