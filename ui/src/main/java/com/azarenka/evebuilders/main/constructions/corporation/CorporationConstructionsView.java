@@ -60,7 +60,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private Button showFullOrder;
     private Button discardOrderButton;
     private Button filterButton;
-    private OrderFilter appliedFilter = new OrderFilter();
+    private OrderFilter appliedFilter;
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
         this.controller = controller;
@@ -75,6 +75,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private HorizontalLayout initFilterLayout() {
+        appliedFilter = controller.getFilter();
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter(),
                 filter -> controller.saveFilter(filter), () -> controller.getFilter())
             .withLoadedFilter(controller.getFilter())

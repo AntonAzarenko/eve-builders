@@ -34,7 +34,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     private final DrawerToggle drawerToggle = new DrawerToggle();
     private final MainWidgetController controller;
     private int countSubmittedRequests;
-    private int countNewOrders;
+    private final int countNewOrders;
 
     public MainWidget(MainWidgetController controller) {
         this.controller = controller;

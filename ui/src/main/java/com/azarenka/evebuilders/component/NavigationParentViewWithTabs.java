@@ -23,7 +23,6 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
     private boolean noNavigation = false;
     private final Map<Class<?>, NavigationTab> tabMap = new LinkedHashMap<>();
 
-
     public NavigationParentViewWithTabs() {
         setSizeFull();
         add(tabs);

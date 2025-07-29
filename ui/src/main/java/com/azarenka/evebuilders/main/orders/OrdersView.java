@@ -67,6 +67,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
     }
 
     private VerticalLayout initMainLayout() {
+        appliedFilter = controller.getFilter();
         VerticalLayout mainLayout = VaadinUtils.initCommonVerticalLayout();
         mainLayout.add(initToolBarLayout(), initSplitLayout());
         return mainLayout;
