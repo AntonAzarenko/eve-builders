@@ -5,6 +5,7 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.dto.CalculationItemInformation;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
+import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionController;
 import com.azarenka.evebuilders.service.util.DecimalFormatter;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
@@ -14,7 +15,10 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,33 +28,37 @@ public class CalculationItemsWindow extends CommonDialogComponent
 
     private ListDataProvider<CalculationItemInformation> dataProvider;
     private Grid<CalculationItemInformation> grid;
-    private final BuilderConstructionController controller;
-    private final AssemblyState assemblyState;
+    private final IBuildConstructionController controller;
     private List<CalculationItemInformation> calculationItemInformationList;
+    private List<CalculationItemInformation> calculationFiltredItemInformationList;
+    private List<ProductionNode> productionNodes;
+    private Map<String, Integer> stagesMap;
 
-    public CalculationItemsWindow(BuilderConstructionController controller, AssemblyState assemblyState) {
+    public CalculationItemsWindow(IBuildConstructionController controller, List<ProductionNode> productionNodes,
+                                  Map<String, Integer> stagesMap, String header) {
         super("calculations-window", true);
-        setHeaderTitle("Calculations for " + assemblyState.getRootNodes().stream().map(ProductionNode::getTypeName).collect(Collectors.joining(", ")));
+        setHeader(stagesMap, header);
         this.controller = controller;
-        this.assemblyState = assemblyState;
+        this.productionNodes = productionNodes;
+        this.stagesMap = stagesMap;
         setSizeFull();
         setFullscreen(true);
+        initList();
         initGrid();
         add(grid);
         getFooter().add(createCloseButton());
     }
 
+    private void setHeader(Map<String, Integer> stagesMap, String header) {
+        if (StringUtils.isNotBlank(header)) {
+            super.setHeaderTitle("Calculations for " + header);
+        } else {
+            super.setHeaderTitle("Calculations for stage");
+        }
+    }
+
     private void initGrid() {
-        dataProvider = DataProvider.ofCollection(controller.collectInformation(assemblyState.getRootNodes().stream()
-            .flatMap(assemblyState::deepStream)
-            .toList(), assemblyState.getStagesMap().values().stream()
-            .flatMap(innerMap -> innerMap.values().stream())
-            .flatMap(map -> map.entrySet().stream())
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                Integer::sum
-            ))));
+        dataProvider = DataProvider.ofCollection(calculationFiltredItemInformationList);
         grid = VaadinUtils.initGrid(dataProvider, "calculation-info-grid");
         grid.setDataProvider(dataProvider);
         grid.setSizeFull();
@@ -63,13 +71,17 @@ public class CalculationItemsWindow extends CommonDialogComponent
     }
 
     private void addColumns() {
-        addComponentColumn(value -> new HorizontalLayout(new Span(controller.createIcon(value.getTypeName())), new Span(value.getTypeName())), "130px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getRequiredQuantity())), "130px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getHasQuantity())), "130px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getHasQuantity() - calc.getRequiredQuantity())), "130px", grid);
-        addDoubleColumn(CalculationItemInformation::getProductPerBatch, "150px", grid);
-        addDoubleColumn(CalculationItemInformation::getProducedQuantity, "100px", grid);
-        addDoubleColumn(CalculationItemInformation::getExcessQuantity, "90px", grid);
+        addComponentColumn(value -> new HorizontalLayout(new Span(controller.createIcon(value.getTypeName())),
+            new Span(value.getTypeName())), "130px", grid);
+        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getRequiredQuantity())),
+            "130px", grid);
+        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getHasQuantity())), "130px",
+            grid);
+        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(
+            BigDecimal.valueOf(calc.getHasQuantity() - calc.getRequiredQuantity())), "130px", grid);
+        //addDoubleColumn(CalculationItemInformation::getProductPerBatch, "150px", grid);
+        // addDoubleColumn(CalculationItemInformation::getProducedQuantity, "100px", grid);
+        //addDoubleColumn(CalculationItemInformation::getExcessQuantity, "90px", grid);
 
         addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaBuyPrice()), "90px", grid);
         addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaSplitPrice()), "90px", grid);
@@ -81,14 +93,35 @@ public class CalculationItemsWindow extends CommonDialogComponent
         grid.getColumns().get(0).setHeader("Материал");
         grid.getColumns().get(1).setHeader("Требуется для производства");
         grid.getColumns().get(2).setHeader("В наличии");
-        grid.getColumns().get(3).setHeader("Разница");
-        grid.getColumns().get(4).setHeader("Прогон");
-        grid.getColumns().get(5).setHeader("произведено");
-        grid.getColumns().get(6).setHeader("Остаток");
+        grid.getColumns().get(3).setHeader("Остаток");
+        //grid.getColumns().get(4).setHeader("Прогон");
+        //grid.getColumns().get(5).setHeader("произведено");
+        //grid.getColumns().get(6).setHeader("Остаток");
 
-        grid.getColumns().get(7).setHeader("Продажа");
-        grid.getColumns().get(8).setHeader("Среднее");
-        grid.getColumns().get(9).setHeader("Покупка");
+        grid.getColumns().get(4).setHeader("Продажа");
+        grid.getColumns().get(5).setHeader("Среднее");
+        grid.getColumns().get(6).setHeader("Покупка");
 
+    }
+
+    private void initList() {
+        calculationItemInformationList = controller.collectInformation(productionNodes, stagesMap);
+        calculationFiltredItemInformationList = mergeByTypeName(calculationItemInformationList);
+    }
+
+    public List<CalculationItemInformation> mergeByTypeName(List<CalculationItemInformation> list) {
+        return list.stream()
+            .collect(Collectors.toMap(
+                CalculationItemInformation::getTypeName,
+                item -> item,
+                (item1, item2) -> {
+                    item1.setRequiredQuantity(item1.getRequiredQuantity() + item2.getRequiredQuantity());
+                    item1.setHasQuantity(item1.getHasQuantity() + item2.getHasQuantity());
+                    return item1;
+                }
+            ))
+            .values()
+            .stream()
+            .sorted(Comparator.comparing(CalculationItemInformation::getTypeName)).collect(Collectors.toList());
     }
 }

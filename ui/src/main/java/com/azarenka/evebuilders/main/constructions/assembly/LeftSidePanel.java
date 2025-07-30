@@ -21,6 +21,8 @@ import com.vaadin.flow.component.shared.SelectionPreservationMode;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,7 +49,6 @@ public class LeftSidePanel extends View {
         this.assemblyState = assemblyState;
         this.controller = controller;
         setWidthFull();
-        //addClassName("scrollable-column");
         init();
     }
 
@@ -55,6 +56,7 @@ public class LeftSidePanel extends View {
         initToolBar();
         add(leftSideToolbar);
         refresh();
+        refreshButtonsView();
     }
 
     private void initToolBar() {
@@ -62,12 +64,13 @@ public class LeftSidePanel extends View {
         leftSideToolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         leftSideToolbar.setWidthFull();
         stateViewMode = ViewMode.TREE;
-        showMineralsButton = new Button("Show Minerals");
-        listViewButton = new Button(VaadinIcon.LIST.create());
-        treeViewButton = new Button(VaadinIcon.ARCHIVES.create());
-        summorizeViewButton = new Button(VaadinIcon.ABACUS.create());
+        showMineralsButton = new Button(LineAwesomeIcon.CALCULATOR_SOLID.create());
+        listViewButton = new Button(LineAwesomeIcon.TOOLS_SOLID.create());
+        treeViewButton = new Button(LineAwesomeIcon.LIST_ALT.create());
+        summorizeViewButton = new Button(VaadinIcon.CART.create());
         listViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         treeViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        showMineralsButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         summorizeViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         listViewButton.addClickListener(event -> changeViewMode(ViewMode.LIST));
         treeViewButton.addClickListener(event -> changeViewMode(ViewMode.TREE));
@@ -75,15 +78,36 @@ public class LeftSidePanel extends View {
         var popupMenuComponent = createPopupMenuComponentForHeaderButton();
         UI.getCurrent().add(popupMenuComponent);
         showMineralsButton.addClickListener(event -> {
-            CalculationItemsWindow window = new CalculationItemsWindow(controller, assemblyState);
+            CalculationItemsWindow window = new CalculationItemsWindow(controller, getProductionNodes(), getStageMap(),
+                assemblyState.getRootNodes().stream()
+                    .map(ProductionNode::getTypeName)
+                    .collect(Collectors.joining(", ")));
             window.open();
         });
         leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton,
             popupMenuComponent.getOpenMenuButton());
     }
 
+    private List<ProductionNode> getProductionNodes() {
+        return assemblyState.getRootNodes().stream()
+            .flatMap(assemblyState::deepStream)
+            .toList();
+    }
+
+    private Map<String, Integer> getStageMap() {
+        return assemblyState.getStagesMap().values().stream()
+            .flatMap(innerMap -> innerMap.values().stream())
+            .flatMap(map -> map.entrySet().stream())
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                Integer::sum
+            ));
+    }
+
     private void changeViewMode(ViewMode viewMode) {
         stateViewMode = viewMode;
+        refreshButtonsView();
         refresh();
     }
 
@@ -95,6 +119,26 @@ public class LeftSidePanel extends View {
             case LIST -> add(new ListItemView(assemblyState, controller));
             case TREE -> add(buildTreeGrid());
             case SUMMARY -> add(buildSummaryView());
+        }
+    }
+
+    private void refreshButtonsView() {
+        switch (stateViewMode) {
+            case LIST -> {
+                treeViewButton.getStyle().setColor("#005fdb");
+                summorizeViewButton.getStyle().setColor("#005fdb");
+                listViewButton.getStyle().setColor("#68c97e");
+            }
+            case TREE -> {
+                treeViewButton.getStyle().setColor("#68c97e");
+                summorizeViewButton.getStyle().setColor("#005fdb");
+                listViewButton.getStyle().setColor("#005fdb");
+            }
+            case SUMMARY -> {
+                treeViewButton.getStyle().setColor("#005fdb");
+                summorizeViewButton.getStyle().setColor("#68c97e");
+                listViewButton.getStyle().setColor("#005fdb");
+            }
         }
     }
 
@@ -143,7 +187,7 @@ public class LeftSidePanel extends View {
         summaryGrid.addColumn(entry -> String.valueOf(entry.getValue())).setHeader("Quantity");
         Map<String, Integer> aggregated = aggregateAllMaterials();
         summaryGrid.setItems(aggregated.entrySet());
-        Button copyButton = new Button("Скопировать", e -> {
+        Button copyButton = new Button(VaadinIcon.COPY.create(), e -> {
             StringBuilder sb = new StringBuilder();
             aggregated.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
             VaadinUtils.copyToClipboard(summaryGrid, sb.toString(),

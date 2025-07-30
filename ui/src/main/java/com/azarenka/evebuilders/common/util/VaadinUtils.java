@@ -12,6 +12,8 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -48,6 +50,24 @@ public class VaadinUtils {
     public static Button createLumoTertiaryButton(VaadinIcon icon) {
         Button button = new Button(icon.create());
         button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        return button;
+    }
+
+    public static Button createLumoTertiaryButton(LineAwesomeIcon icon) {
+        Button button = new Button(icon.create());
+        button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        return button;
+    }
+
+    public static Button createLumoButton(VaadinIcon icon) {
+        Button button = new Button(icon.create());
+        button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        return button;
+    }
+
+    public static Button createLumoButton(LineAwesomeIcon icon) {
+        Button button = new Button(icon.create());
+        button.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         return button;
     }
 

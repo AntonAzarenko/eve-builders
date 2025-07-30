@@ -43,7 +43,9 @@ public class BuilderConstructionView extends View {
         mainLayout.add(leftSidePanel, leftDivider, middleSidePanel, rightDivider, rightSidePanel);
         mainLayout.setFlexGrow(1, leftSidePanel, middleSidePanel, rightSidePanel);
         mainLayout.setSizeFull();
-        mainLayout.setPadding(true);
+        mainLayout.setPadding(false);
+        mainLayout.setSpacing(false);
+        mainLayout.getStyle().set("padding", "0px 5px");
         add(mainLayout);
     }
 }

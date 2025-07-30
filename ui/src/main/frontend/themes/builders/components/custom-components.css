@@ -84,7 +84,8 @@
 .vertical-divider {
     width: 1px;               /* ширина линии */
     background-color: #ccc;    /* цвет линии */
-    height: 99%;              /* тянется по высоте родителя */
+    height: 99%;    /* тянется по высоте родителя */
+    margin: 3px;
 }
 
 .draggable-item {

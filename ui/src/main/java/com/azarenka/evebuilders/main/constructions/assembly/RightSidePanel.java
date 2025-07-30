@@ -21,6 +21,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import org.apache.commons.lang3.StringUtils;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -38,8 +39,8 @@ public class RightSidePanel extends View {
     public RightSidePanel(BuilderConstructionController controller, MiddleSidePanel middleSidePanel, DistributedOrder order, Fit fit) {
         this.middleSidePanel = middleSidePanel;
         this.controller = controller;
-        //addClassName("scrollable-column");
         initToolbar();
+        getStyle().set("padding", "0px 5px");
         initPanel(order, fit);
     }
 
@@ -52,8 +53,8 @@ public class RightSidePanel extends View {
                 event -> clearSearch()
         );
         searchField.setWidth("70%");
-        var addAllButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
-        var clearButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.TRASH);
+        var addAllButton = VaadinUtils.createLumoButton(LineAwesomeIcon.ANGLE_DOUBLE_LEFT_SOLID);
+        var clearButton = VaadinUtils.createLumoButton(VaadinIcon.TRASH);
         clearButton.addClickListener(event -> clearAllModules());
         addAllButton.addClickListener(event -> addAllModules());
         rightSideToolbar.add(addAllButton, clearButton, searchField);
@@ -91,7 +92,7 @@ public class RightSidePanel extends View {
         var icon = createIcon(moduleName);
         var deleteButton = new Button(VaadinIcon.CLOSE.create());
         deleteButton.addClassName("delete-button");
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         HorizontalLayout layout = new HorizontalLayout(new HorizontalLayout(icon, new Span(moduleName)), deleteButton);
         deleteButton.addClickListener(e ->
                 layout.getParent().ifPresent(parent -> {
@@ -138,7 +139,7 @@ public class RightSidePanel extends View {
     }
 
     private void addAllModules() {
-        getChildren()
+        elementsLayout.getChildren()
                 .filter(component -> component instanceof HorizontalLayout)
                 .map(component -> (HorizontalLayout) component)
                 .filter(layout -> layout.getClassNames().contains("draggable-item"))
@@ -150,7 +151,7 @@ public class RightSidePanel extends View {
     }
 
     private void clearAllModules() {
-        getChildren()
+        elementsLayout.getChildren()
                 .filter(component -> component instanceof HorizontalLayout)
                 .map(component -> (HorizontalLayout) component)
                 .filter(layout -> layout.getClassNames().contains("draggable-item"))

@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.menu;
 
+import com.azarenka.evebuilders.component.IconFactory;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
@@ -12,6 +13,9 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
+
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("construction")
@@ -22,19 +26,22 @@ public class MenuConstructionPage extends NavigationParentViewWithTabs implement
 
     public MenuConstructionPage() {
         addView(CorporationConstructionsView.class, getTranslation("tab.construction.corporation_orders"),
-                VaadinIcon.GLOBE_WIRE.create(), "tab-contraction");
+            IconFactory.font(VaadinIcon.BRIEFCASE, "48px", "#00eaff"), "tab-contraction");
 
         //todo will uncommited later
         //addView(PersonalConstructionView.class, getTranslation("tab.construction.personal_orders"));
-        addView(BuilderConstructionView.class, getTranslation("tab.construction.build_orders"), VaadinIcon.GLOBE_WIRE.create(), "tab-assembly");
+        addView(BuilderConstructionView.class, getTranslation("tab.construction.build_orders"),
+            VaadinIcon.FACTORY.create(), "tab-assembly");
     }
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
         Tabs tabs = getTabs();
-        ((NavigationTab)tabs.getTabAt(0)).updateLabel(getTranslation("tab.construction.corporation_orders"), VaadinIcon.GLOBE_WIRE.create());
+        ((NavigationTab) tabs.getTabAt(0)).updateLabel(getTranslation("tab.construction.corporation_orders"),
+            VaadinIcon.BRIEFCASE.create());
         //todo will uncommited later
         //tabs.getTabAt(1).setLabel(getTranslation("tab.construction.personal_orders"));
-        ((NavigationTab)tabs.getTabAt(1)).updateLabel(getTranslation("tab.construction.build_orders"), VaadinIcon.FILE_TREE.create());
+        ((NavigationTab) tabs.getTabAt(1)).updateLabel(getTranslation("tab.construction.build_orders"),
+            VaadinIcon.FACTORY.create());
     }
 }

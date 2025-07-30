@@ -7,14 +7,15 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 public class CommonDialogComponent extends Dialog {
 
-    private Button resizeButton;
-    private ResizeModalWindowComponent resizeModalWindowComponent;
+    private final ResizeModalWindowComponent resizeModalWindowComponent;
 
     public CommonDialogComponent(String componentId, boolean resizable) {
         resizeModalWindowComponent = new ResizeModalWindowComponent(this);
-        resizeButton = resizeModalWindowComponent.getResizeButton();
+        Button resizeButton = resizeModalWindowComponent.getResizeButton();
         super.getHeader().add(resizeButton);
         resizeButton.setEnabled(resizable);
         super.setDraggable(true);

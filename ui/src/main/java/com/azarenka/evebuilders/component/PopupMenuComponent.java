@@ -14,6 +14,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import java.util.List;
 
 public class PopupMenuComponent extends VerticalLayout {
@@ -22,7 +24,6 @@ public class PopupMenuComponent extends VerticalLayout {
     private Button applyButton;
     private final ComponentEventListener<ClickEvent<Button>> listener;
     private final List<Component> contentComponents;
-    private Icon closeIcon;
     private final String tooltip;
     private final String title;
 
@@ -38,8 +39,10 @@ public class PopupMenuComponent extends VerticalLayout {
         setSpacing(false);
         setMargin(false);
         addClassName("material-popup");
-        getStyle().set("position", "absolute"); // чтобы можно было задавать top/left с клиента
+        getStyle().set("position", "absolute");
+        getStyle().set("padding", "5px 10px 3px 10px");
         openMenuButton = new Button(openIcon.create());
+        openMenuButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         super.setVisible(false);
         initContent();
     }
@@ -55,7 +58,7 @@ public class PopupMenuComponent extends VerticalLayout {
     private void initHeader() {
         Span titleSpan = new Span(title);
         titleSpan.addClassName("material-popup__title");
-        closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
+        Icon closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
         closeIcon.addClassName("popup-close-button");
         closeIcon.addClickListener(e -> close());
         HorizontalLayout header = new HorizontalLayout(titleSpan, closeIcon);
@@ -67,15 +70,14 @@ public class PopupMenuComponent extends VerticalLayout {
     }
 
     private void initApplyButton() {
-        applyButton = new Button("Применить", VaadinIcon.CHECK.create());
-        applyButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        applyButton = new Button(LineAwesomeIcon.SAVE.create());
         applyButton.addClickListener(listener);
         applyButton.addClickListener(event -> super.setVisible(false));
     }
 
     private void initOpenButton() {
         openMenuButton.setTooltipText(tooltip);
-        openMenuButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        openMenuButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         openMenuButton.addClickListener(e -> {
             if (!super.isVisible()) {
                 super.setVisible(true);
@@ -133,7 +135,6 @@ public class PopupMenuComponent extends VerticalLayout {
     private void addEscClose() {
         getElement().addEventListener("keydown", e -> close())
             .setFilter("event.key === 'Escape'");
-        //addShortcutListener(this::close, Key.ESCAPE);
     }
 
     public Button getOpenMenuButton() {

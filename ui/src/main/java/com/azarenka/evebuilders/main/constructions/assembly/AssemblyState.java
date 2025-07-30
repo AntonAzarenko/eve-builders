@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 
 public class AssemblyState {
 
-
     private final Map<ProductionNode, Double> efficiencyMap = new HashMap<>();
     private final Map<ProductionNode, Integer> countMap = new HashMap<>();
     private final Set<ProductionNode> excludedNodes = new HashSet<>();
@@ -83,6 +82,14 @@ public class AssemblyState {
         countMap.remove(root);
         rootNodes.remove(root);
         manuallyExcludedNodes.remove(root);
+        recalculateStages();
+    }
+
+    public void clearRoots() {
+        renderedModules.clear();
+        efficiencyMap.clear();
+        countMap.clear();
+        rootNodes.clear();
         recalculateStages();
     }
 
@@ -161,7 +168,6 @@ public class AssemblyState {
     private void recalculateTreeQuantities(ProductionNode node, int parentAdjustedQuantity,
                                            boolean alreadyDiscountedByParent) {
         ProductionNode root = findRoot(node);
-
         int adjustedQuantity;
         if (node == root) {
             adjustedQuantity = recalculateBaseValue(node, parentAdjustedQuantity);
@@ -435,8 +441,7 @@ public class AssemblyState {
         return stagesMap;
     }
 
-    public void setStagesMap(
-        Map<ProductionNode, Map<Integer, Map<String, Integer>>> stagesMap) {
+    public void setStagesMap(Map<ProductionNode, Map<Integer, Map<String, Integer>>> stagesMap) {
         this.stagesMap = stagesMap;
     }
 }

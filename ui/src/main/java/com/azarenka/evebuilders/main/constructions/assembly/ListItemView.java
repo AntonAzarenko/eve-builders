@@ -52,8 +52,6 @@ public class ListItemView extends View implements INumberFormater {
         var listViewLayout = VaadinUtils.initCommonVerticalLayout();
         listViewLayout.setWidth("96%");
         assemblyState.getRootNodes().forEach(rootNode -> {
-            //assemblyState.setBenefitsIfHas(rootNode);
-            //assemblyState.recalculateTreeQuantities(rootNode, rootNode.getQuantity());
             var rootHeader = new HorizontalLayout();
             rootHeader.setAlignItems(FlexComponent.Alignment.CENTER);
             rootHeader.setJustifyContentMode(JustifyContentMode.BETWEEN);
@@ -95,8 +93,9 @@ public class ListItemView extends View implements INumberFormater {
                 stageDetails.setSummary(stageLabel);
                 stageDetails.addClassName("stage-details");
                 stageDetails.setWidthFull();
-                var copyStageMatButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.COPY);
-                var infoStageButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.INFO_CIRCLE);
+                var copyStageMatButton = VaadinUtils.createLumoButton(VaadinIcon.COPY);
+                var infoStageButton = VaadinUtils.createLumoButton(VaadinIcon.INFO_CIRCLE);
+                var showMineralsButton = VaadinUtils.createLumoButton(VaadinIcon.CALC);
                 copyStageMatButton.addClickListener(e -> {
                     StringBuilder sb = new StringBuilder();
                     materials.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
@@ -104,12 +103,16 @@ public class ListItemView extends View implements INumberFormater {
                         String.format("Скопировано айтемов %s", materials.entrySet().stream().count()));
                 });
                 int s = stage[0];
+                List<ProductionNode> productionNodesForStage = collectProductionNodesByStage(rootNode, key);
                 infoStageButton.addClickListener(e -> {
-                    new StageInfoWindow(collectProductionNodesByStage(rootNode, key), assemblyState, s,
-                        controller).open();
+                    new StageInfoWindow(productionNodesForStage, assemblyState, s, controller).open();
+                });
+                showMineralsButton.addClickListener(e -> {
+                    new CalculationItemsWindow(controller, productionNodesForStage,
+                        assemblyState.getStagesMap().get(rootNode).get(key), "Stage " + s).open();
                 });
                 var innerDetailsLayout = createInnerDetailsLayout();
-                innerDetailsLayout.add(stageDetails, infoStageButton, copyStageMatButton);
+                innerDetailsLayout.add(stageDetails, showMineralsButton, infoStageButton, copyStageMatButton);
                 innerDetailsLayout.addClassName("btn-col");
                 stagesLayout.add(innerDetailsLayout);
             }
@@ -136,7 +139,9 @@ public class ListItemView extends View implements INumberFormater {
     private Button createPropertiesMaterialButton(ProductionNode rootNode, String materialName, int stage) {
         boolean isNotFinalItem = doesItemNotFinal(rootNode, materialName, stage);
         var productionNodes = assemblyState.findAllNodesByName(rootNode, materialName);
-        var menuWindow = createPopupMenuComponent(productionNodes);
+        var menuWindow = isCompositeItem(productionNodes)
+            ? createPopupMenuComponentWithoutEfficiency(productionNodes)
+            : createPopupMenuComponentWithEfficiency(productionNodes);
         UI.getCurrent().add(menuWindow);
         var propertiesMaterialButton = menuWindow.getOpenMenuButton();
         if (assemblyState.getManuallyExcludedNodes().containsAll(productionNodes) && isNotFinalItem) {
@@ -144,9 +149,7 @@ public class ListItemView extends View implements INumberFormater {
         } else if (assemblyState.getEfficiencyMap().containsKey(productionNodes.get(0)) && isNotFinalItem) {
             propertiesMaterialButton.getStyle().set("color", "green");
         }
-        propertiesMaterialButton.setEnabled(isNotFinalItem
-            && (Objects.nonNull(productionNodes.get(0).getMaterialType()) &&
-            !assemblyState.getCompositeTypes().contains(productionNodes.get(0).getMaterialType())));
+        propertiesMaterialButton.setEnabled(isNotFinalItem);
         if (assemblyState.isEveryBlueprintHasBenefits() && isNotFinalItem
             && (Objects.nonNull(productionNodes.get(0).getMaterialType()) &&
             !assemblyState.getCompositeTypes().contains(productionNodes.get(0).getMaterialType()))) {
@@ -154,6 +157,11 @@ public class ListItemView extends View implements INumberFormater {
                 assemblyState.setEfficiency(productionNode, assemblyState.getEveryBlueprintBenefitsCount()));
         }
         return propertiesMaterialButton;
+    }
+
+    private boolean isCompositeItem(List<ProductionNode> productionNodes) {
+        return !(Objects.nonNull(productionNodes.get(0).getMaterialType()) &&
+            !assemblyState.getCompositeTypes().contains(productionNodes.get(0).getMaterialType()));
     }
 
     private Checkbox initExcludeCheckbox(List<ProductionNode> productionNodes) {
@@ -182,7 +190,7 @@ public class ListItemView extends View implements INumberFormater {
         return efficiencyField;
     }
 
-    private PopupMenuComponent createPopupMenuComponent(List<ProductionNode> productionNodes) {
+    private PopupMenuComponent createPopupMenuComponentWithEfficiency(List<ProductionNode> productionNodes) {
         var tooltip = "Установите улучшение чертежа для правильного отображения количества материалов";
         var efficiencyField = initEfficiencyField(productionNodes);
         return new PopupMenuBuilder().withComponent(efficiencyField)
@@ -201,7 +209,24 @@ public class ListItemView extends View implements INumberFormater {
             }).build();
     }
 
-
+    private PopupMenuComponent createPopupMenuComponentWithoutEfficiency(List<ProductionNode> productionNodes) {
+        var tooltip = "Исключите компонент из просчета";
+        var efficiencyField = initEfficiencyField(productionNodes);
+        return new PopupMenuBuilder()
+            .withTitle("Настройка узла")
+            .withComponent(initExcludeCheckbox(productionNodes))
+            .withTooltip(tooltip)
+            .withIcon(VaadinIcon.COG)
+            .onApply(keyPressEvent -> {
+                var value = efficiencyField.getValue();
+                productionNodes.forEach(productionNode -> {
+                    assemblyState.getEfficiencyMap()
+                        .put(productionNode, Objects.isNull(value) ? 0 : Double.valueOf(value));
+                });
+                assemblyState.recalculateStages();
+                this.refresh();
+            }).build();
+    }
 
     public List<ProductionNode> collectProductionNodesByStage(ProductionNode root, int targetStage) {
         var result = new ArrayList<ProductionNode>();
