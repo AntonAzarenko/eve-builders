@@ -1,136 +1,186 @@
 package com.azarenka.evebuilders.service.impl.inventory;
 
-import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.db.Asset;
+import com.azarenka.evebuilders.domain.db.AssetEntity;
+import com.azarenka.evebuilders.domain.dto.ItemDto;
 import com.azarenka.evebuilders.domain.sqllite.EveIcon;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
+import com.azarenka.evebuilders.repository.database.AssetRepository;
 import com.azarenka.evebuilders.repository.litesql.EveIconRepository;
 import com.azarenka.evebuilders.repository.litesql.InvTypesRepository;
 import com.azarenka.evebuilders.service.api.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
-import reactor.util.retry.Retry;
+import com.azarenka.evebuilders.service.api.IUserTokenService;
+import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+import com.azarenka.evebuilders.service.impl.intergarion.AssetIntegrationService;
 
-import java.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class AssetService {
 
-    private final WebClient webClient;
+    Logger LOGGER = LoggerFactory.getLogger(AssetService.class);
 
-    @Value("${eve.character.assets.url}")
-    private String apiUrl;
+    private final AssetMapper assetMapper = new AssetMapper();
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IUserTokenService tokenService;
+    @Autowired
+    private TokenRefreshService tokenRefreshService;
+    @Autowired
+    private InvTypesRepository itemRepository;
+    @Autowired
+    private EveIconRepository eveIconRepository;
+    @Autowired
+    private AssetIntegrationService assetIntegrationService;
+    @Autowired
+    private CharacterAssetSyncService characterAssetSyncService;
+    @Autowired
+    private AssetRepository assetRepository;
 
-    private final InvTypesRepository itemRepository;
-    private final EveIconRepository eveIconRepository;
-
-    public AssetService(InvTypesRepository itemRepository, EveIconRepository eveIconRepository) {
-        this.webClient = WebClient.builder()
-                .baseUrl("https://esi.evetech.net")
-                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
-                        .responseTimeout(Duration.ofMinutes(2))
-                ))
-                .build();
-        this.itemRepository = itemRepository;
-        this.eveIconRepository = eveIconRepository;
+    @Transactional
+    public List<ItemDto> getMaterials(List<String> expectedMaterials) {
+        var materialTypeIds = itemRepository.findTypeIdsByNames(expectedMaterials);
+        var mainCharacterId = userService.getCharacterId();
+        var mainUserToken = userService.getUserToken();
+        var alters = userService.getAlters();
+        var allAssets = new ArrayList<>(
+            syncAndFetchAssets(SecurityUtils.getUserName(), mainCharacterId, mainUserToken, materialTypeIds));
+        alters.forEach(alter -> {
+            var updatedAccessToken = tokenRefreshService
+                .refreshTokenIfNeeded(alter.getUid())
+                .defaultIfEmpty(tokenService.getUserToken(alter.getUid()))
+                .block();
+            allAssets.addAll(syncAndFetchAssets(
+                alter.getUsername(), alter.getCharacterId(), updatedAccessToken, materialTypeIds));
+        });
+        LOGGER.info("Retrieving materials. Stop. UserCount={}, AssetsCount={}", alters.size() + 1, allAssets.size());
+        return allAssets;
     }
 
-    public List<ItemDto> getMinerals() {
-        String characterId = userService.getCharacterId();
-        String userToken = userService.getUserToken();
-
-        int totalPages = getTotalPages(characterId, userToken);
-        List<Asset> allAssets = new ArrayList<>();
-        for (int page = 1; page <= totalPages; page++) {
-            int finalPage = page;
-            List<Asset> assetsPage = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(apiUrl)
-                            .queryParam("datasource", "tranquility")
-                            .queryParam("page", finalPage) // Укажите страницу, если необходимо
-                            .build(characterId))
-                    .header("Authorization", "Bearer " + userToken)
-                    .retrieve()
-                    .bodyToFlux(Asset.class)
-                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(10)))
-                    .collectList()
-                    .block();
-            if (assetsPage != null) {
-                allAssets.addAll(assetsPage);
-            }
+    private List<ItemDto> syncAndFetchAssets(String userName, String characterId, String userToken,
+                                             List<Integer> typeFilter) {
+        LOGGER.info("Retrieving materials. Start. UserName={}", userName);
+        var savedEtag = characterAssetSyncService.getEtagForUser(userName);
+        var response = assetIntegrationService.findAssetsWithEtag(characterId, userToken, savedEtag);
+        List<Asset> assets;
+        if (response.isNotModified()) {
+            characterAssetSyncService.updateExpiresOnly(userName, response.getExpiresAt());
+            assets = assetRepository.findAllByUserNameAndTypeIdIn(userName, typeFilter)
+                .stream().map(assetMapper::toApiAsset).toList();
+            LOGGER.info("Retrieved materials from Database. AssetsCount={}", assets.size());
+        } else {
+            characterAssetSyncService.updateSync(userName, response.getEtag(), response.getExpiresAt());
+            saveAssets(userName, response.getAssets()); // обновим БД
+            assets = response.getAssets().stream()
+                .filter(asset -> typeFilter.contains(asset.getTypeId()))
+                .toList();
         }
-        // 2. Загружаем typeID минералов из базы данных
-        List<Integer> mineralTypeIds = itemRepository.findMineralTypeIds();
-
-        List<Asset> temp = allAssets.stream()
-                .filter(asset -> mineralTypeIds.contains(asset.getTypeId()))
-                .toList();
-        temp = groupAssetsByTypeIdAndSumQuantity(temp);
-        List<InvType> invTypes = itemRepository.findByTypeIDIn(temp.stream().map(Asset::getTypeId).toList());
+        assets = groupAssetsByTypeIdAndSumQuantity(assets);
+        List<InvType> invTypes = itemRepository.findByTypeIDIn(assets.stream().map(Asset::getTypeId).toList());
         List<EveIcon> eveIcons = eveIconRepository.findByIconIdIn(invTypes.stream().map(InvType::getIconID).toList());
-        return temp.stream()
-                .map(asset -> {
-                    // Ищем InvType для текущего Asset
-                    InvType invType = invTypes.stream()
-                            .filter(type -> type.getTypeID().equals(asset.getTypeId()))
-                            .findFirst()
-                            .orElse(null);
 
-                    // Ищем EveIcon для текущего InvType
-                    EveIcon eveIcon = (invType != null) ? eveIcons.stream()
-                            .filter(icon -> icon.getIconId().equals(invType.getIconID()))
-                            .findFirst()
-                            .orElse(null) : null;
-
-                    // Создаем ItemDto
-                    ItemDto dto = new ItemDto();
-                    dto.setAsset(asset);
-                    dto.setInvType(invType);
-                    dto.setEveIcon(eveIcon);
-
-                    return dto;
-                })
-                .toList();
-    }
-
-    private int getTotalPages(String characterId, String accessToken) {
-        WebClient.ResponseSpec responseSpec = webClient.get()
-                .uri("https://esi.evetech.net/latest/characters/{characterId}/assets/?datasource=tranquility&page=1",
-                        characterId)
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve();
-
-        return responseSpec.toBodilessEntity()
-                .block()
-                .getHeaders()
-                .getFirst("X-Pages") != null
-                ? Integer.parseInt(responseSpec.toBodilessEntity().block().getHeaders().getFirst("X-Pages"))
-                : 1;
-    }
-
-    public List<Asset> groupAssetsByTypeIdAndSumQuantity(List<Asset> assets) {
         return assets.stream()
-                .collect(Collectors.groupingBy(
-                        Asset::getTypeId,
-                        Collectors.summingInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
-                ))
-                .entrySet().stream()
-                .map(entry -> {
-                    Asset asset = new Asset();
-                    asset.setTypeId(entry.getKey());
-                    asset.setQuantity(entry.getValue());
-                    return asset;
-                })
-                .toList();
+            .map(asset -> {
+                InvType invType = invTypes.stream()
+                    .filter(type -> type.getTypeID().equals(asset.getTypeId()))
+                    .findFirst()
+                    .orElse(null);
+                EveIcon eveIcon = (invType != null)
+                    ? eveIcons.stream()
+                    .filter(icon -> icon.getIconId().equals(invType.getIconID()))
+                    .findFirst()
+                    .orElse(null)
+                    : null;
+                var dto = new ItemDto();
+                dto.setAsset(asset);
+                dto.setInvType(invType);
+                dto.setEveIcon(eveIcon);
+                dto.setUserName(userName);
+                return dto;
+            })
+            .toList();
+    }
+
+    private List<Asset> groupAssetsByTypeIdAndSumQuantity(List<Asset> assets) {
+        return  assets.stream()
+            .collect(Collectors.groupingBy(
+                Asset::getTypeId
+            ))
+            .entrySet().stream()
+            .map(entry -> {
+                Integer typeId = entry.getKey();
+                List<Asset> assetGroup = entry.getValue();
+                int totalQuantity = assetGroup.stream()
+                    .mapToInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
+                    .sum();
+                Asset baseAsset = assetGroup.get(0);
+                Asset result = new Asset();
+                result.setTypeId(typeId);
+                result.setQuantity(totalQuantity);
+                result.setLocationId(baseAsset.getLocationId()); // Сохраняем locationId из первого
+                return result;
+            })
+            .toList();
+    }
+
+    private void saveAssets(String userName, List<Asset> assets) {
+        LOGGER.info("Saving assets. UserName={}", userName);
+        assetRepository.deleteAllByUserName(userName);
+        List<AssetEntity> entities = assets.stream()
+            .map(asset -> new AssetEntity(
+                UUID.randomUUID().toString(),
+                userName,
+                asset.getTypeId(),
+                asset.getLocationId(),
+                asset.getQuantity(),
+                LocalDateTime.now()
+            ))
+            .toList();
+        assetRepository.saveAll(entities);
+    }
+
+    public void syncUserAssets(String characterId, String userName, String accessToken) {
+        var etag = characterAssetSyncService.getEtagForUser(userName);
+        var response = assetIntegrationService.findAssetsWithEtag(characterId, accessToken, etag);
+        if (response.isNotModified()) {
+            characterAssetSyncService.updateExpiresOnly(userName, response.getExpiresAt());
+            return;
+        }
+        saveAssets(userName, response.getAssets());
+        characterAssetSyncService.updateSync(userName, response.getEtag(), response.getExpiresAt());
+    }
+
+    private static class AssetMapper {
+
+        public Asset toApiAsset(AssetEntity entity) {
+            Asset asset = new Asset();
+            asset.setTypeId(entity.getType());
+            asset.setLocationId(entity.getLocationId());
+            asset.setQuantity(entity.getQuantity());
+            return asset;
+        }
+
+        public AssetEntity toEntity(Asset asset, String userName) {
+            AssetEntity entity = new AssetEntity();
+            entity.setId(userName + "-" + asset.getTypeId() + "-" + asset.getLocationId());
+            entity.setUserName(userName);
+            entity.setTypeId(asset.getTypeId());
+            entity.setLocationId(asset.getLocationId());
+            entity.setQuantity(asset.getQuantity());
+            return entity;
+        }
     }
 }

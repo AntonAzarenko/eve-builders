@@ -1,9 +1,16 @@
 package com.azarenka.evebuilders.domain.dto.file;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ActivityProduct {
+
+    @JsonProperty("typeID")
     private int typeID;
+    @JsonProperty("activityID")
     private int activityID;
+    @JsonProperty("productTypeID")
     private int productTypeID;
+    @JsonProperty("quantity")
     private int quantity;
 
     public int getActivityID() {

@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.main;
 
 import com.azarenka.evebuilders.common.util.BuilderPermission;
+import com.azarenka.evebuilders.component.IconFactory;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.domain.db.Role;
@@ -12,6 +13,8 @@ import com.azarenka.evebuilders.main.menu.page.OrdersPage;
 import com.azarenka.evebuilders.main.orders.OrdersView;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -20,6 +23,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import jakarta.annotation.security.PermitAll;
 
 import java.util.Map;
@@ -34,23 +40,26 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     private final DrawerToggle drawerToggle = new DrawerToggle();
     private final MainWidgetController controller;
     private int countSubmittedRequests;
-    private int countNewOrders;
+    private final int countNewOrders;
 
     public MainWidget(MainWidgetController controller) {
         this.controller = controller;
         countSubmittedRequests = controller.countRequests();
         countNewOrders = controller.countNewOrders();
         addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), OrdersPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(), countNewOrders);
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(),
+            countNewOrders, "tab-order-menu");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.FACTORY.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, IconFactory.lineAwesome(
+                LineAwesomeIcon.INDUSTRY_SOLID)
+            , "tab-construction-menu");
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create());
+                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
                 new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
-                countSubmittedRequests);
+                countSubmittedRequests, "tab-request-menu");
     }
 
     @Override
@@ -71,7 +80,8 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasUserPermission() || BuilderPermission.hasAdminPermission()) {
             tabMap.get(OrdersPage.class).updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
-            tabMap.get(MenuConstructionPage.class).updateLabel(getTranslation("menu.tab.construction"), VaadinIcon.FACTORY.create());
+            tabMap.get(MenuConstructionPage.class).updateLabel(getTranslation("menu.tab.construction"),
+                LineAwesomeIcon.INDUSTRY_SOLID.create());
         }
         if (BuilderPermission.hasAdminPermission()) {
             tabMap.get(MenuManagerPage.class).updateLabel(getTranslation("menu.tab.manger.orders"), VaadinIcon.COG.create());

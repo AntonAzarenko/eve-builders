@@ -23,10 +23,9 @@ public class FitView extends CommonDialogComponent {
     private IFitLoaderService fitLoaderService;
 
     public FitView(Fit fit, IFitLoaderService fitLoaderService) {
+        super("fit-window", true);
         this.fitLoaderService = fitLoaderService;
-
-        VerticalLayout verticalLayout = new VerticalLayout();
-        Span created = new Span(String.format("Загружено: %s", fit.getCreatedBy()));
+        var created = new Span(String.format("Загружено: %s", fit.getCreatedBy()));
         created.getStyle().set("font-size", "10px");
         super.setHeaderTitle(String.format("Fit: %s", fit.getId()));
         add(created);

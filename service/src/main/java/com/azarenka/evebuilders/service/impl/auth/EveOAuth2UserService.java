@@ -2,9 +2,11 @@ package com.azarenka.evebuilders.service.impl.auth;
 
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.domain.dto.EveUserPrincipal;
 import com.azarenka.evebuilders.service.api.IAuthIntegrationService;
 import com.azarenka.evebuilders.service.api.IUserService;
+import com.azarenka.evebuilders.service.api.IUserTokenService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;
 
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +41,8 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IUserTokenService tokenService;
     @Autowired
     private EveCharacterService eveCharacterService;
     @Autowired
@@ -91,7 +96,9 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
             userService.getByUsername(userName).ifPresent(mainUser -> {
                 user.setMainId(mainUser.getUid());
                 user.setRoles(mainUser.getRoles());
+                user.setMainCharacter(false);
                 LOGGER.info("User [{}] was add as a character to [{}]", user.getUsername(), mainUser.getUsername());
+                //createToken(userRequest, user);
             });
         }
         return user;
@@ -116,5 +123,18 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         } else {
             user.setRoles(Set.of(Role.ROLE_USER));
         }
+    }
+
+    private void createToken(OAuth2UserRequest userRequest, User user) {
+        var userId = user.getUid();
+        var accessToken = userRequest.getAccessToken().getTokenValue();
+        var expiresAt = userRequest.getAccessToken().getExpiresAt();
+        var token = new UserToken();
+        token.setUserId(userId);
+        token.setAccessToken(accessToken);
+        //token.setRefreshToken(userRequest.getRefreshToken().getTokenValue());
+        token.setExpiresAt(LocalDateTime.ofInstant(expiresAt, ZoneId.systemDefault()));
+        tokenService.save(token);
+        LOGGER.info("User [{}], Token updated", user.getUsername());
     }
 }

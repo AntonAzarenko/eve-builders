@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
@@ -28,9 +28,8 @@ public class BuilderConstructionView extends View {
         this.controller = controller;
         this.order = (DistributedOrder) VaadinSession.getCurrent().getAttribute("currentOrder");
         this.fit = (Fit) VaadinSession.getCurrent().getAttribute("currentFit");
-        setHeight("95%");
+        addClassName("corporation-constructions-view");
         initView();
-        new AttentionWindow().open();
     }
 
     private void initView() {
@@ -44,7 +43,9 @@ public class BuilderConstructionView extends View {
         mainLayout.add(leftSidePanel, leftDivider, middleSidePanel, rightDivider, rightSidePanel);
         mainLayout.setFlexGrow(1, leftSidePanel, middleSidePanel, rightSidePanel);
         mainLayout.setSizeFull();
-        mainLayout.setPadding(true);
+        mainLayout.setPadding(false);
+        mainLayout.setSpacing(false);
+        mainLayout.getStyle().set("padding", "0px 5px");
         add(mainLayout);
     }
 }

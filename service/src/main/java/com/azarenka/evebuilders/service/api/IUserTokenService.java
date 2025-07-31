@@ -5,6 +5,8 @@ import com.azarenka.evebuilders.domain.db.UserToken;
 
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 
+import java.util.Optional;
+
 public interface IUserTokenService {
 
     UserToken save(UserToken userToken);
@@ -12,6 +14,8 @@ public interface IUserTokenService {
     String getUserToken(String userId);
 
     UserToken findByUserId(String uid);
+
+    Optional<UserToken> getByUserId(String uid);
 
     void delete(String userId);
 }

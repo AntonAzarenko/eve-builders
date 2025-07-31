@@ -8,6 +8,7 @@ import com.vaadin.flow.server.VaadinSession;
 public class CreateRequestView extends CommonDialogComponent {
 
     public CreateRequestView(ICreateRequestController controller) {
+        super("create-request-view",false);
         setHeaderTitle("Create Request");
         setHeight("750px");
         setWidth("800px");

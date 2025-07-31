@@ -1,4 +1,5 @@
 @import 'components/custom-components.css';
+@import 'components/loading-indicator.css';
 
 vaadin-context-menu-overlay::part(overlay) {
     padding: 0;
@@ -18,4 +19,9 @@ html, body, #outlet, vaadin-app-layout, #ROOT, #flow-root {
     height: 100% !important;
     margin: 0;
     overflow: hidden;
+}
+
+.centered-header {
+    text-align: center;
+    vertical-align: middle;
 }

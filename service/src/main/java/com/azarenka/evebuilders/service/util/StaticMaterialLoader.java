@@ -4,8 +4,15 @@ import com.azarenka.evebuilders.domain.ModuleSlotEnum;
 import com.azarenka.evebuilders.domain.dto.file.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -34,8 +41,8 @@ public class StaticMaterialLoader {
     private final SlotResolver slotResolver = new SlotResolver();
 
     public StaticMaterialLoader() {
-        Map<Integer, InvGroup> groupMap = groups;
         loadFiles();
+        Map<Integer, InvGroup> groupMap = groups;
         Map<Integer, List<MaterialEntry>> materialsByBlueprint = new HashMap<>();
         for (ActivityMaterial m : materials) {
             if (m.getActivityID() != 1 && m.getActivityID() != 11) continue;
@@ -54,7 +61,7 @@ public class StaticMaterialLoader {
             InvType productType = types.get(p.getProductTypeID());
             InvType blueprintType = types.get(p.getTypeID());
             if (productType == null || blueprintType == null) continue;
-            InvGroup group = groupMap.get(productType.getGroupId());
+            InvGroup group = groups.get(productType.getGroupId());
             TypeInfo info = new TypeInfo();
             info.setTypeID(productType.getTypeID());
             info.setTypeName(productType.getTypeName());
@@ -70,7 +77,7 @@ public class StaticMaterialLoader {
 
     private void loadFiles() {
         try {
-            var invTypes = loadCsvList("invTypes.csv", InvType.class);
+            var invTypes = loadCsvListWithCamelCases("invTypes.csv", InvType.class);
             this.nameToTypeID = invTypes.stream()
                     .filter(t -> t.getTypeName() != null)
                     .collect(Collectors.toMap(
@@ -113,7 +120,7 @@ public class StaticMaterialLoader {
         Map<Integer, T> map = new HashMap<>();
 
         for (T obj : list) {
-            int id;
+            Integer id;
             if (type == InvGroup.class) {
                 id = ((InvGroup) obj).getGroupID();
             } else if (type == InvType.class) {
@@ -152,6 +159,24 @@ public class StaticMaterialLoader {
 
         try (InputStream in = resource.getInputStream()) {
             MappingIterator<T> it = mapper.readerFor(type).with(schema).readValues(in);
+            return it.readAll();
+        }
+    }
+
+    private <T> List<T> loadCsvListWithCamelCases(String fileName, Class<T> type) throws IOException {
+        CsvMapper mapper = new CsvMapper();
+        mapper.enable(CsvParser.Feature.TRIM_SPACES);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+        mapper.registerModule(new NullsAsNoneModule());
+
+        CsvSchema schema = CsvSchema.emptySchema().withHeader();
+        Resource resource = new ClassPathResource("data/" + fileName);
+
+        try (InputStream in = resource.getInputStream()) {
+            MappingIterator<T> it = mapper.readerFor(type)
+                .with(schema)
+                .with(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+                .readValues(in);
             return it.readAll();
         }
     }
@@ -206,6 +231,32 @@ public class StaticMaterialLoader {
                 case 18 -> ModuleSlotEnum.DRONE_BAY;
                 default -> ModuleSlotEnum.CARGO;
             };
+        }
+    }
+
+    public class NullsAsNoneModule extends SimpleModule {
+        public NullsAsNoneModule() {
+            addDeserializer(Integer.class, new StdDeserializer<>(Integer.class) {
+                @Override
+                public Integer deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+                    String value = p.getText().trim();
+                    if ("None".equalsIgnoreCase(value) || value.isEmpty()) {
+                        return null;
+                    }
+                    return Integer.valueOf(value);
+                }
+            });
+
+            addDeserializer(Double.class, new StdDeserializer<>(Double.class) {
+                @Override
+                public Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+                    String value = p.getText().trim();
+                    if ("None".equalsIgnoreCase(value) || value.isEmpty()) {
+                        return null;
+                    }
+                    return Double.valueOf(value);
+                }
+            });
         }
     }
 }

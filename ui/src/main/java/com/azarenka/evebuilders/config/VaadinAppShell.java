@@ -2,12 +2,14 @@ package com.azarenka.evebuilders.config;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.Theme;
 
 import java.util.Locale;
 
+@Push
 @Theme("builders")
 public class VaadinAppShell implements AppShellConfigurator {
 

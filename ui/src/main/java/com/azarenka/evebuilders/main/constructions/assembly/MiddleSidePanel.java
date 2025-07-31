@@ -1,5 +1,7 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
+import com.azarenka.evebuilders.common.util.VaadinUtils;
+import com.azarenka.evebuilders.component.PopupMenuBuilder;
 import com.azarenka.evebuilders.component.PopupMenuComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
@@ -27,19 +29,39 @@ public class MiddleSidePanel extends View {
     private final AssemblyState assemblyState;
     private final LeftSidePanel leftSidePanel;
     private final Pattern pattern = Pattern.compile(".*\\s+x(\\d+)$");
+    private final VerticalLayout mainlayout = VaadinUtils.initCommonVerticalLayout();
 
-    public MiddleSidePanel(BuilderConstructionController controller, AssemblyState assemblyState, LeftSidePanel leftSidePanel) {
+    public MiddleSidePanel(BuilderConstructionController controller, AssemblyState assemblyState,
+                           LeftSidePanel leftSidePanel) {
         this.controller = controller;
         this.assemblyState = assemblyState;
         this.leftSidePanel = leftSidePanel;
-        setClassName("assembly-area");
-        //setClassName("scrollable-column");
+        mainlayout.addClassName("assembly-area");
+        mainlayout.addClassName("scrollable-column");
+        mainlayout.getStyle().set("padding", "2px 5px");
         setSizeFull();
+        getStyle().set("padding", "0px 5px");
         setWidth("70%");
+        initToolbar();
         initPanel();
     }
 
+    void initToolbar() {
+        HorizontalLayout middleSideToolbar = new HorizontalLayout();
+        middleSideToolbar.setAlignItems(FlexComponent.Alignment.CENTER);
+        middleSideToolbar.setWidthFull();
+        var clearButton = VaadinUtils.createLumoButton(VaadinIcon.TRASH);
+        clearButton.addClickListener(event -> {
+            mainlayout.removeAll();
+            assemblyState.clearRoots();
+            leftSidePanel.refresh();
+        });
+        middleSideToolbar.add(clearButton);
+        add(middleSideToolbar);
+    }
+
     private void initPanel() {
+        add(mainlayout);
         DropTarget<VerticalLayout> dropTarget = DropTarget.create(this);
         dropTarget.addDropListener(event -> {
             String moduleName = (String) event.getDragData().orElse(null);
@@ -55,15 +77,17 @@ public class MiddleSidePanel extends View {
             String pureName = parseModuleName(moduleName);
             ProductionNode root = controller.getProductionNode(pureName, 1);
             assemblyState.addModule(root, count);
-            add(renderDroppedModule(root, pureName));
+            mainlayout.add(renderDroppedModule(root, pureName));
             leftSidePanel.refresh();
         } else {
             Map<ProductionNode, Integer> countMap = assemblyState.getCountMap();
             Optional<ProductionNode> first = countMap.keySet().stream()
-                    .filter(e -> e.getTypeName().equals(moduleName))
-                    .findFirst();
-            first.ifPresent(e -> countMap.put(e, countMap.get(e) + 1));
+                .filter(e -> e.getTypeName().equals(moduleName))
+                .findFirst();
+            first.ifPresent(productionNode -> countMap.compute(productionNode,  (k, integer) -> integer + 1));
+            leftSidePanel.refresh();
         }
+        assemblyState.recalculateRoots();
     }
 
     private HorizontalLayout renderDroppedModule(ProductionNode root, String moduleName) {
@@ -82,44 +106,38 @@ public class MiddleSidePanel extends View {
 
     private HorizontalLayout buildRenderDroppedModuleButtonsLayout(ProductionNode root, HorizontalLayout layout) {
         var popupEfficiencyMenu = initPopupEfficiencyMenu(root);
-        var popupCountMenu = initPopupCountMenu(root);
         getUI().ifPresent(ui -> ui.add(popupEfficiencyMenu));
-        getUI().ifPresent(ui -> ui.add(popupCountMenu));
-        var countMenuButton = popupCountMenu.getOpenMenuButton();
         var bluePrintPropertiesButton = popupEfficiencyMenu.getOpenMenuButton();
-        var deleteButton = new Button(VaadinIcon.CLOSE.create());
+        var deleteButton = VaadinUtils.createLumoButton(VaadinIcon.CLOSE);
         deleteButton.addClassName("delete-button");
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
         deleteButton.addClickListener(e ->
-                layout.getParent().ifPresent(parent -> {
-                    if (parent instanceof HasComponents) {
-                        ((HasComponents) parent).remove(layout);
-                        assemblyState.removeModule(root);
-                        leftSidePanel.refresh();
-                    }
-                }));
-        return new HorizontalLayout(countMenuButton, bluePrintPropertiesButton, deleteButton);
+            layout.getParent().ifPresent(parent -> {
+                if (parent instanceof HasComponents) {
+                    ((HasComponents) parent).remove(layout);
+                    assemblyState.removeModule(root);
+                    leftSidePanel.refresh();
+                }
+            }));
+        return new HorizontalLayout(bluePrintPropertiesButton, deleteButton);
     }
 
     private PopupMenuComponent initPopupEfficiencyMenu(ProductionNode root) {
-        var tooltip = "Установите улучшение материала на блюпринте для правильного отображения количества материалов";
+        var tooltip = "Установите улучшение чертежа для правильного отображения количества материалов";
         var efficiencyField = new IntegerField("Экономия материалов %");
-        return new PopupMenuComponent(root.getTypeName(), efficiencyField, VaadinIcon.COG, tooltip,
-                keyPressEvent -> {
-                    var value = efficiencyField.getValue();
-                    assemblyState.getEfficiencyMap().put(root, Objects.isNull(value) ? 0 : Double.valueOf(value));
-                    leftSidePanel.refresh();
-                });
-    }
-
-    private PopupMenuComponent initPopupCountMenu(ProductionNode root) {
         var countIntegerField = new IntegerField("Количество");
-        return new PopupMenuComponent(root.getTypeName(), countIntegerField, VaadinIcon.DROP,
-                "", event -> {
-            var value = countIntegerField.getValue();
-            assemblyState.getCountMap().compute(root, (k, integer) -> Objects.isNull(value) ? integer : value);
-            leftSidePanel.refresh();
-        });
+        return new PopupMenuBuilder()
+            .withTitle("Настройка чертежа")
+            .withComponent(countIntegerField)
+            .withComponent(efficiencyField)
+            .withTooltip(tooltip)
+            .withIcon(VaadinIcon.COG)
+            .onApply(keyPressEvent -> {
+                var efficiencyFieldValue = efficiencyField.getValue();
+                var countIntegerFieldValue = countIntegerField.getValue();
+                assemblyState.getCountMap().compute(root, (k, integer) -> Objects.isNull(countIntegerFieldValue) ? integer : countIntegerFieldValue);
+                assemblyState.getEfficiencyMap().put(root, Objects.isNull(efficiencyFieldValue) ? 0 : Double.valueOf(efficiencyFieldValue));
+                leftSidePanel.refresh();
+            }).build();
     }
 
     private Image createIcon(String moduleName) {
@@ -131,14 +149,18 @@ public class MiddleSidePanel extends View {
     }
 
     private int parseModuleCount(String moduleName) {
-        Matcher matcher = pattern.matcher(moduleName);
-        if (matcher.find()) return Integer.parseInt(matcher.group(1));
+        var matcher = pattern.matcher(moduleName);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
         return 1;
     }
 
     private String parseModuleName(String moduleName) {
-        Matcher matcher = Pattern.compile("^(.*)\\s+x\\d+$").matcher(moduleName.trim());
-        if (matcher.matches()) return matcher.group(1).trim();
+        var matcher = Pattern.compile("^(.*)\\s+x\\d+$").matcher(moduleName.trim());
+        if (matcher.matches()) {
+            return matcher.group(1).trim();
+        }
         return moduleName.trim();
     }
 }

@@ -12,7 +12,7 @@ import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
-import com.azarenka.evebuilders.main.constructions.build.BuilderConstructionView;
+import com.azarenka.evebuilders.main.constructions.assembly.BuilderConstructionView;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
@@ -60,12 +60,13 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private Button showFullOrder;
     private Button discardOrderButton;
     private Button filterButton;
-    private OrderFilter appliedFilter = new OrderFilter();
+    private OrderFilter appliedFilter;
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
         this.controller = controller;
         initMainLayout();
         updateButtonsStatus();
+        addClassName("corporation-constructions-view");
     }
 
     private void initMainLayout() {
@@ -74,6 +75,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private HorizontalLayout initFilterLayout() {
+        appliedFilter = controller.getFilter();
         orderFilterPopupComponent = new OrderFilterPopupComponent().builder(event -> applyFilter(),
                 filter -> controller.saveFilter(filter), () -> controller.getFilter())
             .withLoadedFilter(controller.getFilter())

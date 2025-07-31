@@ -4,6 +4,32 @@
 
 # Release notes
 
+## Version 1.6.0 – Enhancements & Fixes
+
+### UI/UX Improvements
+- Added new **loading indicator** and implemented **screen lock during loading**.
+- Redesigned the **option selection window** for each blueprint.
+- Added **resize support** and **close button** to modal headers.
+- Added **calculation window for each stage**, showing components, stock, deficit, and total cost in Jita.
+
+### Core Logic Updates
+- Fully **reworked calculation logic** for both general flow and the **list view**.
+- Improved logic for **adding characters with main association**.
+- Blueprint **properties setup** implemented.
+- Enhanced **Assembly tab rendering logic**.
+
+### Backend & Integration
+- Fully redesigned the **ESI asset retrieval service**.
+- Implemented **database + service** to fetch asset data either from ESI or from cache.
+- Implemented a service to **fetch item prices from Jita via ESI**.
+
+### Bug Fixes
+- Fixed various issues in the **Assembly tab**.
+- Filters now **auto-apply saved selections** on page load.
+- Minor fixes for **InfoLocation**.
+- Fixed a **coordinator bug** ("PerfectionBug") where pressing *Approve* in the context menu incorrectly created a new order.
+
+
 ## Version 1.5.4
 Release Date: 2025-07-18
 

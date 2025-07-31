@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 public class AppDevelopmentInformationWindow extends CommonDialogComponent {
 
     public AppDevelopmentInformationWindow(String version) {
+        super("", false);
         setHeaderTitle("EVE Online Industry Manager");
         VerticalLayout layout = new VerticalLayout();
         layout.setPadding(false);
@@ -36,13 +37,11 @@ public class AppDevelopmentInformationWindow extends CommonDialogComponent {
         donationButton.setText("Поддержать проект");
         layout.add(donationButton);
         donationButton.addClickListener(e -> createSupportDialog().open());
-
-        getFooter().add(createCloseButton());
         add(layout);
     }
 
     public  Dialog createSupportDialog() {
-        CommonDialogComponent dialog = new CommonDialogComponent();
+        CommonDialogComponent dialog = new CommonDialogComponent("support-window", false);
         dialog.setHeaderTitle("Поддержать проект");
 
         VerticalLayout layout = new VerticalLayout();

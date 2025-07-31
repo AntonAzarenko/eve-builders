@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions.build;
+package com.azarenka.evebuilders.main.constructions.assembly;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
@@ -18,7 +18,10 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 import org.apache.commons.lang3.StringUtils;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -31,12 +34,13 @@ public class RightSidePanel extends View {
     private final MiddleSidePanel middleSidePanel;
     private HorizontalLayout rightSideToolbar;
     private SearchComponent searchField;
+    private VerticalLayout elementsLayout;
 
     public RightSidePanel(BuilderConstructionController controller, MiddleSidePanel middleSidePanel, DistributedOrder order, Fit fit) {
         this.middleSidePanel = middleSidePanel;
         this.controller = controller;
-        //setClassName("scrollable-column");
         initToolbar();
+        getStyle().set("padding", "0px 5px");
         initPanel(order, fit);
     }
 
@@ -49,8 +53,8 @@ public class RightSidePanel extends View {
                 event -> clearSearch()
         );
         searchField.setWidth("70%");
-        var addAllButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.PLUS_CIRCLE_O);
-        var clearButton = VaadinUtils.createLumoTertiaryButton(VaadinIcon.TRASH);
+        var addAllButton = VaadinUtils.createLumoButton(LineAwesomeIcon.ANGLE_DOUBLE_LEFT_SOLID);
+        var clearButton = VaadinUtils.createLumoButton(VaadinIcon.TRASH);
         clearButton.addClickListener(event -> clearAllModules());
         addAllButton.addClickListener(event -> addAllModules());
         rightSideToolbar.add(addAllButton, clearButton, searchField);
@@ -58,15 +62,18 @@ public class RightSidePanel extends View {
     }
 
     private void initPanel(DistributedOrder order, Fit fit) {
+        elementsLayout = VaadinUtils.initCommonVerticalLayout();
+        elementsLayout.addClassName("scrollable-column");
         if (Objects.nonNull(order)) {
-            add(createDraggableModule(order.getShipName()));
+            elementsLayout.add(createDraggableModule(order.getShipName()));
         }
         if (Objects.nonNull(fit)) {
             getModules(fit).stream()
                     .sorted(Comparator.naturalOrder())
                     .map(this::createDraggableModule)
-                    .forEach(this::add);
+                    .forEach(elementsLayout::add);
         }
+        add(elementsLayout);
     }
 
     private List<String> getModules(Fit fit) {
@@ -85,7 +92,7 @@ public class RightSidePanel extends View {
         var icon = createIcon(moduleName);
         var deleteButton = new Button(VaadinIcon.CLOSE.create());
         deleteButton.addClassName("delete-button");
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY_INLINE);
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         HorizontalLayout layout = new HorizontalLayout(new HorizontalLayout(icon, new Span(moduleName)), deleteButton);
         deleteButton.addClickListener(e ->
                 layout.getParent().ifPresent(parent -> {
@@ -122,7 +129,7 @@ public class RightSidePanel extends View {
             var invGroupsById = controller.getInvGroupsById(typeEnum[i].getGroupId());
             var typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream().map(InvGroup::getGroupID).toList());
             Optional<InvType> optionalInvType = typesByGroupIds.stream().filter(e -> e.getTypeName().equalsIgnoreCase(value)).findFirst();
-            optionalInvType.ifPresent(invType -> add(createDraggableModule(invType.getTypeName())));
+            optionalInvType.ifPresent(invType -> elementsLayout.add(createDraggableModule(invType.getTypeName())));
         });
     }
 
@@ -132,7 +139,7 @@ public class RightSidePanel extends View {
     }
 
     private void addAllModules() {
-        getChildren()
+        elementsLayout.getChildren()
                 .filter(component -> component instanceof HorizontalLayout)
                 .map(component -> (HorizontalLayout) component)
                 .filter(layout -> layout.getClassNames().contains("draggable-item"))
@@ -144,11 +151,11 @@ public class RightSidePanel extends View {
     }
 
     private void clearAllModules() {
-        getChildren()
+        elementsLayout.getChildren()
                 .filter(component -> component instanceof HorizontalLayout)
                 .map(component -> (HorizontalLayout) component)
                 .filter(layout -> layout.getClassNames().contains("draggable-item"))
-                .forEach(this::remove);
+                .forEach(elementsLayout::remove);
     }
 
 }

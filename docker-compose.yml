@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        APP_VERSION: 1.5.4
+        APP_VERSION: 1.6.0
     ports:
       - "9191:9191"
     volumes:

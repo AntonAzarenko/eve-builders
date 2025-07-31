@@ -89,4 +89,11 @@ public interface InvTypesRepository extends JpaRepository<InvType, String> {
             WHERE LOWER(i.typeName) = LOWER(:typeName)
         """)
     Optional<InvType> findByTypeNameIgnoreCase(@Param("typeName") String typeName);
+
+    @Query("""
+       SELECT t.typeID
+       FROM InvType t
+       WHERE t.typeName IN :typeNames
+       """)
+    List<Integer> findTypeIdsByNames(@Param("typeNames") List<String> typeNames);
 }
