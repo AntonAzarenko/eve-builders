@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionController;
 import com.azarenka.evebuilders.service.util.DecimalFormatter;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.FooterRow;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.HeaderRow;
@@ -24,6 +25,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +62,8 @@ public class CalculationItemsWindow extends CommonDialogComponent
         this.productionNodes = productionNodes;
         this.stagesMap = stagesMap;
         setSizeFull();
+        super.setMinHeight("500px");
+        super.setMinWidth("500px");
         setFullscreen(true);
         initList();
         initGrid();
@@ -141,6 +145,26 @@ public class CalculationItemsWindow extends CommonDialogComponent
         join.setComponent(headerLabel);
         HeaderCell batchJoin = topRow.join(buyBatchColumn, avgBatchColumn, sellBatchColumn);
         batchJoin.setComponent(headerBatchLabel);
+        FooterRow footerRow = grid.appendFooterRow();
+        footerRow.getCell(nameColumn).setText("Итого");
+        footerRow.getCell(buyBatchColumn)
+            .setText(DecimalFormatter.formatIsk(
+                calculationFiltredItemInformationList.stream()
+                    .map(item -> calcTotal(BigDecimal.valueOf(item.getRequiredQuantity()), item.getJitaBuyPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+            ));
+        footerRow.getCell(avgBatchColumn)
+            .setText(DecimalFormatter.formatIsk(
+                calculationFiltredItemInformationList.stream()
+                    .map(item -> calcTotal(BigDecimal.valueOf(item.getRequiredQuantity()), item.getJitaSplitPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+            ));
+        footerRow.getCell(sellBatchColumn)
+            .setText(DecimalFormatter.formatIsk(
+                calculationFiltredItemInformationList.stream()
+                    .map(item -> calcTotal(BigDecimal.valueOf(item.getRequiredQuantity()), item.getJitaSellPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+            ));
     }
 
     private BigDecimal calcTotal(BigDecimal quantity, BigDecimal price) {
@@ -152,11 +176,12 @@ public class CalculationItemsWindow extends CommonDialogComponent
 
     private Button createInfoUserButton(CalculationItemInformation calculationItemInformation) {
         var button = VaadinUtils.createLumoButton(VaadinIcon.INFO);
+        button.setEnabled(Objects.nonNull(calculationItemInformation.getItemDto()));
         button.addClickListener(event -> {
             List<CalculationItemInformation> fullInfo = calculationItemInformationList.stream()
                 .filter(info -> info.getTypeName().equals(calculationItemInformation.getTypeName()))
                 .toList();
-
+            new UserMaterialsInfoWindow(fullInfo, controller).open();
         });
         return button;
     }
@@ -171,17 +196,17 @@ public class CalculationItemsWindow extends CommonDialogComponent
         requiredColumn.setHeader("Требуется для производства");
         hasColumn.setHeader("В наличии");
         excessColumn.setHeader("Остаток");
-        buyColumn.setHeader("Продажа");
+        buyColumn.setHeader("Покупка");
         avgColumn.setHeader("Среднее");
-        sellColumn.setHeader("Покупка");
-        buyBatchColumn.setHeader("Продажа");
+        sellColumn.setHeader("Продажа");
+        buyBatchColumn.setHeader("Покупка");
         avgBatchColumn.setHeader("Среднее");
-        sellBatchColumn.setHeader("Покупка");
+        sellBatchColumn.setHeader("Продажа");
     }
 
     private void initList() {
         calculationItemInformationList = controller.collectInformation(productionNodes, stagesMap);
-        calculationFiltredItemInformationList = mergeByTypeName(calculationItemInformationList);
+        calculationFiltredItemInformationList = new ArrayList<>(mergeByTypeName(calculationItemInformationList));
     }
 
     public List<CalculationItemInformation> mergeByTypeName(List<CalculationItemInformation> list) {
@@ -190,7 +215,6 @@ public class CalculationItemsWindow extends CommonDialogComponent
                 CalculationItemInformation::getTypeName,
                 item -> item,
                 (item1, item2) -> {
-                    item1.setRequiredQuantity(item1.getRequiredQuantity() + item2.getRequiredQuantity());
                     item1.setHasQuantity(item1.getHasQuantity() + item2.getHasQuantity());
                     return item1;
                 }

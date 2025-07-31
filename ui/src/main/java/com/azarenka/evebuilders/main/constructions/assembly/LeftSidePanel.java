@@ -187,14 +187,21 @@ public class LeftSidePanel extends View {
         summaryGrid.addColumn(entry -> String.valueOf(entry.getValue())).setHeader("Quantity");
         Map<String, Integer> aggregated = aggregateAllMaterials();
         summaryGrid.setItems(aggregated.entrySet());
-        Button copyButton = new Button(VaadinIcon.COPY.create(), e -> {
+        Button copyButton = VaadinUtils.createLumoButton(VaadinIcon.COPY);
+        copyButton.addClickListener( e -> {
             StringBuilder sb = new StringBuilder();
             aggregated.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
             VaadinUtils.copyToClipboard(summaryGrid, sb.toString(),
                 String.format("Скопировано айтемов %s", aggregated.entrySet().stream().count()));
         });
+        var calcButton = VaadinUtils.createLumoButton(LineAwesomeIcon.CALCULATOR_SOLID);
+        calcButton.addClickListener( e -> {
+            CalculationItemsWindow window = new CalculationItemsWindow(controller, getProductionNodes(), aggregated,
+                "Base materials");
+            window.open();
+        });
         var layout = VaadinUtils.initCommonVerticalLayout();
-        layout.add(copyButton, summaryGrid);
+        layout.add(new HorizontalLayout(copyButton, calcButton), summaryGrid);
         layout.setSizeFull();
         return layout;
     }

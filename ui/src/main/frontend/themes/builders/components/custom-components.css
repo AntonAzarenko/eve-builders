@@ -312,5 +312,5 @@ vaadin-context-menu-item:focus {
 }
 
 .tab-assembly {
-    height: calc(100% - 56px) !important;
+    height: calc(100% - 60px) !important;
 }

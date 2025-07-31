@@ -148,7 +148,8 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
 
     private void createContextMenu(Grid<RequestOrder> grid) {
         var gridContextMenu = new GridContextMenu<>(grid);
-        submitItem = gridContextMenu.addItem(getTranslation("button.submit"), e -> clickRepeatButton());
+        submitItem = gridContextMenu.addItem(getTranslation("button.submit"), e ->
+            grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickSubmitButton));
         suspendedItem = gridContextMenu.addItem(getTranslation("button.request_suspended"),
             e -> e.getItem().ifPresent(this::clickSuspendOrderButton));
         continueItem = gridContextMenu.addItem(getTranslation("button.request_continue"),

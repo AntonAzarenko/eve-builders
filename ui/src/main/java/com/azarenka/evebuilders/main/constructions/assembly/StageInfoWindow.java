@@ -39,6 +39,7 @@ public class StageInfoWindow extends CommonDialogComponent implements INumberFor
             rootBlock.setPadding(false);
             rootBlock.setSpacing(false);
 
+
             int rootQty = root.getFinalQuantity();
             Span header = new Span(root.getTypeName() + " x " + formatNumber(rootQty));
             header.getStyle().set("font-weight", "bold");
@@ -48,7 +49,6 @@ public class StageInfoWindow extends CommonDialogComponent implements INumberFor
                 int finalQty = material.getFinalQuantity();
 
                 Span line = new Span(material.getTypeName() + ": " + formatNumber(finalQty));
-                //line.getStyle().set("margin-left", "5px");
                 HorizontalLayout horizontalLayout = new HorizontalLayout(new Span("↳ "), createIcon(material.getTypeName()), line);
                 horizontalLayout.getStyle().set("margin-left", "10px");
                 rootBlock.add(horizontalLayout);

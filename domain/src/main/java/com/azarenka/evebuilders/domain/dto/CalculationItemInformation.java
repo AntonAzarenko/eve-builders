@@ -22,6 +22,16 @@ public class CalculationItemInformation {
     private BigDecimal jitaBuyPrice;
     private BigDecimal jitaSplitPrice;
 
+    private ItemDto itemDto;
+
+    public ItemDto getItemDto() {
+        return itemDto;
+    }
+
+    public void setItemDto(ItemDto itemDto) {
+        this.itemDto = itemDto;
+    }
+
     public Integer getTypeID() {
         return typeID;
     }

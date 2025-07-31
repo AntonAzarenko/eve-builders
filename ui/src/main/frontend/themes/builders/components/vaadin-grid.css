@@ -1,0 +1,37 @@
+/*
+* Styles for all grids (Local scope).
+* @see https://vaadin.com/docs/latest/styling/custom-theme/style-scopes
+*/
+
+[part='row']:last-child [part~='header-cell'] {
+    background-color: #d9dbdd;
+    font-size: 10px;
+}
+
+[part~='header-cell'] ::slotted(vaadin-grid-cell-content) {
+    text-shadow: #f3f5f8 0 1px 0;
+    text-transform: uppercase;
+}
+
+[part='row']:last-child [part~='footer-cell'] {
+    background-color: #d9dbdd;
+    font-size: 10px;
+}
+
+[part~='footer-cell'] ::slotted(vaadin-grid-cell-content) {
+    font-weight: bolder;
+    text-shadow: #f3f5f8 0 1px 0;
+    text-transform: uppercase;
+}
+
+[part="cell body-cell"] {
+    color: chartreuse !important;
+}
+
+[part~='cell'] ::slotted(vaadin-grid-cell-content) {
+    font-size: 14px;
+}
+
+:host([theme~="hide-first-footer"]) tfoot [part="row"]:first-child {
+    display: none;
+}

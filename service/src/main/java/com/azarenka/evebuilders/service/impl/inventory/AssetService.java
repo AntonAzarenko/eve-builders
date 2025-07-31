@@ -115,17 +115,23 @@ public class AssetService {
     }
 
     private List<Asset> groupAssetsByTypeIdAndSumQuantity(List<Asset> assets) {
-        return assets.stream()
+        return  assets.stream()
             .collect(Collectors.groupingBy(
-                Asset::getTypeId,
-                Collectors.summingInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
+                Asset::getTypeId
             ))
             .entrySet().stream()
             .map(entry -> {
-                Asset asset = new Asset();
-                asset.setTypeId(entry.getKey());
-                asset.setQuantity(entry.getValue());
-                return asset;
+                Integer typeId = entry.getKey();
+                List<Asset> assetGroup = entry.getValue();
+                int totalQuantity = assetGroup.stream()
+                    .mapToInt(asset -> asset.getQuantity() != null ? asset.getQuantity() : 0)
+                    .sum();
+                Asset baseAsset = assetGroup.get(0);
+                Asset result = new Asset();
+                result.setTypeId(typeId);
+                result.setQuantity(totalQuantity);
+                result.setLocationId(baseAsset.getLocationId()); // Сохраняем locationId из первого
+                return result;
             })
             .toList();
     }
