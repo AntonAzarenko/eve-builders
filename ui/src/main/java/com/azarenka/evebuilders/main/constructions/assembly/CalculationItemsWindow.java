@@ -7,8 +7,14 @@ import com.azarenka.evebuilders.domain.dto.ProductionNode;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.constructions.api.IBuildConstructionController;
 import com.azarenka.evebuilders.service.util.DecimalFormatter;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -21,10 +27,22 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CalculationItemsWindow extends CommonDialogComponent
     implements IGridColumnAdder<CalculationItemInformation>, LocaleChangeObserver {
+
+    private Column<CalculationItemInformation> nameColumn;
+    private Column<CalculationItemInformation> requiredColumn;
+    private Column<CalculationItemInformation> hasColumn;
+    private Column<CalculationItemInformation> excessColumn;
+    private Column<CalculationItemInformation> buyColumn;
+    private Column<CalculationItemInformation> avgColumn;
+    private Column<CalculationItemInformation> sellColumn;
+    private Column<CalculationItemInformation> buyBatchColumn;
+    private Column<CalculationItemInformation> avgBatchColumn;
+    private Column<CalculationItemInformation> sellBatchColumn;
 
     private ListDataProvider<CalculationItemInformation> dataProvider;
     private Grid<CalculationItemInformation> grid;
@@ -37,7 +55,7 @@ public class CalculationItemsWindow extends CommonDialogComponent
     public CalculationItemsWindow(IBuildConstructionController controller, List<ProductionNode> productionNodes,
                                   Map<String, Integer> stagesMap, String header) {
         super("calculations-window", true);
-        setHeader(stagesMap, header);
+        setHeader(header);
         this.controller = controller;
         this.productionNodes = productionNodes;
         this.stagesMap = stagesMap;
@@ -49,7 +67,7 @@ public class CalculationItemsWindow extends CommonDialogComponent
         getFooter().add(createCloseButton());
     }
 
-    private void setHeader(Map<String, Integer> stagesMap, String header) {
+    private void setHeader(String header) {
         if (StringUtils.isNotBlank(header)) {
             super.setHeaderTitle("Calculations for " + header);
         } else {
@@ -71,37 +89,94 @@ public class CalculationItemsWindow extends CommonDialogComponent
     }
 
     private void addColumns() {
-        addComponentColumn(value -> new HorizontalLayout(new Span(controller.createIcon(value.getTypeName())),
-            new Span(value.getTypeName())), "130px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getRequiredQuantity())),
-            "130px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getHasQuantity())), "130px",
-            grid);
-        addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(
-            BigDecimal.valueOf(calc.getHasQuantity() - calc.getRequiredQuantity())), "130px", grid);
+        nameColumn =
+            addComponentColumn(value -> new HorizontalLayout(createInfoUserButton(value),
+                new Span(controller.createIcon(value.getTypeName())),
+                new Span(value.getTypeName())), "130px", grid);
+        requiredColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getRequiredQuantity())),
+                "130px", grid);
+        hasColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(BigDecimal.valueOf(calc.getHasQuantity())),
+                "130px",
+                grid);
+        excessColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatDecimalValue(
+                BigDecimal.valueOf(calc.getHasQuantity() - calc.getRequiredQuantity())), "130px", grid);
         //addDoubleColumn(CalculationItemInformation::getProductPerBatch, "150px", grid);
-        // addDoubleColumn(CalculationItemInformation::getProducedQuantity, "100px", grid);
+        //addDoubleColumn(CalculationItemInformation::getProducedQuantity, "100px", grid);
         //addDoubleColumn(CalculationItemInformation::getExcessQuantity, "90px", grid);
 
-        addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaBuyPrice()), "90px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaSplitPrice()), "90px", grid);
-        addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaSellPrice()), "90px", grid);
+        buyColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaBuyPrice()), "90px", grid);
+        avgColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaSplitPrice()), "90px", grid);
+        sellColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(calc.getJitaSellPrice()), "90px", grid);
+        buyBatchColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(
+                calcTotal(BigDecimal.valueOf(calc.getRequiredQuantity()), calc.getJitaBuyPrice())), "90px", grid);
+        avgBatchColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(
+                calcTotal(BigDecimal.valueOf(calc.getRequiredQuantity()), calc.getJitaSplitPrice())), "90px", grid);
+        sellBatchColumn =
+            addAmountColumn(calc -> DecimalFormatter.formatIsk(
+                calcTotal(BigDecimal.valueOf(calc.getRequiredQuantity()), calc.getJitaSellPrice())), "90px", grid);
+        updateColumnHeaders();
+        HeaderRow topRow = grid.prependHeaderRow();
+
+        //topRow.join(nameColumn).setText("Материал");
+        //topRow.join(requiredColumn);
+        //topRow.join(hasColumn).setText("В наличии");
+        //topRow.join(excessColumn).setText("Остаток");
+        HorizontalLayout headerLabel = new HorizontalLayout(new Span("Цена за единицу"));
+        HorizontalLayout headerBatchLabel = new HorizontalLayout(new Span("Цена за все"));
+        headerLabel.setWidthFull();
+        headerLabel.setJustifyContentMode(JustifyContentMode.CENTER);
+        headerLabel.addClassName("centered-header");
+        headerBatchLabel.setWidthFull();
+        headerBatchLabel.setJustifyContentMode(JustifyContentMode.CENTER);
+        headerBatchLabel.addClassName("centered-header");
+        HeaderCell join = topRow.join(buyColumn, avgColumn, sellColumn);
+        join.setComponent(headerLabel);
+        HeaderCell batchJoin = topRow.join(buyBatchColumn, avgBatchColumn, sellBatchColumn);
+        batchJoin.setComponent(headerBatchLabel);
+    }
+
+    private BigDecimal calcTotal(BigDecimal quantity, BigDecimal price) {
+        if (Objects.nonNull(quantity) && Objects.nonNull(price)) {
+            return quantity.multiply(price);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private Button createInfoUserButton(CalculationItemInformation calculationItemInformation) {
+        var button = VaadinUtils.createLumoButton(VaadinIcon.INFO);
+        button.addClickListener(event -> {
+            List<CalculationItemInformation> fullInfo = calculationItemInformationList.stream()
+                .filter(info -> info.getTypeName().equals(calculationItemInformation.getTypeName()))
+                .toList();
+
+        });
+        return button;
     }
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        grid.getColumns().get(0).setHeader("Материал");
-        grid.getColumns().get(1).setHeader("Требуется для производства");
-        grid.getColumns().get(2).setHeader("В наличии");
-        grid.getColumns().get(3).setHeader("Остаток");
-        //grid.getColumns().get(4).setHeader("Прогон");
-        //grid.getColumns().get(5).setHeader("произведено");
-        //grid.getColumns().get(6).setHeader("Остаток");
+        updateColumnHeaders();
+    }
 
-        grid.getColumns().get(4).setHeader("Продажа");
-        grid.getColumns().get(5).setHeader("Среднее");
-        grid.getColumns().get(6).setHeader("Покупка");
-
+    private void updateColumnHeaders() {
+        nameColumn.setHeader("Материал");
+        requiredColumn.setHeader("Требуется для производства");
+        hasColumn.setHeader("В наличии");
+        excessColumn.setHeader("Остаток");
+        buyColumn.setHeader("Продажа");
+        avgColumn.setHeader("Среднее");
+        sellColumn.setHeader("Покупка");
+        buyBatchColumn.setHeader("Продажа");
+        avgBatchColumn.setHeader("Среднее");
+        sellBatchColumn.setHeader("Покупка");
     }
 
     private void initList() {
@@ -122,6 +197,7 @@ public class CalculationItemsWindow extends CommonDialogComponent
             ))
             .values()
             .stream()
-            .sorted(Comparator.comparing(CalculationItemInformation::getTypeName)).collect(Collectors.toList());
+            .sorted(Comparator.comparing(CalculationItemInformation::getTypeName))
+            .collect(Collectors.toList());
     }
 }

@@ -20,6 +20,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +97,7 @@ public class ListItemView extends View implements INumberFormater {
                 stageDetails.setWidthFull();
                 var copyStageMatButton = VaadinUtils.createLumoButton(VaadinIcon.COPY);
                 var infoStageButton = VaadinUtils.createLumoButton(VaadinIcon.INFO_CIRCLE);
-                var showMineralsButton = VaadinUtils.createLumoButton(VaadinIcon.CALC);
+                var showMineralsButton = VaadinUtils.createLumoButton(LineAwesomeIcon.CALCULATOR_SOLID);
                 copyStageMatButton.addClickListener(e -> {
                     StringBuilder sb = new StringBuilder();
                     materials.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
@@ -211,18 +213,12 @@ public class ListItemView extends View implements INumberFormater {
 
     private PopupMenuComponent createPopupMenuComponentWithoutEfficiency(List<ProductionNode> productionNodes) {
         var tooltip = "Исключите компонент из просчета";
-        var efficiencyField = initEfficiencyField(productionNodes);
         return new PopupMenuBuilder()
             .withTitle("Настройка узла")
             .withComponent(initExcludeCheckbox(productionNodes))
             .withTooltip(tooltip)
             .withIcon(VaadinIcon.COG)
             .onApply(keyPressEvent -> {
-                var value = efficiencyField.getValue();
-                productionNodes.forEach(productionNode -> {
-                    assemblyState.getEfficiencyMap()
-                        .put(productionNode, Objects.isNull(value) ? 0 : Double.valueOf(value));
-                });
                 assemblyState.recalculateStages();
                 this.refresh();
             }).build();

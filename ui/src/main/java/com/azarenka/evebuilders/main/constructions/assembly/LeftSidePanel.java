@@ -260,8 +260,8 @@ public class LeftSidePanel extends View {
             .withIcon(VaadinIcon.COG_O)
             .onApply(keyPressEvent -> {
                 var value = efficiencyField.getValue();
+                assemblyState.setEveryBlueprintHasBenefits(assemblyState.getEveryBlueprintBenefitsCount() != value);
                 assemblyState.setEveryBlueprintBenefitsCount(value);
-                assemblyState.setEveryBlueprintHasBenefits(value > 0);
                 assemblyState.recalculateStages();
                 this.refresh();
             }).build();

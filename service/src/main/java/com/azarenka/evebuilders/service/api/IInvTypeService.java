@@ -9,4 +9,6 @@ public interface IInvTypeService {
     List<InvType> getTypesByGroupId(Integer groupId);
 
     InvType getInvTypeByModuleName(String moduleName);
+
+    List<InvType> getInvTypesByTypeNames(List<String> typeNames);
 }

@@ -155,7 +155,7 @@ public class RightSidePanel extends View {
                 .filter(component -> component instanceof HorizontalLayout)
                 .map(component -> (HorizontalLayout) component)
                 .filter(layout -> layout.getClassNames().contains("draggable-item"))
-                .forEach(this::remove);
+                .forEach(elementsLayout::remove);
     }
 
 }

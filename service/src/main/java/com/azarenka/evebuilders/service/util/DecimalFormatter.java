@@ -19,7 +19,7 @@ public class DecimalFormatter {
         }
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
-        symbols.setGroupingSeparator(' ');
+        symbols.setGroupingSeparator('.');
         df.setDecimalFormatSymbols(symbols);
         return df.format(value);
     }

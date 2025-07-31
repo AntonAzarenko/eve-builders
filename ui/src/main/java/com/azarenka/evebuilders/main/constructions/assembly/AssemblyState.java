@@ -46,7 +46,9 @@ public class AssemblyState {
     void recalculateStages() {
         stagesMap.clear();
         rootNodes.forEach(node -> {
-            setBenefitsIfHas(node);
+            if(isEveryBlueprintHasBenefits) {
+                setBenefitsIfHas(node);
+            }
             recalculateTreeQuantities(node, node.getQuantity());
             stagesMap.put(node, calculateStages(node));
         });
@@ -400,7 +402,7 @@ public class AssemblyState {
 
     public void setBenefitsIfHas(ProductionNode node) {
         List<ProductionNode> productionNodes = pickEligibleParents(node);
-        if (isEveryBlueprintHasBenefits) {
+        if (isEveryBlueprintHasBenefits && everyBlueprintBenefitsCount > 0 ) {
             productionNodes.forEach(parent -> {
                 if (!rootNodes.contains(parent)) {
                     setEfficiency(parent, everyBlueprintBenefitsCount);
@@ -413,7 +415,7 @@ public class AssemblyState {
                 }
             });
         }
-        recalculateTreeQuantities(node, node.getQuantity());
+        isEveryBlueprintHasBenefits = false;
     }
 
     public List<ProductionNode> pickEligibleParents(ProductionNode root) {
