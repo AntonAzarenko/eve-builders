@@ -47,6 +47,16 @@ public class RequestOrder {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private RequestOrderStatusEnum requestStatus;
+    @Column(name = "is_assembly", columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isAssembly = true;
+
+    public boolean isAssembly() {
+        return isAssembly;
+    }
+
+    public void setAssembly(boolean assembly) {
+        isAssembly = assembly;
+    }
 
     public RequestOrderStatusEnum getRequestStatus() {
         return requestStatus;
