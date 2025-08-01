@@ -14,7 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 public class AppDevelopmentInformationWindow extends CommonDialogComponent {
 
     public AppDevelopmentInformationWindow(String version) {
-        super("", false);
+        super("app-dev-component-info", false);
         setHeaderTitle("EVE Online Industry Manager");
         VerticalLayout layout = new VerticalLayout();
         layout.setPadding(false);
