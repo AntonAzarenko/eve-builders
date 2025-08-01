@@ -48,6 +48,16 @@ public class DistributedOrder {
     private String category;
     @Column(name = "price")
     private BigDecimal price;
+    @Column(name = "is_assembly", columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isAssembly = true;
+
+    public boolean isAssembly() {
+        return isAssembly;
+    }
+
+    public void setAssembly(boolean assembly) {
+        isAssembly = assembly;
+    }
 
     public BigDecimal getPrice() {
         return price;

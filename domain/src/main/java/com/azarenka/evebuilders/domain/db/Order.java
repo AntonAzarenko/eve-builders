@@ -67,6 +67,16 @@ public class Order {
     private Integer countReady;
     @Column(name = "finish_by")
     private LocalDate finishBy;
+    @Column(name = "is_assembly", columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isAssembly = true;
+
+    public boolean isAssembly() {
+        return isAssembly;
+    }
+
+    public void setAssembly(boolean assembly) {
+        isAssembly = assembly;
+    }
 
     public String getRequestId() {
         return requestId;

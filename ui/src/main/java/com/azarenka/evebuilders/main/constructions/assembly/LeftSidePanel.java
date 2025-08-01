@@ -42,6 +42,8 @@ public class LeftSidePanel extends View {
     private Button treeViewButton;
     private Button summorizeViewButton;
     private Button showMineralsButton;
+    private Button savePropertiesButton;
+    private Button loadPropertiesButton;
     private ViewMode stateViewMode;
     private HorizontalLayout leftSideToolbar;
 
@@ -68,10 +70,14 @@ public class LeftSidePanel extends View {
         listViewButton = new Button(LineAwesomeIcon.TOOLS_SOLID.create());
         treeViewButton = new Button(LineAwesomeIcon.LIST_ALT.create());
         summorizeViewButton = new Button(VaadinIcon.CART.create());
+        savePropertiesButton = new Button(LineAwesomeIcon.SAVE.create());
+        loadPropertiesButton = new Button(LineAwesomeIcon.DOWNLOAD_SOLID.create());
         listViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         treeViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         showMineralsButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         summorizeViewButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        loadPropertiesButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        savePropertiesButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         listViewButton.addClickListener(event -> changeViewMode(ViewMode.LIST));
         treeViewButton.addClickListener(event -> changeViewMode(ViewMode.TREE));
         summorizeViewButton.addClickListener(event -> changeViewMode(ViewMode.SUMMARY));

@@ -46,7 +46,7 @@ public class AssemblyState {
     void recalculateStages() {
         stagesMap.clear();
         rootNodes.forEach(node -> {
-            if(isEveryBlueprintHasBenefits) {
+            if (isEveryBlueprintHasBenefits) {
                 setBenefitsIfHas(node);
             }
             recalculateTreeQuantities(node, node.getQuantity());
@@ -357,10 +357,15 @@ public class AssemblyState {
      * Порядок важен: BPO -> структура+риги -> татара. После каждого шага делаем ceil.
      */
     private int effPerBatchForEdge(ProductionNode parent, String childTypeName) {
-        int q = parent.getRecipeQuantityBase(childTypeName); // чистый per-batch из чертежа
+        int q = parent.getRecipeQuantityBase(childTypeName);
         Double bp = efficiencyMap.get(parent);
+        boolean isReaction = parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType());
         if (bp != null && bp > 0) {
             q = ceilApply(q, bp);
+        }
+        if (isReaction) {
+            q = ceilApply(q, tataraBenefitPercentage);
+            return q;
         }
         if (rigsPercentage > 0) {
             q = ceilApply(q, rigsPercentage);
@@ -368,11 +373,9 @@ public class AssemblyState {
         if (baseSotiyoBenefitPercentage > 0) {
             q = ceilApply(q, baseSotiyoBenefitPercentage);
         }
-        if (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType())) {
-            q = ceilApply(q, tataraBenefitPercentage);
-        }
         return q;
     }
+
 
     private int applyAllBonusesToTotal(ProductionNode parent, int total) {
         int q = total;
@@ -402,7 +405,7 @@ public class AssemblyState {
 
     public void setBenefitsIfHas(ProductionNode node) {
         List<ProductionNode> productionNodes = pickEligibleParents(node);
-        if (isEveryBlueprintHasBenefits && everyBlueprintBenefitsCount > 0 ) {
+        if (isEveryBlueprintHasBenefits && everyBlueprintBenefitsCount > 0) {
             productionNodes.forEach(parent -> {
                 if (!rootNodes.contains(parent)) {
                     setEfficiency(parent, everyBlueprintBenefitsCount);
