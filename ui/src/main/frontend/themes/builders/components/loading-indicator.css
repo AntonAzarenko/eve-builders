@@ -10,6 +10,7 @@
     pointer-events: auto;
     animation: fadein 0.8s ease-out 0.2s normal 1 both;
     z-index: 2147483647;
+    display: none !Important;
 }
 
 vaadin-connection-indicator[loading] {

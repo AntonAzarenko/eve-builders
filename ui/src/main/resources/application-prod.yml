@@ -125,3 +125,9 @@ timrod:
     url: https://service.scan-stakan.com/api/auth/checkUserByGroup.php
     token: ${TIMROD_API_TOKEN}
     group-id: ${TIMROD_API_GROUP_ID}
+
+vaadin:
+  loading-indicator:
+    first-delay: 600
+    second-delay: -1
+    third-delay: -1
