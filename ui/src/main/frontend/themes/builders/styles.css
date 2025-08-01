@@ -25,3 +25,7 @@ html, body, #outlet, vaadin-app-layout, #ROOT, #flow-root {
     text-align: center;
     vertical-align: middle;
 }
+
+v-loading-indicator {
+    display: none !important;
+}

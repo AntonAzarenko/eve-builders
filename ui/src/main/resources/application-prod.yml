@@ -128,6 +128,6 @@ timrod:
 
 vaadin:
   loading-indicator:
-    first-delay: 600
+    first-delay: 900
     second-delay: -1
     third-delay: -1

@@ -4,6 +4,12 @@
 
 # Release notes
 
+## Version 1.6.0.1 
+
+### HOT FIX
+- Fix loading indicator
+- Fix Info application window
+
 ## Version 1.6.0 – Enhancements & Fixes
 
 ### UI/UX Improvements
