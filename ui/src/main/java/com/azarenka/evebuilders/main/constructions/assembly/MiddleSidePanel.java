@@ -56,6 +56,7 @@ public class MiddleSidePanel extends View {
             assemblyState.clearRoots();
             leftSidePanel.refresh();
         });
+        clearButton.setTooltipText("Очистить все");
         middleSideToolbar.add(clearButton);
         add(middleSideToolbar);
     }

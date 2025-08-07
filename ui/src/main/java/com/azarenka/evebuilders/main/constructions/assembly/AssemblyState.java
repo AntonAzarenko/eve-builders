@@ -27,11 +27,9 @@ public class AssemblyState {
     private final Set<ProductionNode> manuallyExcludedNodes = new HashSet<>();
     private final Set<String> renderedModules = new HashSet<>();
     private final List<ProductionNode> rootNodes = new ArrayList<>();
-    double sotioStructureBonus = 1.0 / 100;
-    double sotioRigBonus = 2.0 * 2.1 / 100;
-    //double tataraStructureBonus = 1.0 / 100;
-    double tataraRigBonus = 2.4 * 1.1 / 100;
-
+    private double sotioStructureBonus = 1.0 / 100;
+    private double sotioRigBonus = 2.0 * 2.1 / 100;
+    private double tataraRigBonus = 2.4 * 1.1 / 100;
     private boolean isEveryBlueprintHasBenefits = false;
     private int everyBlueprintBenefitsCount = 0;
 
@@ -191,7 +189,6 @@ public class AssemblyState {
                 childRequired = parentBatches * effPerBatch;
                 node.putRecipePerBatchEff(childType, effPerBatch);
             }
-
             recalculateTreeQuantities(child, childRequired, true);
         }
     }
@@ -213,7 +210,6 @@ public class AssemblyState {
         if (node.getTypeName().equalsIgnoreCase(targetName)) {
             result.add(node);
         }
-
         for (ProductionNode child : node.getChildren()) {
             collectByNameRecursive(child, targetName, result);
         }
@@ -433,9 +429,10 @@ public class AssemblyState {
         Map<String, Integer> prevBatches = new HashMap<>();
         List<ProductionNode> roots = stageMap.getOrDefault(0, List.of());
         for (ProductionNode r : roots) {
-            int batchesRoot = countMap.getOrDefault(r, 1);          // сколько кораблей/модулей
+            int batchesRoot = countMap.getOrDefault(r, 1);
+            batchesRoot = Math.max(batchesRoot / r.getProducedQuantity(), 1);
             prevBatches.put(r.getTypeName(), batchesRoot);
-            int qty = batchesRoot * r.getFinalQuantity();           // уже со всеми бонусами
+            int qty = batchesRoot * r.getFinalQuantity();
             result.computeIfAbsent(0, k -> new HashMap<>())
                 .merge(r.getTypeName(), qty, Integer::sum);
         }
@@ -452,6 +449,8 @@ public class AssemblyState {
                 String childType = e.getKey();
                 List<ProductionNode> nodes = e.getValue();
                 ProductionNode sample = nodes.get(0);
+                boolean rootExcludedGroup =
+                    nodes.stream().anyMatch(this::isRootExcluded);
                 int unitsTotal = 0;
                 Map<String, ProductionNode> parentSamples = new HashMap<>();
                 for (ProductionNode n : nodes) {
@@ -473,6 +472,16 @@ public class AssemblyState {
                         ? parent.getEffectivePerBatch(childType)
                         : parent.getRecipeQuantityBase(childType);
                     unitsTotal += parentBatches * perBatch;
+                }
+                if (unitsTotal == 0 && rootExcludedGroup) {
+                    int buyQty = nodes.stream()
+                        .filter(this::isRootExcluded)
+                        .mapToInt(ProductionNode::getFinalQuantity)
+                        .sum();
+                    if (buyQty > 0) {
+                        bucket.merge(childType, buyQty, Integer::sum);
+                    }
+                    continue;
                 }
                 if (unitsTotal == 0) {
                     continue;

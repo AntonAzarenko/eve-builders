@@ -92,6 +92,15 @@ public class LeftSidePanel extends View {
         });
         leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton,
             popupMenuComponent.getOpenMenuButton());
+        addToolTips();
+    }
+
+    private void addToolTips() {
+        showMineralsButton.setTooltipText("Показать расчеты компонентов. " +
+            "Сравнение с тем что имеется на складах и цены на все компоненты в списке");
+        treeViewButton.setTooltipText("Показать компоненты в виде раскрывающегося дерева");
+        listViewButton.setTooltipText("Показать компоненты сгруппированные по стадиям с возможностью настройки чертежей");
+        summorizeViewButton.setTooltipText("Показать сгруппированные компоненты нижнего уровня для покупки");
     }
 
     private List<ProductionNode> getProductionNodes() {
