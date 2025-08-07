@@ -5,12 +5,14 @@ import com.azarenka.evebuilders.domain.dto.ProductionNode;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,9 +27,10 @@ public class AssemblyState {
     private final Set<ProductionNode> manuallyExcludedNodes = new HashSet<>();
     private final Set<String> renderedModules = new HashSet<>();
     private final List<ProductionNode> rootNodes = new ArrayList<>();
-    private final double baseSotiyoBenefitPercentage = 1;
-    private final double rigsPercentage = 4.2;
-    private final double tataraBenefitPercentage = 2.6;
+    double sotioStructureBonus = 1.0 / 100;
+    double sotioRigBonus = 2.0 * 2.1 / 100;
+    //double tataraStructureBonus = 1.0 / 100;
+    double tataraRigBonus = 2.4 * 1.1 / 100;
 
     private boolean isEveryBlueprintHasBenefits = false;
     private int everyBlueprintBenefitsCount = 0;
@@ -141,25 +144,12 @@ public class AssemblyState {
 
     public int recalculateBaseValue(ProductionNode node, int value) {
         ProductionNode root = findRoot(node);
-        int q = value;
-        Double bp = efficiencyMap.get(node.getParent());
-        if (bp != null && bp > 0) {
-            q = ceilApply(q, bp);
-        }
-        if (rigsPercentage > 0) {
-            q = ceilApply(q, rigsPercentage);
-        }
-        if (baseSotiyoBenefitPercentage > 0) {
-            q = ceilApply(q, baseSotiyoBenefitPercentage);
-        }
-        if (node.getMaterialType() != null && compositeTypes.contains(node.getMaterialType())) {
-            q = ceilApply(q, tataraBenefitPercentage);
-        }
+        int adjusted = applyAllBonusesToTotal(Objects.nonNull(node.getParent()) ? node.getParent() : node, value);
         if (node == root) {
             int rootCount = countMap.getOrDefault(root, 1);
-            q *= rootCount;
+            adjusted *= rootCount;
         }
-        return q;
+        return adjusted;
     }
 
     public void recalculateTreeQuantities(ProductionNode node, int parentAdjustedQuantity) {
@@ -191,7 +181,9 @@ public class AssemblyState {
             int childRequired;
             if (effPerBatch == basePerBatch) {
                 int rawTotal = parentBatches * basePerBatch;
-                int discountedTot = applyAllBonusesToTotal(node, rawTotal);
+                int discountedTot = basePerBatch == 1
+                    ? rawTotal
+                    : applyAllBonusesToTotal(node, rawTotal);
                 childRequired = discountedTot;
                 int effByTotal = (int) Math.ceil(discountedTot / (double) parentBatches);
                 node.putRecipePerBatchEff(childType, effByTotal);
@@ -199,6 +191,7 @@ public class AssemblyState {
                 childRequired = parentBatches * effPerBatch;
                 node.putRecipePerBatchEff(childType, effPerBatch);
             }
+
             recalculateTreeQuantities(child, childRequired, true);
         }
     }
@@ -230,9 +223,7 @@ public class AssemblyState {
         Map<Integer, List<ProductionNode>> stageMap = new HashMap<>();
         Set<ProductionNode> visited = new HashSet<>();
         Queue<ProductionNode> queue = new LinkedList<>();
-
         queue.add(root);
-
         while (!queue.isEmpty()) {
             ProductionNode node = queue.poll();
             if (visited.contains(node)) {
@@ -259,14 +250,15 @@ public class AssemblyState {
 
     public Map<Integer, Map<String, Integer>> calculateStages(ProductionNode root) {
         var integerListMap = buildStageMap(root);
-        return calculateRealQuantities(integerListMap);
+        return calculateRealQuantitiesV2(integerListMap);
     }
 
+    @Deprecated
     public TreeMap<Integer, Map<String, Integer>> calculateRealQuantities(Map<Integer, List<ProductionNode>> stageMap) {
         TreeMap<Integer, Map<String, Integer>> result = new TreeMap<>();
         for (Map.Entry<Integer, List<ProductionNode>> stageEntry : stageMap.entrySet()) {
             int stage = stageEntry.getKey();
-            List<ProductionNode> nodes = stageEntry.getValue(); // не фильтруем — чтобы root-excluded попали в UI
+            List<ProductionNode> nodes = stageEntry.getValue();
             Map<String, Integer> typeMap = new HashMap<>();
             Map<String, List<ProductionNode>> groupedByType =
                 nodes.stream().collect(Collectors.groupingBy(ProductionNode::getTypeName));
@@ -345,55 +337,41 @@ public class AssemblyState {
         return isRootExcluded(n) || isAutoExcluded(n);
     }
 
-    private static int ceilApply(int value, double pct) {
-        if (pct <= 0) {
-            return value;
-        }
-        return (int) Math.ceil(value * (1.0 - pct / 100.0));
-    }
-
     /**
      * Считает per-batch с бонусами РОДИТЕЛЯ для ребра parent -> child.
      * Порядок важен: BPO -> структура+риги -> татара. После каждого шага делаем ceil.
      */
     private int effPerBatchForEdge(ProductionNode parent, String childTypeName) {
         int q = parent.getRecipeQuantityBase(childTypeName);
-        Double bp = efficiencyMap.get(parent);
-        boolean isReaction = parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType());
-        if (bp != null && bp > 0) {
-            q = ceilApply(q, bp);
-        }
-        if (isReaction) {
-            q = ceilApply(q, tataraBenefitPercentage);
-            return q;
-        }
-        if (rigsPercentage > 0) {
-            q = ceilApply(q, rigsPercentage);
-        }
-        if (baseSotiyoBenefitPercentage > 0) {
-            q = ceilApply(q, baseSotiyoBenefitPercentage);
-        }
-        return q;
+        return applyAllBonusesToTotal(parent, q);
     }
 
 
     private int applyAllBonusesToTotal(ProductionNode parent, int total) {
-        int q = total;
+        if (total == 1) {
+            return 1;
+        }
+        double modifier = 1.0;
+        Double bpPercent = efficiencyMap.get(parent);
 
-        Double bp = efficiencyMap.get(parent);
-        if (bp != null && bp > 0) {
-            q = ceilApply(q, bp);
-        }
-        if (rigsPercentage > 0) {
-            q = ceilApply(q, rigsPercentage);
-        }
-        if (baseSotiyoBenefitPercentage > 0) {
-            q = ceilApply(q, baseSotiyoBenefitPercentage);
-        }
         if (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType())) {
-            q = ceilApply(q, tataraBenefitPercentage);
+            modifier *= getTataraMaterialModifier();
+        } else {
+            modifier *= getSotiyoMaterialModifier();
         }
-        return q;
+        if (bpPercent != null && bpPercent > 0) {
+            double bpFraction = bpPercent / 100.0;
+            modifier *= (1 - bpFraction);
+        }
+        return (int) Math.ceil(total * modifier);
+    }
+
+    public double getSotiyoMaterialModifier() {
+        return (1 - sotioStructureBonus) * (1 - sotioRigBonus);
+    }
+
+    public double getTataraMaterialModifier() {
+        return (1 - tataraRigBonus);
     }
 
     public void clearEff(ProductionNode node) {
@@ -448,5 +426,67 @@ public class AssemblyState {
 
     public void setStagesMap(Map<ProductionNode, Map<Integer, Map<String, Integer>>> stagesMap) {
         this.stagesMap = stagesMap;
+    }
+
+    TreeMap<Integer, Map<String, Integer>> calculateRealQuantitiesV2(Map<Integer, List<ProductionNode>> stageMap) {
+        TreeMap<Integer, Map<String, Integer>> result = new TreeMap<>();
+        Map<String, Integer> prevBatches = new HashMap<>();
+        List<ProductionNode> roots = stageMap.getOrDefault(0, List.of());
+        for (ProductionNode r : roots) {
+            int batchesRoot = countMap.getOrDefault(r, 1);          // сколько кораблей/модулей
+            prevBatches.put(r.getTypeName(), batchesRoot);
+            int qty = batchesRoot * r.getFinalQuantity();           // уже со всеми бонусами
+            result.computeIfAbsent(0, k -> new HashMap<>())
+                .merge(r.getTypeName(), qty, Integer::sum);
+        }
+        List<Integer> stages = new ArrayList<>(stageMap.keySet());
+        stages.remove(Integer.valueOf(0));
+        Collections.sort(stages);
+        for (int st : stages) {
+            Map<String, Integer> bucket = new HashMap<>();
+            Map<String, Integer> currentBatch = new HashMap<>();
+            Map<String, List<ProductionNode>> grouped =
+                stageMap.get(st).stream()
+                    .collect(Collectors.groupingBy(ProductionNode::getTypeName));
+            for (var e : grouped.entrySet()) {
+                String childType = e.getKey();
+                List<ProductionNode> nodes = e.getValue();
+                ProductionNode sample = nodes.get(0);
+                int unitsTotal = 0;
+                Map<String, ProductionNode> parentSamples = new HashMap<>();
+                for (ProductionNode n : nodes) {
+                    ProductionNode p = n.getParent();
+                    if (p == null || isExcludedForCalc(p) || isExcludedForCalc(n)) {
+                        continue;
+                    }
+                    parentSamples.putIfAbsent(p.getTypeName(), p);
+                }
+                for (var pEntry : parentSamples.entrySet()) {
+                    String pType = pEntry.getKey();
+                    ProductionNode parent = pEntry.getValue();
+
+                    int parentBatches = prevBatches.getOrDefault(pType, 0);
+                    if (parentBatches == 0) {
+                        continue;
+                    }
+                    int perBatch = parent.getEffectivePerBatch(childType) > 0
+                        ? parent.getEffectivePerBatch(childType)
+                        : parent.getRecipeQuantityBase(childType);
+                    unitsTotal += parentBatches * perBatch;
+                }
+                if (unitsTotal == 0) {
+                    continue;
+                }
+                bucket.merge(childType, unitsTotal, Integer::sum);
+                int out = Math.max(1, sample.getOutputQuantity());
+                int bChild = (int) Math.ceil(unitsTotal / (double) out);
+                currentBatch.put(childType, bChild);
+            }
+            if (!bucket.isEmpty()) {
+                result.put(st, bucket);
+            }
+            prevBatches = currentBatch;
+        }
+        return result;
     }
 }

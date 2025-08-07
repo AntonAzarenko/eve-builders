@@ -20,7 +20,6 @@ public class ProductionNode {
     private final Map<String, Integer> recipePerBatchBase = new HashMap<>();
     private final Map<String, Integer> recipePerBatchEff = new HashMap<>();
 
-
     private ProductionNode parent;
 
     private boolean stageHeader;
