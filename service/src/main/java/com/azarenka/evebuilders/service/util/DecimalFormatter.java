@@ -24,6 +24,17 @@ public class DecimalFormatter {
         return df.format(value);
     }
 
+    public static String formatDecimalValueForMessage(BigDecimal value) {
+        if (Objects.isNull(value)) {
+            return "";
+        }
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
+        symbols.setGroupingSeparator(' ');
+        df.setDecimalFormatSymbols(symbols);
+        return df.format(value) + " ISK";
+    }
+
     public static String maybeToText(BigDecimal value) {
         if (value == null) {
             return "0";
