@@ -2,7 +2,17 @@
 
 * This application is designed to support industrial operations within the EVE Online universe. It provides tools for managing corporation production orders, specifically tailored for the Hold My Probs alliance. The application enables streamlined tracking, assignment, and fulfillment of manufacturing requests, improving efficiency and coordination across the corporation. While currently configured for Hold My Probs, the system is modular and can be adapted for use by other alliances or corporations as needed.
 
-# Release notes
+# Release notes'
+
+## Version 1.6.0.3
+
+### HOT FIX
+-Fix issue related to send message during crating order 
+
+## Version 1.6.0.2
+
+### HOT FIX
+- Reimplement calculation formula
 
 ## Version 1.6.0.1 
 

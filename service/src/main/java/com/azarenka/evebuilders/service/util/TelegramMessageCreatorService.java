@@ -20,9 +20,9 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
                         String.format(FORMAT, "Количество", count) +
                         String.format(FORMAT, "Остаток свободных позиций в заказе", orderDto.getCount()
                                 - orderDto.getInProgressCount()) +
-                        String.format(FORMAT, "Цена за единицу", DecimalFormatter.formatIsk(orderDto.getPrice()) +
+                        String.format(FORMAT, "Цена за единицу", DecimalFormatter.formatDecimalValueForMessage(orderDto.getPrice()) +
                                 " " + DecimalFormatter.maybeToText(orderDto.getPrice())) +
-                        String.format(FORMAT, "Цена за все", DecimalFormatter.formatIsk(total) +
+                        String.format(FORMAT, "Цена за все", DecimalFormatter.formatDecimalValueForMessage(total) +
                                 " " + DecimalFormatter.maybeToText(total)) +
                         String.format(FORMAT, "Срок сдачи до", orderDto.getFinishDate()));
         return text.replace(".", "\\.");
@@ -36,7 +36,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
                 .append(String.format("* Заказ: %s*\n", distributedOrder.getOrderNumber()))
                 .append(String.format(FORMAT, "Наименование", distributedOrder.getShipName()))
                 .append(String.format("* Контракт на %s позиций*\n", count))
-                .append(String.format("* Контракт %s*\n", DecimalFormatter.formatIsk(total) +
+                .append(String.format("* Контракт %s*\n", DecimalFormatter.formatDecimalValueForMessage(total) +
                         " " + DecimalFormatter.maybeToText(total)));
         if (distributedOrder.getCountReady().equals(distributedOrder.getCount())) {
             builder.append(String.format("* Заказ завершен полностью - %s шт*", distributedOrder.getCountReady()));
@@ -63,7 +63,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
         return escapeMarkdownV2(String.format(FORMAT, "Заказ", order.getOrderNumber()) +
                 String.format(FORMAT, "Наименование", order.getShipName()) +
                 String.format(FORMAT, "Количество", order.getCount()) +
-                String.format(FORMAT, "Цена за единицу", DecimalFormatter.formatIsk(order.getPrice())) +
+                String.format(FORMAT, "Цена за единицу", DecimalFormatter.formatDecimalValueForMessage(order.getPrice())) +
                 String.format(FORMAT, "Приоритет", order.getPriority()) +
                 String.format(FORMAT, "Оснастка", "[Открыть заказ](https://industry.scan-stakan.com/)") +
                 String.format(FORMAT, "Срок сдачи до", order.getFinishBy()));
@@ -105,7 +105,7 @@ public class TelegramMessageCreatorService implements LocaleChangeObserver {
                 .append(String.format("* Заказ: %s - Отменен*\n", distributedOrder.getOrderNumber()))
                 .append(String.format(FORMAT, "Наименование", distributedOrder.getShipName()))
                 .append(String.format("* Контракт на %s позиций*\n", distributedOrder.getCount()))
-                .append(String.format("* Контракт %s*\n", DecimalFormatter.formatIsk(total) +
+                .append(String.format("* Контракт %s*\n", DecimalFormatter.formatDecimalValueForMessage(total) +
                         " " + DecimalFormatter.maybeToText(total)))
                 .append("** ОТМЕНА**");
         var text = escapeMarkdownV2(builder.toString());
