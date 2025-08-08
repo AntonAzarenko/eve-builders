@@ -92,6 +92,15 @@ public class LeftSidePanel extends View {
         });
         leftSideToolbar.add(treeViewButton, listViewButton, summorizeViewButton, showMineralsButton,
             popupMenuComponent.getOpenMenuButton());
+        addToolTips();
+    }
+
+    private void addToolTips() {
+        showMineralsButton.setTooltipText("Показать расчеты компонентов. " +
+            "Сравнение с тем что имеется на складах и цены на все компоненты в списке");
+        treeViewButton.setTooltipText("Показать компоненты в виде раскрывающегося дерева");
+        listViewButton.setTooltipText("Показать компоненты сгруппированные по стадиям с возможностью настройки чертежей");
+        summorizeViewButton.setTooltipText("Показать сгруппированные компоненты нижнего уровня для покупки");
     }
 
     private List<ProductionNode> getProductionNodes() {
@@ -181,7 +190,8 @@ public class LeftSidePanel extends View {
 
     private Grid<Map.Entry<String, Integer>> initSummaryGrid() {
         Grid<Map.Entry<String, Integer>> summaryGrid = VaadinUtils.initGrid("summary-grid");
-        summaryGrid.addColumn(Map.Entry::getKey).setHeader("Компонент");
+        summaryGrid.addComponentColumn( e ->
+            new HorizontalLayout(controller.getImageByInvTypeName(e.getKey()), new Span(e.getKey()))).setHeader("Компонент");
         summaryGrid.addColumn(entry -> String.valueOf(entry.getValue())).setHeader("Кол-во");
         summaryGrid.setWidthFull();
         return summaryGrid;
@@ -189,7 +199,8 @@ public class LeftSidePanel extends View {
 
     private Component buildSummaryView() {
         summaryGrid.removeAllColumns();
-        summaryGrid.addColumn(Map.Entry::getKey).setHeader("Component");
+        summaryGrid.addComponentColumn( e ->
+            new HorizontalLayout(controller.getImageByInvTypeName(e.getKey()), new Span(e.getKey()))).setHeader("Component");
         summaryGrid.addColumn(entry -> String.valueOf(entry.getValue())).setHeader("Quantity");
         Map<String, Integer> aggregated = aggregateAllMaterials();
         summaryGrid.setItems(aggregated.entrySet());
@@ -216,7 +227,7 @@ public class LeftSidePanel extends View {
         Map<String, Integer> buy = new LinkedHashMap<>();
         assemblyState.getRootNodes().forEach(rootNode -> {
             Map<Integer, List<ProductionNode>> stageMap = assemblyState.buildStageMap(rootNode);
-            TreeMap<Integer, Map<String, Integer>> real = assemblyState.calculateRealQuantities(stageMap);
+            TreeMap<Integer, Map<String, Integer>> real = assemblyState.calculateRealQuantitiesV2(stageMap);
             Map<String, Boolean> isLeaf = computeLeafFlags(stageMap);
             Set<String> rootExcludedTypes = collectRootExcludedTypes(stageMap);
             for (Map<String, Integer> stageQuantities : real.values()) {
