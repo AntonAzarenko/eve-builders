@@ -27,4 +27,8 @@ public interface ICorporationConstructionController {
     void saveFilter(OrderFilter filter);
 
     OrderFilter getFilter();
+
+    String getDestination(String orderNumber);
+
+    String getReceiver(String orderNumber);
 }

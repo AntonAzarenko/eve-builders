@@ -3,11 +3,13 @@ package com.azarenka.evebuilders.main.request.admin;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
+import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
-import com.azarenka.evebuilders.main.request.api.IRequestsController;
+import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -42,12 +44,13 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
-    private final IRequestsController controller;
+    private final ICreateRequestController controller;
     private Button applyButton;
     private Button createOrderButton;
     private Button redjectRequestButton;
+    private Button showFitButton;
 
-    public RequestsView(@Autowired IRequestsController controller) {
+    public RequestsView(@Autowired ICreateRequestController controller) {
         this.controller = controller;
         initMainLayout();
     }
@@ -79,7 +82,16 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
             controller.updateRequest(requestOrder);
             UI.getCurrent().refreshCurrentRoute(true);
         });
-        var layout = new HorizontalLayout(applyButton, createOrderButton, redjectRequestButton, searchField);
+        showFitButton = VaadinUtils.createLumoButton(VaadinIcon.PRESENTATION);
+        showFitButton.setTooltipText(getTranslation("message.button.tooltip.show_full_order"));
+        showFitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
+        showFitButton.addClickListener(event -> {
+            Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
+            firstSelectedItem.ifPresent(this::clickFitButton);
+        });
+
+        var layout =
+            new HorizontalLayout(applyButton, createOrderButton, redjectRequestButton, showFitButton, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
@@ -176,6 +188,14 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     private Grid.Column<RequestOrder> addColumn(ValueProvider<RequestOrder, String> provider) {
         Grid.Column<RequestOrder> column = grid.addColumn(provider);
         return column;
+    }
+
+    private void clickFitButton(RequestOrder order) {
+        String fitId = order.getFitId();
+        if (fitId != null && !fitId.isEmpty()) {
+            Fit fit = controller.getFitById(fitId);
+            new FitView(fit, controller.getFitLoaderService()).open();
+        }
     }
 
     @Override

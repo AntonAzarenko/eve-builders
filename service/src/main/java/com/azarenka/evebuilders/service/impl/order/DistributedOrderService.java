@@ -145,6 +145,16 @@ public class DistributedOrderService implements IDistributedOrderService {
     }
 
     @Override
+    public String getDestination(String orderNumber) {
+        return orderService.getOrderById(orderNumber).getDestination();
+    }
+
+    @Override
+    public String getReceiver(String orderNumber) {
+        return orderService.getByOrderNumber(orderNumber).getReceiver();
+    }
+
+    @Override
     @Transactional
     public DistributedOrder distributeOrder(TelegramRequestOrder telegramRequestOrder) {
         return save(telegramRequestOrder.getOrderNumber(), telegramRequestOrder.getCount(),

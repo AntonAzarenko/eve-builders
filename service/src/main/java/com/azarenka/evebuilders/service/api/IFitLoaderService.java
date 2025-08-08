@@ -14,4 +14,6 @@ public interface IFitLoaderService {
     Fit getFitById(String id);
 
     boolean updateFit(Fit fit);
+
+    List<Fit> gitAllFitsByUser();
 }

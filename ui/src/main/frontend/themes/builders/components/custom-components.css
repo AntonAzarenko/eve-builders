@@ -314,3 +314,58 @@ vaadin-context-menu-item:focus {
 .tab-assembly {
     height: calc(100% - 60px) !important;
 }
+
+/* metadata-distributed-order.css */
+:host {
+    display: block;
+}
+
+/* Корневая "карточка" */
+.meta-card {
+    background: var(--lumo-base-color);
+    border: 1px solid var(--lumo-contrast-10pct);
+    box-shadow: var(--lumo-box-shadow-s);
+    padding: var(--lumo-space-m);
+    gap: var(--lumo-space-s);
+}
+
+/* Заголовок */
+.meta-card .title {
+    font-size: var(--lumo-font-size-xl);
+    font-weight: 700;
+    margin-bottom: var(--lumo-space-s);
+}
+
+/* Общий вид строки */
+.meta-card .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lumo-space-m);
+    padding: 0.15rem 0;
+    border-bottom: 1px dashed var(--lumo-contrast-10pct);
+}
+
+.meta-card .row:last-of-type {
+    border-bottom: 0;
+}
+
+/* Левая часть строки (лейбл) */
+.meta-card .label {
+    color: var(--lumo-secondary-text-color);
+    white-space: nowrap;
+    margin-right: var(--lumo-space-m);
+}
+
+/* Правая часть строки (значение) */
+.meta-card .value {
+    font-weight: 600;
+}
+
+/* Кнопка копирования — делаем её "встроенной" и компактной */
+.meta-card .copy-btn::part(label) { /* прячем текст, если вдруг появится */
+    display: none;
+}
+.meta-card .copy-btn {
+    margin-left: var(--lumo-space-s);
+}

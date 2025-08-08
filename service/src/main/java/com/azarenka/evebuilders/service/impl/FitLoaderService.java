@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class FitLoaderService implements IFitLoaderService {
@@ -64,5 +65,11 @@ public class FitLoaderService implements IFitLoaderService {
         fitRepository.saveAndFlush(fit);
         LOGGER.info("Update fit. FINISHED. LoadedBy={}", userName);
         return true;
+    }
+
+    @Override
+    public List<Fit> gitAllFitsByUser() {
+        String userName = SecurityUtils.getUserName();
+        return fitRepository.findAll().stream().filter(fit -> fit.getCreatedBy().equals(userName)).collect(Collectors.toList());
     }
 }

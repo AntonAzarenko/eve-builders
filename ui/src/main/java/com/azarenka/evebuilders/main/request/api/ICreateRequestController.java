@@ -13,6 +13,8 @@ public interface ICreateRequestController {
 
     List<Fit> gitAllFits();
 
+    List<Fit> gitAllFitsByUser();
+
     List<InvGroup> getInvGroupsById(Integer id);
 
     List<InvType> getTypesByGroupIds(List<Integer> groupIds);
@@ -33,4 +35,8 @@ public interface ICreateRequestController {
     List<RequestOrder> getRequestOrders();
 
     Fit getFitById(String id);
+
+    void updateRequest(RequestOrder requestOrder);
+
+    String deleteFit(Fit fit);
 }

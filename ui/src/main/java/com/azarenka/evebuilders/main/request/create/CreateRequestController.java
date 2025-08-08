@@ -34,6 +34,11 @@ public class CreateRequestController implements ICreateRequestController {
     }
 
     @Override
+    public List<Fit> gitAllFitsByUser() {
+        return fitLoaderService.gitAllFitsByUser();
+    }
+
+    @Override
     public List<InvGroup> getInvGroupsById(Integer id) {
         return dataService.getInvGroupsById(id);
     }
@@ -85,5 +90,15 @@ public class CreateRequestController implements ICreateRequestController {
     @Override
     public Fit getFitById(String id) {
         return fitLoaderService.getFitById(id);
+    }
+
+    @Override
+    public void updateRequest(RequestOrder requestOrder) {
+        requestOrderService.update(requestOrder);
+    }
+
+    @Override
+    public String deleteFit(Fit fit) {
+        return "";
     }
 }
