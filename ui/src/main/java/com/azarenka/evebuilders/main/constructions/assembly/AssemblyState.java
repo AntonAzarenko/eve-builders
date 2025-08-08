@@ -430,9 +430,9 @@ public class AssemblyState {
         List<ProductionNode> roots = stageMap.getOrDefault(0, List.of());
         for (ProductionNode r : roots) {
             int batchesRoot = countMap.getOrDefault(r, 1);
-            batchesRoot = Math.max(batchesRoot / r.getProducedQuantity(), 1);
+            batchesRoot = (int) Math.max(Math.ceil((double) batchesRoot / (double) r.getProducedQuantity()), 1);
             prevBatches.put(r.getTypeName(), batchesRoot);
-            int qty = batchesRoot * r.getFinalQuantity();
+            int qty =  (batchesRoot * r.getFinalQuantity());
             result.computeIfAbsent(0, k -> new HashMap<>())
                 .merge(r.getTypeName(), qty, Integer::sum);
         }
