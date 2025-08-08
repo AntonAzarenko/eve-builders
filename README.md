@@ -4,10 +4,15 @@
 
 # Release notes'
 
+## Version 1.6.0.4
+
+### HOT FIX
+- Fix issue related to stage calculation
+
 ## Version 1.6.0.3
 
 ### HOT FIX
--Fix issue related to send message during crating order 
+- Fix issue related to send message during crating order 
 
 ## Version 1.6.0.2
 
