@@ -92,7 +92,6 @@
     /*padding: 8px;*/
     border: 1px solid #ccc;
     margin: 1px;
-    background-color: #ffffff;
     cursor: grab;
     align-items: center;
     gap: 8px;
@@ -102,13 +101,11 @@
     min-height: 300px;
     border: 2px dashed #bbb;
     #padding: 16px;
-    background-color: #f9f9f9;
 }
 
 .assembly-module {
     /*//padding: 1px 1px;*/
     border: 1px solid #ddd;
-    background-color: #fff;
     /*//margin-bottom: 6px;*/
     border-radius: 4px;
     align-items: center;
