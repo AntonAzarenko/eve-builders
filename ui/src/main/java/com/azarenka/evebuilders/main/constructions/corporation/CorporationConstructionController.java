@@ -85,4 +85,14 @@ public class CorporationConstructionController implements ICorporationConstructi
     public OrderFilter getFilter() {
         return orderFilterService.getOrderFilter();
     }
+
+    @Override
+    public String getDestination(String orderNumber) {
+        return distributedOrderService.getDestination(orderNumber);
+    }
+
+    @Override
+    public String getReceiver(String orderNumber) {
+        return distributedOrderService.getReceiver(orderNumber);
+    }
 }

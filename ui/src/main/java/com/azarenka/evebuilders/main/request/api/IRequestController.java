@@ -9,9 +9,11 @@ import com.vaadin.flow.component.html.Image;
 
 import java.util.List;
 
-public interface ICreateRequestController {
+public interface IRequestController {
 
     List<Fit> gitAllFits();
+
+    List<Fit> gitAllFitsByUser();
 
     List<InvGroup> getInvGroupsById(Integer id);
 
@@ -33,4 +35,8 @@ public interface ICreateRequestController {
     List<RequestOrder> getRequestOrders();
 
     Fit getFitById(String id);
+
+    void updateRequest(RequestOrder requestOrder);
+
+    boolean deleteFit(Fit fit);
 }

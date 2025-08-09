@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
@@ -25,6 +26,8 @@ import com.vaadin.flow.component.grid.GridSelectionModel;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout.Orientation;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.function.ValueProvider;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.VaadinSession;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +65,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private Button discardOrderButton;
     private Button filterButton;
     private OrderFilter appliedFilter;
+    private final MetadataDistributedOrderView metadataDistributedOrderView = new MetadataDistributedOrderView();
 
     public CorporationConstructionsView(ICorporationConstructionController controller) {
         this.controller = controller;
@@ -71,7 +76,14 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private void initMainLayout() {
         super.getStyle().set("padding", "0px 5px 0px 5px");
-        add(initToolBarLayout(), initFilterLayout(), initGrid());
+        SplitLayout splitLayout = new SplitLayout();
+        splitLayout.setWidthFull();
+        add(initToolBarLayout(), initFilterLayout());
+        splitLayout.setOrientation(Orientation.HORIZONTAL);
+        splitLayout.setSplitterPosition(70);
+        splitLayout.addToPrimary(initGrid());
+        splitLayout.addToSecondary(metadataDistributedOrderView);
+        addAndExpand(splitLayout);
     }
 
     private HorizontalLayout initFilterLayout() {
@@ -201,6 +213,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         });
         GridSelectionModel<DistributedOrder> selectionModel = grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         selectionModel.addSelectionListener(selectionEvent -> updateButtonsStatus());
+        selectOrder();
         return grid;
     }
 
@@ -225,6 +238,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         }
+        selectOrder();
     }
 
     private void addColumns() {
@@ -276,6 +290,9 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             fitButton.setEnabled(true);
             showFullOrder.setEnabled(true);
             discardOrderButton.setEnabled(true);
+            String destination = controller.getDestination(distributedOrder.getOrderNumber());
+            String receiver = controller.getReceiver(distributedOrder.getOrderNumber());
+            metadataDistributedOrderView.refresh(distributedOrder, destination, receiver);
         } else {
             fitButton.setEnabled(false);
             showFullOrder.setEnabled(false);
@@ -283,6 +300,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             discardOrderButton.setEnabled(false);
             updateStatusOrderButton.setEnabled(false);
             buildButton.setEnabled(false);
+            metadataDistributedOrderView.refresh(null, null, null);
         }
     }
 
@@ -312,5 +330,15 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private void clearSearch() {
         searchField.clearText();
         searchByText("");
+    }
+
+    private void selectOrder() {
+        var items = dataProvider.getItems();
+        if (!items.isEmpty()) {
+            var distributedOrder = new ArrayList<>(items).get(0);
+            grid.select(distributedOrder);
+        } else {
+            metadataDistributedOrderView.refresh(null, null, null);
+        }
     }
 }

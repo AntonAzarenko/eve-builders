@@ -29,3 +29,7 @@ html, body, #outlet, vaadin-app-layout, #ROOT, #flow-root {
 v-loading-indicator {
     display: none !important;
 }
+
+:host([theme~="dark"]) .stat-card {
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.64);
+}

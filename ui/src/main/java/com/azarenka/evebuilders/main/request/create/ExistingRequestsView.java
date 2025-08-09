@@ -4,7 +4,7 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -20,7 +20,6 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.VaadinSession;
-import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -30,7 +29,7 @@ import java.util.Optional;
 
 public class ExistingRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter   {
 
-    private final ICreateRequestController controller;
+    private final IRequestController controller;
     private Grid<RequestOrder> grid;
     private ListDataProvider<RequestOrder> dataProvider;
     private HorizontalLayout toolbarLayout = new HorizontalLayout();
@@ -38,7 +37,7 @@ public class ExistingRequestsView extends View implements LocaleChangeObserver, 
     private Button repeatOrderButton;
     private Button editButton;
 
-    public ExistingRequestsView(ICreateRequestController controller) {
+    public ExistingRequestsView(IRequestController controller) {
         this.controller = controller;
         super.getStyle().set("padding-left", "10px");
         initContent();

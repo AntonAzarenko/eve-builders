@@ -16,6 +16,8 @@ public class FitComponent extends VerticalLayout implements LocaleChangeObserver
 
     public FitComponent(Fit fit) {
         this.fit = fit;
+        super.setPadding(false);
+        super.setMargin(false);
         super.setMaxHeight("800px");
         super.setWidth("500px");
         initContent();

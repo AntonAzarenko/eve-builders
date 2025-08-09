@@ -204,7 +204,7 @@ public class RightSidePanel extends View {
             .map(component -> (HorizontalLayout) component)
             .filter(layout -> layout.getClassNames().contains("draggable-item"))
             .map(layout -> {
-                Span span = (Span) ((HorizontalLayout) layout.getComponentAt(0)).getComponentAt(1);
+                Span span = (Span) ((HorizontalLayout) layout.getComponentAt(1)).getComponentAt(1);
                 return span.getText();
             })
             .forEach(middleSidePanel::onModuleDragged);

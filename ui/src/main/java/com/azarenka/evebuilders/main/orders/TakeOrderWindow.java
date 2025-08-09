@@ -1,11 +1,13 @@
 package com.azarenka.evebuilders.main.orders;
 
+import com.azarenka.evebuilders.common.util.INumberFormater;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
+import com.azarenka.evebuilders.service.util.DecimalFormatter;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -27,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class TakeOrderWindow extends CommonDialogComponent implements LocaleChangeObserver {
+public class TakeOrderWindow extends CommonDialogComponent implements LocaleChangeObserver, INumberFormater {
 
     private String HEADER_WINDOW = getTranslation("window.header.take_an_order");
     private final ShipOrderDto shipOrderDto;
@@ -109,16 +111,18 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
                 .bind(e -> e, (s, r) -> r.intValue());
         orderTexfieldMap.put(shipOrderDto, countTextField);
         VerticalLayout layout = VaadinUtils.initCommonVerticalLayout();
-        var showFitButton = new Button(VaadinIcon.EYE.create(), event -> {
+        var showFitButton = new Button("Показать фит", event -> {
             Fit fitById = controller.getFitById(shipOrderDto.getFitId());
             if (Objects.nonNull(fitById)) {
                 new FitView(fitById, controller.getFitLoaderService()).open();
             }
         });
+        showFitButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        showFitButton.addClassName("link-button");
         layout.add(
                 initNextLayout(getTranslation("table.column.order_number"), shipOrderDto.getOrderNumber()),
                 initNextLayout(getTranslation("table.column.nomination"), shipOrderDto.getItemName()),
-                initNextLayout(getTranslation("table.column.price"), shipOrderDto.getPrice().toString()),
+                initNextLayout(getTranslation("table.column.price"), DecimalFormatter.formatIsk(shipOrderDto.getPrice())),
                 initNextLayout(getTranslation("management.label.fit"), showFitButton),
                 initNextLayout(getTranslation("management.label.order_free"),
                         String.valueOf(shipOrderDto.getCount() - shipOrderDto.getInProgressCount())),

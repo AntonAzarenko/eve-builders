@@ -14,12 +14,14 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +41,7 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
     private Image largeAvatar;
     private final IEveAuthService eveAuthService;
     private final IUserService userService;
+    private ThemeToggleIcon themeToggleIcon;
 
     public Header(IEveAuthService eveAuthService, IUserService userService) {
         this.eveAuthService = eveAuthService;
@@ -59,11 +62,22 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         initAboutLayout();
         createContextMenu();
         var layout = new HorizontalLayout();
-        layout.add(aboutButton, avatar);
+        initTheme();
+        layout.add(themeToggleIcon, aboutButton, avatar);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         setDefaultVerticalComponentAlignment(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.BETWEEN);
         add(layout);
+    }
+
+    private void initTheme() {
+        String theme = userService.getThemeName();
+        if (!theme.isEmpty()) {
+            setThemeToCookie(theme);
+            themeToggleIcon = new ThemeToggleIcon(theme);
+        } else {
+            themeToggleIcon = new ThemeToggleIcon("light");
+        }
     }
 
     private void initAboutLayout() {
@@ -153,5 +167,47 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         Span span = new Span(SecurityUtils.getUserName());
         userNameDiv = new Div(span);
         userNameDiv.getStyle().set("text-align", "center");
+    }
+
+    private void setThemeToCookie(String themeName) {
+        UI.getCurrent().getElement().setAttribute("theme", themeName);
+    }
+
+    public class ThemeToggleIcon extends HorizontalLayout {
+
+        private boolean darkMode = false;
+        private final Icon sunIcon = VaadinIcon.SUN_O.create();
+        private final Icon moonIcon = VaadinIcon.MOON.create();
+
+        public ThemeToggleIcon(String themeName) {
+            Button toggle = new Button();
+            if (Lumo.LIGHT.equals(themeName)) {
+                toggle.setIcon(sunIcon);
+                sunIcon.setColor("orange");
+            } else {
+                darkMode = true;
+                moonIcon.setColor("gold");
+                toggle.setIcon(moonIcon);
+            }
+            toggle.addClickListener(e -> {
+                darkMode = !darkMode;
+                if (darkMode) {
+                    setThemeToCookie(Lumo.DARK);
+                    toggle.setIcon(moonIcon);
+                    moonIcon.setColor("gold");
+                } else {
+                    setThemeToCookie(Lumo.LIGHT);
+                    toggle.setIcon(sunIcon);
+                    sunIcon.setColor("orange");
+                }
+                userService.updateTheme(darkMode ? Lumo.DARK : Lumo.LIGHT);
+            });
+            toggle.getStyle()
+                .set("background", "none")
+                .set("border", "none")
+                .set("cursor", "pointer");
+
+            add(toggle);
+        }
     }
 }

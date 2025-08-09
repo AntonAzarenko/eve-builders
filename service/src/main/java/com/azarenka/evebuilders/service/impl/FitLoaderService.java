@@ -1,9 +1,11 @@
 package com.azarenka.evebuilders.service.impl;
 
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.repository.database.IFitRepository;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.FitConverter;
 
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class FitLoaderService implements IFitLoaderService {
@@ -27,6 +30,8 @@ public class FitLoaderService implements IFitLoaderService {
     private IEveMaterialDataService dataService;
     @Autowired
     private IFitRepository fitRepository;
+    @Autowired
+    private IOrderService orderService;
 
     @Override
     public boolean upload(String text) {
@@ -64,5 +69,26 @@ public class FitLoaderService implements IFitLoaderService {
         fitRepository.saveAndFlush(fit);
         LOGGER.info("Update fit. FINISHED. LoadedBy={}", userName);
         return true;
+    }
+
+    @Override
+    public List<Fit> gitAllFitsByUser() {
+        String userName = SecurityUtils.getUserName();
+        return fitRepository.findAll()
+            .stream()
+            .filter(fit -> fit.getCreatedBy().equals(userName))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean removeFit(Fit fit) {
+        var isConnected = orderService.getOrderList(new OrderFilter())
+            .stream()
+            .filter(order -> Objects.nonNull(order.getFitId()))
+            .noneMatch(order -> order.getFitId().equals(fit.getId()));
+        if (isConnected) {
+            fitRepository.delete(fit);
+        }
+        return isConnected;
     }
 }

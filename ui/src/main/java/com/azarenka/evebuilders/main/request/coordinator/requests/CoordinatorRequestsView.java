@@ -8,8 +8,7 @@ import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
-import com.azarenka.evebuilders.main.request.api.IRequestsController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.main.request.create.CreateRequestView;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
@@ -20,6 +19,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -36,7 +36,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,8 +50,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
-    private final IRequestsController controller;
-    private final ICreateRequestController createRequestController;
+    private final IRequestController createRequestController;
     private Button submitButton;
     private Button suspendedRequestButton;
     private Button continueRequestButton;
@@ -60,6 +58,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private Button repeatRequestButton;
     private Button removeRequestButton;
     private Button editButton;
+    private Button fitManagerButton;
 
     private GridMenuItem<RequestOrder> createItem;
     private GridMenuItem<RequestOrder> editItem;
@@ -70,9 +69,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private GridMenuItem<RequestOrder> continueItem;
     private GridMenuItem<RequestOrder> fitItem;
 
-    public CoordinatorRequestsView(@Autowired IRequestsController controller,
-                                   @Autowired ICreateRequestController createRequestController) {
-        this.controller = controller;
+    public CoordinatorRequestsView(@Autowired IRequestController createRequestController) {
         this.createRequestController = createRequestController;
         initMainLayout();
     }
@@ -107,13 +104,16 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         editButton.setTooltipText(getTranslation("message.button_tooltip.edit"));
         editButton.addClickListener(event ->
             grid.getSelectionModel().getFirstSelectedItem().ifPresent(this::clickEditButton));
+        fitManagerButton = VaadinUtils.createLumoButton(VaadinIcon.TOOLS);
+        fitManagerButton.addClickListener(event -> new FitManageWindow(createRequestController).open());
         var layout = new HorizontalLayout(createRequestButton, editButton, repeatRequestButton, submitButton,
-            suspendedRequestButton, continueRequestButton, removeRequestButton);
+            suspendedRequestButton, continueRequestButton, removeRequestButton, fitManagerButton);
         continueRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         suspendedRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         createRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         repeatRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         removeRequestButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
+        fitManagerButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         editButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_SMALL);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
@@ -132,7 +132,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private Grid<RequestOrder> initGrid() {
-        dataProvider = DataProvider.ofCollection(controller.getRequestOrders());
+        dataProvider = DataProvider.ofCollection(createRequestController.getRequestOrders());
         grid = VaadinUtils.initGrid(dataProvider, "distributed-orders-grid");
         addColumns();
         grid.getColumns().forEach(shipOrderDtoColumn -> {
@@ -156,7 +156,8 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             e -> e.getItem().ifPresent(this::clickContinueButton));
         gridContextMenu.add(new Hr());
         createItem = gridContextMenu.addItem(getTranslation("button.request_create"), e -> clickCreateButton());
-        fitItem = gridContextMenu.addItem(getTranslation("button.request_fit"), e -> e.getItem().ifPresent(this::clickFitButton));
+        fitItem = gridContextMenu.addItem(getTranslation("button.request_fit"),
+            e -> e.getItem().ifPresent(this::clickFitButton));
         gridContextMenu.add(new Hr());
         editItem = gridContextMenu.addItem(getTranslation("button.request_edit"),
             e -> e.getItem().ifPresent(this::clickEditButton));
@@ -209,7 +210,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
 
     private void clickSuspendOrderButton(RequestOrder order) {
         order.setRequestStatus(RequestOrderStatusEnum.SUSPENDED);
-        controller.updateRequest(order);
+        createRequestController.updateRequest(order);
         UI.getCurrent().refreshCurrentRoute(true);
     }
 
@@ -223,13 +224,13 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         order.setRequestStatus(
             Objects.nonNull(order.getPrice()) && !order.getPrice().equals(BigDecimal.ZERO) ?
                 RequestOrderStatusEnum.SUBMITTED : RequestOrderStatusEnum.CREATED);
-        controller.updateRequest(order);
+        createRequestController.updateRequest(order);
         UI.getCurrent().refreshCurrentRoute(true);
     }
 
     private void clickSubmitButton(RequestOrder order) {
         order.setRequestStatus(RequestOrderStatusEnum.APPROVED);
-        controller.updateRequest(order);
+        createRequestController.updateRequest(order);
         UI.getCurrent().refreshCurrentRoute(true);
     }
 
@@ -256,14 +257,13 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         } else {
-            dataProvider = DataProvider.ofCollection(controller.getRequestOrders());
+            dataProvider = DataProvider.ofCollection(createRequestController.getRequestOrders());
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         }
     }
 
     private void addColumns() {
-        addColumn(RequestOrder::getId).setWidth("320px");
         addColumn(value -> convertRequestStatus(value.getRequestStatus()))
             .setWidth("135px");
         addColumn(RequestOrder::getItemName).setWidth("145px");
@@ -273,6 +273,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         addColumn(RequestOrder::getCreatedBy).setWidth("141px");
         addColumn(order -> order.getCreatedDate().toString()).setWidth("190px");
         addColumn(order -> order.getFinishDate().toString());
+        addColumn(RequestOrder::getId).setWidth("320px");
     }
 
     private Grid.Column<RequestOrder> addAmountColumn(ValueProvider<RequestOrder, ?> provider) {
@@ -294,15 +295,15 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        grid.getColumns().get(0).setHeader(getTranslation("table.column.request_id"));
-        grid.getColumns().get(1).setHeader(getTranslation("table.column.status"));
-        grid.getColumns().get(2).setHeader(getTranslation("table.column.nomination"));
-        grid.getColumns().get(3).setHeader(getTranslation("table.column.priority"));
-        grid.getColumns().get(4).setHeader(getTranslation("table.column.count"));
-        grid.getColumns().get(5).setHeader(getTranslation("table.column.price"));
-        grid.getColumns().get(6).setHeader(getTranslation("table.column.created_by"));
-        grid.getColumns().get(7).setHeader(getTranslation("table.column.create_date_request"));
-        grid.getColumns().get(8).setHeader(getTranslation("table.column.deadline"));
+        grid.getColumns().get(0).setHeader(getTranslation("table.column.status"));
+        grid.getColumns().get(1).setHeader(getTranslation("table.column.nomination"));
+        grid.getColumns().get(2).setHeader(getTranslation("table.column.priority"));
+        grid.getColumns().get(3).setHeader(getTranslation("table.column.count"));
+        grid.getColumns().get(4).setHeader(getTranslation("table.column.price"));
+        grid.getColumns().get(5).setHeader(getTranslation("table.column.created_by"));
+        grid.getColumns().get(6).setHeader(getTranslation("table.column.create_date_request"));
+        grid.getColumns().get(7).setHeader(getTranslation("table.column.deadline"));
+        grid.getColumns().get(8).setHeader(getTranslation("table.column.request_id"));
         searchField.setPlaceholder(getTranslation("request.search.placeholder"));
         submitButton.setText(getTranslation("button.submit"));
         suspendedRequestButton.setText(getTranslation("button.request_suspended"));

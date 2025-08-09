@@ -4,6 +4,26 @@
 
 # Release notes'
 
+## Version 1.6.2 
+
+### Fixes
+- Fixed **FitOff display**.
+- Fixed **FitOff issue in the error window** — buttons and their labels now display correctly.
+- Fixed **quantity display position** in the *Distribution* section on the **Orders** tab — now the **order number** is shown instead, with the ability to copy it.
+- Fixed an issue where all items were incorrectly added to the **middle panel** in the *Assembly* tab — this error no longer occurs.
+- Fixed **trash calculations** in the calculator when one of the items was excluded from the calculation.
+
+### Improvements
+- Added **dark theme** for the application.
+- Added functionality for **coordinators to delete fits**.
+
+## Version 1.6.1
+
+### UI Improvements
+- Implement metadata panel in distribution orders
+- Add ability to remove fits for Coordinator role
+- Add ability to watch fits for admin in Requests tab
+
 ## Version 1.6.0.4
 
 ### HOT FIX

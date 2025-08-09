@@ -45,7 +45,7 @@ public class ErrorWindow extends CommonDialogComponent {
         rootLayout.add(errorMessage);
         if (StringUtils.isNotBlank(stackTrace)) {
             VerticalLayout errorStackTracePanel = buildErrorStackTracePanel(stackTrace);
-            var details = new Button("Show more");
+            var details = new Button("Раскрыть");
             details.addClickListener(new DetailsButtonClickListener(details, errorStackTracePanel));
             getFooter().add(details);
             rootLayout.setMargin(true);
@@ -62,7 +62,7 @@ public class ErrorWindow extends CommonDialogComponent {
     }
 
     private HorizontalLayout buildControlsLayout() {
-        var okButton = new com.vaadin.flow.component.button.Button();
+        var okButton = new Button("Закрыть");
         okButton.addClickListener(event -> close());
         var controlPanel = new HorizontalLayout();
         controlPanel.add(okButton);
@@ -92,11 +92,11 @@ public class ErrorWindow extends CommonDialogComponent {
         public void onComponentEvent(ClickEvent<Button> event) {
             boolean visible = stackTracePanel.isVisible();
             if (visible) {
-                details.setText("Show more");
+                details.setText("Раскрыть");
                 setHeight("200px");
                 setWidth("500px");
             } else {
-                details.setText("Show less");
+                details.setText("Скрыть");
                 setHeight("70%");
                 setWidth("80%");
             }

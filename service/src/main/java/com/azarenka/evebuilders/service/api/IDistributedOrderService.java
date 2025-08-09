@@ -30,4 +30,8 @@ public interface IDistributedOrderService {
     void updateStatus(DistributedOrder distributedOrder, OrderStatusEnum status);
 
     boolean sendOrderForApproval(DistributedOrder distributedOrder, OrderStatusEnum orderStatusEnum);
+
+    String getDestination(String orderNumber);
+
+    String getReceiver(String orderNumber);
 }

@@ -15,4 +15,5 @@ public interface IFitRepository extends JpaRepository<Fit, String> {
 
     @Override
     List<Fit> findAll();
+
 }
