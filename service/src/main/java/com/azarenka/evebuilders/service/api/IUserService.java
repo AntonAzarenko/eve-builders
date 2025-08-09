@@ -29,4 +29,8 @@ public interface IUserService {
     List<User> getAlters();
 
     User getByCharacterId(String id);
+
+    void updateTheme(String themeName);
+
+    String getThemeName();
 }

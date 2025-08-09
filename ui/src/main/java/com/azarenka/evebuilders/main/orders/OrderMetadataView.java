@@ -74,7 +74,7 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
         add(header, orderInfo);
         HorizontalLayout fitLayout = new HorizontalLayout();
         fitLayout.setWidthFull();
-        Button showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
+        Button showFitButton = new Button("Показать фит", event -> {
             String fitId = orderDto.getFitId();
             if (StringUtils.isNotBlank(fitId)) {
                 Fit fitById = controller.getFitById(orderDto.getFitId());
@@ -83,6 +83,7 @@ public class OrderMetadataView extends VerticalLayout implements LocaleChangeObs
                 Notification.show("Для этого заказа фита не существует", 2000, Notification.Position.MIDDLE);
             }
         });
+        showFitButton.addClassName("link-button");
         showFitButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
         Span fit = new Span();
         fit.getElement().setProperty("innerHTML", String.format("<div style=\"padding-left: 10px;\"><b>%s</b>", FIT));

@@ -11,7 +11,7 @@
 }
 
 .card {
-    border: 1px solid #ccc;
+    border: 1px solid #b30000;
     border-radius: 8px;
     padding: 16px;
     max-width: 260px;
@@ -36,7 +36,7 @@
 }
 
 .filter-parent-card {
-    border: 1px solid #ccc;
+    border: 1px solid #cd0000;
     border-radius: 0px;
     padding: 20px;
     height: fit-content;
@@ -44,7 +44,7 @@
 }
 
 .filter-card {
-    border: 1px solid #ccc;
+    border: 1px solid #d10000;
     border-radius: 0px;
     padding: 25px 0px 0px 0px;
     height: 150px;
@@ -83,7 +83,7 @@
 /* Builder component*/
 .vertical-divider {
     width: 1px;               /* ширина линии */
-    background-color: #ccc;    /* цвет линии */
+    background-color: #ef0000;    /* цвет линии */
     height: 99%;    /* тянется по высоте родителя */
     margin: 3px;
 }
@@ -155,13 +155,18 @@
 }
 
 .stat-card {
-    background-color: white;
+   /* background-color: white;*/
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow:     5px 8px 8px 5px rgb(0 0 0 / 39%);
+
     padding: 1rem;
     text-align: center;
     white-space: nowrap;
     max-width: max-content;
+}
+
+:host([theme~="dark"]) .stat-card {
+    box-shadow: 0 2px 6px rgba(255,255,255,0.15);
 }
 
 .circle-button {
@@ -366,6 +371,16 @@ vaadin-context-menu-item:focus {
 .meta-card .copy-btn::part(label) { /* прячем текст, если вдруг появится */
     display: none;
 }
+
 .meta-card .copy-btn {
     margin-left: var(--lumo-space-s);
+}
+
+.link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #3c8caf;
+    text-decoration: underline;
+    cursor: pointer;
 }

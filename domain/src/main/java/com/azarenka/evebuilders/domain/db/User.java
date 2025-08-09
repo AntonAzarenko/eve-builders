@@ -32,6 +32,16 @@ public class User {
     private String allianceName;
     @Column(name = "language")
     private String language;
+    @Column(name = "theme", columnDefinition = "VARCHAR(255) DEFAULT 'light'")
+    private String theme;
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Permission> permissions;

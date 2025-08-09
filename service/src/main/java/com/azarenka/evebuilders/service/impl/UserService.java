@@ -78,11 +78,25 @@ public class UserService implements IUserService {
 
     @Override
     public List<User> getAlters() {
-       return userRepository.findAltsByMainUsername(SecurityUtils.getUserName());
+        return userRepository.findAltsByMainUsername(SecurityUtils.getUserName());
     }
 
     @Override
     public User getByCharacterId(String id) {
         return userRepository.findByCharacterId(id).orElse(null);
+    }
+
+    @Override
+    public void updateTheme(String themeName) {
+        getByUsername(SecurityUtils.getUserName()).ifPresent(user -> {
+            user.setTheme(themeName);
+            userRepository.save(user);
+        });
+    }
+
+    @Override
+    public String getThemeName() {
+        Optional<User> optionalUser = getByUsername(SecurityUtils.getUserName());
+        return optionalUser.map(User::getTheme).orElse(null);
     }
 }
