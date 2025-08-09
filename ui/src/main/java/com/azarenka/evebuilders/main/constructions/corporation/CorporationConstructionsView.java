@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.DistributedOrderDetailsWindow;
@@ -39,6 +40,7 @@ import com.vaadin.flow.server.VaadinSession;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -211,6 +213,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         });
         GridSelectionModel<DistributedOrder> selectionModel = grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         selectionModel.addSelectionListener(selectionEvent -> updateButtonsStatus());
+        selectOrder();
         return grid;
     }
 
@@ -235,6 +238,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             grid.setDataProvider(dataProvider);
             dataProvider.refreshAll();
         }
+        selectOrder();
     }
 
     private void addColumns() {
@@ -296,6 +300,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
             discardOrderButton.setEnabled(false);
             updateStatusOrderButton.setEnabled(false);
             buildButton.setEnabled(false);
+            metadataDistributedOrderView.refresh(null, null, null);
         }
     }
 
@@ -325,5 +330,15 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     private void clearSearch() {
         searchField.clearText();
         searchByText("");
+    }
+
+    private void selectOrder() {
+        var items = dataProvider.getItems();
+        if (!items.isEmpty()) {
+            var distributedOrder = new ArrayList<>(items).get(0);
+            grid.select(distributedOrder);
+        } else {
+            metadataDistributedOrderView.refresh(null, null, null);
+        }
     }
 }

@@ -14,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class MetadataDistributedOrderView extends View {
 
@@ -49,30 +50,32 @@ public class MetadataDistributedOrderView extends View {
 
     public void refresh(DistributedOrder distributedOrder, String destination, String recievier) {
         removeAll();
-        header.removeAll();
-        priceComponent.removeAll();
-        fullPrice.removeAll();
-        count.removeAll();
-        destinationComponent.removeAll();
-        recievierComponent.removeAll();
-        finishDate.removeAll();
-        fit.removeAll();
-        BigDecimal price = distributedOrder.getPrice();
-        BigDecimal total = price.multiply(BigDecimal.valueOf(distributedOrder.getCount()));
-        header.add(new Span(distributedOrder.getShipName()));
-        initCopyButton(header, e ->
-            VaadinUtils.copyToClipboard(header, distributedOrder.getShipName(), "Скопировано"));
-        addRow(priceComponent, "Цена за ед.", DecimalFormatter.formatIsk(price), () ->
-            VaadinUtils.copyToClipboard(priceComponent, String.valueOf(price), "Скопировано"));
-        addRow(fullPrice, "Полная цена", DecimalFormatter.formatIsk(total), () ->
-            VaadinUtils.copyToClipboard(fullPrice, String.valueOf(total), "Скопировано"));
-        addRow(count, "Кол-во", String.valueOf(distributedOrder.getCount()), () ->
-            VaadinUtils.copyToClipboard(count, String.valueOf(distributedOrder.getCount()), "Скопировано"));
-        addRow(destinationComponent, "Место Сдачи", destination, () ->
-            VaadinUtils.copyToClipboard(destinationComponent, destination, "Скопировано"));
-        addRow(recievierComponent, "Приемщик", recievier, () ->
-            VaadinUtils.copyToClipboard(recievierComponent, recievier, "Скопировано"));
-        add(header, priceComponent, fullPrice, count, recievierComponent, destinationComponent, finishDate, fit);
+        if(Objects.nonNull(distributedOrder)) {
+            header.removeAll();
+            priceComponent.removeAll();
+            fullPrice.removeAll();
+            count.removeAll();
+            destinationComponent.removeAll();
+            recievierComponent.removeAll();
+            finishDate.removeAll();
+            fit.removeAll();
+            BigDecimal price = distributedOrder.getPrice();
+            BigDecimal total = price.multiply(BigDecimal.valueOf(distributedOrder.getCount()));
+            header.add(new Span(distributedOrder.getShipName()));
+            initCopyButton(header, e ->
+                VaadinUtils.copyToClipboard(header, distributedOrder.getShipName(), "Скопировано"));
+            addRow(priceComponent, "Цена за ед.", DecimalFormatter.formatIsk(price), () ->
+                VaadinUtils.copyToClipboard(priceComponent, String.valueOf(price), "Скопировано"));
+            addRow(fullPrice, "Полная цена", DecimalFormatter.formatIsk(total), () ->
+                VaadinUtils.copyToClipboard(fullPrice, String.valueOf(total), "Скопировано"));
+            addRow(count, "Номер заказа", String.valueOf(distributedOrder.getOrderNumber()), () ->
+                VaadinUtils.copyToClipboard(count, String.valueOf(distributedOrder.getOrderNumber()), "Скопировано"));
+            addRow(destinationComponent, "Место Сдачи", destination, () ->
+                VaadinUtils.copyToClipboard(destinationComponent, destination, "Скопировано"));
+            addRow(recievierComponent, "Приемщик", recievier, () ->
+                VaadinUtils.copyToClipboard(recievierComponent, recievier, "Скопировано"));
+            add(header, priceComponent, fullPrice, count, recievierComponent, destinationComponent, finishDate, fit);
+        }
     }
 
     private void addRow(HorizontalLayout layout, String label, String value, Runnable copyAction) {
