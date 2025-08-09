@@ -111,6 +111,9 @@ public class DistributedOrderService implements IDistributedOrderService {
         }
         distributedOrderRepository.save(distributedOrder);
         updateShipOrder(distributedOrder.getOrderNumber(), value);
+        telegramIntegrationService.sendMessage(
+            TelegramMessageCreatorService.createFinishOrderMessage(distributedOrder, ready,
+                SecurityUtils.getUserName()), threadRequestId);
         auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
             String.format("Count was changed from %s to %s", wasReady, ready), distributedOrder.getUserName());
     }
