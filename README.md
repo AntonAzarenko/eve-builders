@@ -4,6 +4,13 @@
 
 # Release notes'
 
+## Version 1.6.1
+
+### UI Improvements
+- Implement metadata panel in distribution orders
+- Add ability to remove fits for Coordinator role
+- Add ability to watch fits for admin in Requests tab
+
 ## Version 1.6.0.4
 
 ### HOT FIX

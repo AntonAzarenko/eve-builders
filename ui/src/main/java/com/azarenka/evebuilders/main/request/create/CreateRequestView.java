@@ -1,13 +1,13 @@
 package com.azarenka.evebuilders.main.request.create;
 
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.server.VaadinSession;
 
 public class CreateRequestView extends CommonDialogComponent {
 
-    public CreateRequestView(ICreateRequestController controller) {
+    public CreateRequestView(IRequestController controller) {
         super("create-request-view",false);
         setHeaderTitle("Create Request");
         setHeight("750px");
@@ -16,7 +16,7 @@ public class CreateRequestView extends CommonDialogComponent {
         initContent(controller);
     }
 
-    private void initContent(ICreateRequestController controller) {
+    private void initContent(IRequestController controller) {
         var parametersRequestView = new ParametersRequestView(controller);
         add(parametersRequestView);
         var applyButton = parametersRequestView.getApplyButton();

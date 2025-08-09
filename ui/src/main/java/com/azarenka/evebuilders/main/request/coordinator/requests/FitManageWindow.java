@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.commonview.FitView;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -25,7 +25,7 @@ import java.util.Optional;
 
 public class FitManageWindow extends CommonDialogComponent implements IGridColumnAdder<Fit>, LocaleChangeObserver {
 
-    private final ICreateRequestController controller;
+    private final IRequestController controller;
     private Grid<Fit> grid;
     private ListDataProvider<Fit> dataProvider;
 
@@ -33,7 +33,7 @@ public class FitManageWindow extends CommonDialogComponent implements IGridColum
     private Button uploadFitButton;
     private Button showFitButton;
 
-    public FitManageWindow(ICreateRequestController controller) {
+    public FitManageWindow(IRequestController controller) {
         super("fit-management-view", true);
         this.controller = controller;
         super.setHeaderTitle("Управление фитами");
@@ -50,8 +50,14 @@ public class FitManageWindow extends CommonDialogComponent implements IGridColum
         removeButton = VaadinUtils.createLumoButton(LineAwesomeIcon.TRASH_ALT);
         removeButton.addClickListener(e -> {
             Fit fit = grid.getSelectionModel().getFirstSelectedItem().get();
-            new ConfirmDialog("Remove item", "Вы Уверены что ходите удалить фит?", "Удалить",
-                s -> controller.deleteFit(fit),
+            new ConfirmDialog("Remove item", "Вы уверены что хотите удалить фит?", "Удалить",
+                s -> {
+                    boolean isDeleted = controller.deleteFit(fit);
+                    if (!isDeleted) {
+                        VaadinUtils.showNotification("Фит не удален так как он уже используется в заказе");
+                    }
+                    refresh();
+                },
                 "Отмена", ew -> {
             }).open();
         });

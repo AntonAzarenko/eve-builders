@@ -16,4 +16,6 @@ public interface IFitLoaderService {
     boolean updateFit(Fit fit);
 
     List<Fit> gitAllFitsByUser();
+
+    boolean removeFit(Fit fit);
 }

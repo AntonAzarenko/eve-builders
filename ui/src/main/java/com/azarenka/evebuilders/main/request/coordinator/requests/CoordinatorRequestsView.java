@@ -8,7 +8,7 @@ import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.main.request.create.CreateRequestView;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
@@ -50,7 +50,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
-    private final ICreateRequestController createRequestController;
+    private final IRequestController createRequestController;
     private Button submitButton;
     private Button suspendedRequestButton;
     private Button continueRequestButton;
@@ -69,7 +69,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     private GridMenuItem<RequestOrder> continueItem;
     private GridMenuItem<RequestOrder> fitItem;
 
-    public CoordinatorRequestsView(@Autowired ICreateRequestController createRequestController) {
+    public CoordinatorRequestsView(@Autowired IRequestController createRequestController) {
         this.createRequestController = createRequestController;
         initMainLayout();
     }

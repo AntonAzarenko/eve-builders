@@ -9,7 +9,7 @@ import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -44,13 +44,13 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
-    private final ICreateRequestController controller;
+    private final IRequestController controller;
     private Button applyButton;
     private Button createOrderButton;
     private Button redjectRequestButton;
     private Button showFitButton;
 
-    public RequestsView(@Autowired ICreateRequestController controller) {
+    public RequestsView(@Autowired IRequestController controller) {
         this.controller = controller;
         initMainLayout();
     }

@@ -1,10 +1,10 @@
-package com.azarenka.evebuilders.main.request.create;
+package com.azarenka.evebuilders.main.request;
 
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Controller
-public class CreateRequestController implements ICreateRequestController {
+public class RequestController implements IRequestController {
 
     @Autowired
     private IEveMaterialDataService dataService;
@@ -98,7 +98,7 @@ public class CreateRequestController implements ICreateRequestController {
     }
 
     @Override
-    public String deleteFit(Fit fit) {
-        return "";
+    public boolean deleteFit(Fit fit) {
+        return fitLoaderService.removeFit(fit);
     }
 }

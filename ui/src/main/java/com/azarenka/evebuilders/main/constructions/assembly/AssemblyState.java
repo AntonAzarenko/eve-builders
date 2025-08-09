@@ -349,7 +349,6 @@ public class AssemblyState {
         }
         double modifier = 1.0;
         Double bpPercent = efficiencyMap.get(parent);
-
         if (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType())) {
             modifier *= getTataraMaterialModifier();
         } else {
@@ -476,6 +475,7 @@ public class AssemblyState {
                 if (unitsTotal == 0 && rootExcludedGroup) {
                     int buyQty = nodes.stream()
                         .filter(this::isRootExcluded)
+                        .filter(n -> !isRootExcluded(n.getParent()))
                         .mapToInt(ProductionNode::getFinalQuantity)
                         .sum();
                     if (buyQty > 0) {

@@ -8,7 +8,7 @@ import com.azarenka.evebuilders.domain.db.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.commonview.FitView;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.validators.RequiredValidator;
 import com.azarenka.evebuilders.validators.StubValidator;
 import com.vaadin.flow.component.ClientCallable;
@@ -26,7 +26,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
@@ -38,7 +37,6 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.VaadinSession;
 import org.apache.commons.lang3.StringUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +53,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private final ComboBox<PriorityOption> priorityField = new ComboBox(getTranslation("management.label.priority"));
     private final ComboBox<Fit> fitField = new ComboBox(getTranslation("management.label.fit"));
     private final Binder<RequestOrder> binder = new Binder<>();
-    private final ICreateRequestController controller;
+    private final IRequestController controller;
     private final DatePicker datePickerField = new DatePicker();
     private RequiredValidator requiredValidator = new RequiredValidator(getTranslation(REQUIRED_FIELD_VALUE));
     private final Div imageContainer = new Div();
@@ -74,7 +72,7 @@ public class ParametersRequestView extends View implements LocaleChangeObserver 
     private List<InvGroup> invGroupById = new ArrayList<>();
     private SearchComponent searchField;
 
-    public ParametersRequestView(ICreateRequestController controller) {
+    public ParametersRequestView(IRequestController controller) {
         this.controller = controller;
         initContent();
         RequestOrder originalOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");

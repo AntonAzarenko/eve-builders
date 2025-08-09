@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
-import com.azarenka.evebuilders.main.request.api.ICreateRequestController;
+import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.validators.RequiredValidator;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -27,10 +27,10 @@ public class SubmitRequestOrderWindow extends CommonDialogComponent implements L
     private final String headerLabel = getTranslation("label.submit.request.cost");
 
     private final RequestOrder order;
-    private final ICreateRequestController controller;
+    private final IRequestController controller;
     private final ISaveListener listener;
 
-    public SubmitRequestOrderWindow(RequestOrder order, ICreateRequestController controller,
+    public SubmitRequestOrderWindow(RequestOrder order, IRequestController controller,
                                     ISaveListener listener) {
         super("submit-request-order-window", false);
         this.order = order;

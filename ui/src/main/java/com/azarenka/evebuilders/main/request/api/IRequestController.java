@@ -9,7 +9,7 @@ import com.vaadin.flow.component.html.Image;
 
 import java.util.List;
 
-public interface ICreateRequestController {
+public interface IRequestController {
 
     List<Fit> gitAllFits();
 
@@ -38,5 +38,5 @@ public interface ICreateRequestController {
 
     void updateRequest(RequestOrder requestOrder);
 
-    String deleteFit(Fit fit);
+    boolean deleteFit(Fit fit);
 }
