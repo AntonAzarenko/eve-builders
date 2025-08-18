@@ -35,6 +35,8 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.server.VaadinSession;
 
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery.B;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -63,7 +65,6 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
     public OrdersView(IOrderViewController controller) {
         this.controller = controller;
         add(initMainLayout());
-        getUI().ifPresent(ui -> ui.add(orderFilterPopupComponent));
     }
 
     private VerticalLayout initMainLayout() {

@@ -38,6 +38,12 @@ public class VaadinUtils {
         });
     }
 
+    public static VerticalLayout initCommonVerticalLayout(Component... components) {
+        VerticalLayout verticalLayout = initCommonVerticalLayout();
+        verticalLayout.add(components);
+        return verticalLayout;
+    }
+
     public static VerticalLayout initCommonVerticalLayout() {
         var verticalLayout = new VerticalLayout();
         verticalLayout.setPadding(false);
@@ -115,7 +121,7 @@ public class VaadinUtils {
 
     private static <T> void applyGridProperties(Grid<T> grid, String id) {
         grid.addThemeVariants(
-                GridVariant.LUMO_COLUMN_BORDERS,
+                //GridVariant.LUMO_COLUMN_BORDERS,
                 GridVariant.LUMO_COMPACT,
                 GridVariant.LUMO_ROW_STRIPES);
         grid.setSizeFull();

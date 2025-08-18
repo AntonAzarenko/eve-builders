@@ -13,7 +13,7 @@ public class CharacterAssetSync {
 
     @Id
     @Column(name = "user_name", nullable = false)
-    private String userName; // или characterId, если используешь его
+    private String userName;
     @Column(name = "etag", length = 128)
     private String etag;
     @Column(name = "expires_at")

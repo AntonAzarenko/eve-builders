@@ -42,31 +42,6 @@ public class ProductionTreeService implements IProductionTreeService {
 
     public ProductionNode buildProductionTree(String typeName, int requiredQty) {
         return buildProductionTreeRecursive(typeName, requiredQty, 0);
-
-        /*TypeInfo typeInfo = loader.getByTypeName(typeName);
-        ProductionNode root = new ProductionNode();
-        root.setTypeName(typeName);
-        root.setQuantity(requiredQty);
-        if (typeInfo == null) {
-            root.setProducedQuantity(requiredQty);
-            root.setExcessQuantity(0);
-            return root;
-        }
-        int outputPerBatch = typeInfo.getOutputQuantity() > 0 ? typeInfo.getOutputQuantity() : 1;
-        int batches = (int) Math.ceil((double) requiredQty / outputPerBatch);
-        int produced = batches * outputPerBatch;
-        root.setProducedQuantity(produced);
-        root.setExcessQuantity(produced - requiredQty);
-        root.setMaterialType(resolveMaterialType(typeInfo.getGroupName(), typeInfo.getCategoryID()));
-        for (MaterialEntry material : typeInfo.getMaterials()) {
-            ProductionNode child =
-                buildProductionTree(material.getMaterialTypeName(), material.getQuantity() * batches);
-            if (child != null) {
-                child.setParent(root);
-                root.getChildren().add(child);
-            }
-        }
-        return root;*/
     }
 
     private ProductionNode buildProductionTreeRecursive(String typeName, int requiredQty, int currentStage) {

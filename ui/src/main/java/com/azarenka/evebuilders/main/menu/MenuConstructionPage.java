@@ -20,7 +20,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("construction")
 @Route("")
-@RolesAllowed({"ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @ParentLayout(MainWidget.class)
 public class MenuConstructionPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 

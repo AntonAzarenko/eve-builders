@@ -91,6 +91,7 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         user.setMainCharacter(true);
         defineRole(characterName, user);
         user.setLanguage(locale.getLanguage());
+        user.setTheme("light");
         var userName = SecurityUtils.getUserName();
         if (Objects.nonNull(userName)) {
             userService.getByUsername(userName).ifPresent(mainUser -> {
@@ -118,11 +119,7 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private void defineRole(String userName, User user) {
-        if (userName.equals("AntonFromEpam")) {
-            user.setRoles(Set.of(Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN));
-        } else {
-            user.setRoles(Set.of(Role.ROLE_USER));
-        }
+        user.setRoles(Set.of(Role.ROLE_VIEWER));
     }
 
     private void createToken(OAuth2UserRequest userRequest, User user) {

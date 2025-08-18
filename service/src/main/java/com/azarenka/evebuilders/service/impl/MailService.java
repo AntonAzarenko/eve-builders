@@ -11,6 +11,7 @@ import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.integration.IEveMailIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 
 import org.springframework.beans.factory.annotation.Autowired;

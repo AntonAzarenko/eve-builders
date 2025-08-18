@@ -11,7 +11,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "main", layout = OrdersPage.class)
 @PageTitle("Orders")
-@RolesAllowed({"ROLE_USER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 public class MenuOrdersView extends View {
 
     public MenuOrdersView(IOrderViewController controller) {

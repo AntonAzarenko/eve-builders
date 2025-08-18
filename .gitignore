@@ -31,6 +31,7 @@ build/
 !**/src/test/**/build/
 ui/src/main/frontend/themes/ui/texture/
 ui/src/main/frontend/generated/
+ui/src/main/bundles/
 env/**
 env
 deploy-to-pi.bat
