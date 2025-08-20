@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions.corporation;
+package com.azarenka.evebuilders.main.orders.myorders;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
@@ -13,7 +13,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class MetadataDistributedOrderView extends View {

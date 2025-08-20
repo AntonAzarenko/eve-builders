@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.constructions;
+package com.azarenka.evebuilders.main.orders.myorders;
 
 import com.azarenka.evebuilders.common.util.ISaveListener;
 import com.azarenka.evebuilders.common.util.VaadinUtils;

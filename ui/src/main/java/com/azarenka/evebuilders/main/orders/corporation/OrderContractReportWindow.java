@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.orders;
+package com.azarenka.evebuilders.main.orders.corporation;
 
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;

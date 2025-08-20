@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.orders;
+package com.azarenka.evebuilders.main.orders.corporation;
 
 import com.azarenka.evebuilders.common.util.INumberFormater;
 import com.azarenka.evebuilders.common.util.VaadinUtils;

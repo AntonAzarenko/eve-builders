@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.orders;
+package com.azarenka.evebuilders.main.orders.corporation;
 
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
@@ -7,7 +7,6 @@ import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

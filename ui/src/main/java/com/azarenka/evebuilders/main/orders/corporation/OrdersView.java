@@ -1,8 +1,7 @@
-package com.azarenka.evebuilders.main.orders;
+package com.azarenka.evebuilders.main.orders.corporation;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
-import com.azarenka.evebuilders.component.RadialMenuComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
@@ -12,13 +11,13 @@ import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
+import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSelectionModel;
@@ -33,9 +32,11 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery.B;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -48,6 +49,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import jakarta.annotation.security.RolesAllowed;
+
+@Route(value = "main", layout = MenuOrdersPage.class)
+@PageTitle("Orders")
+@RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 public class OrdersView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
 
     private final IOrderViewController controller;
@@ -62,7 +68,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
     private OrderFilterPopupComponent orderFilterPopupComponent;
     private OrderFilter appliedFilter = new OrderFilter();
 
-    public OrdersView(IOrderViewController controller) {
+    public OrdersView(@Autowired IOrderViewController controller) {
         this.controller = controller;
         add(initMainLayout());
     }

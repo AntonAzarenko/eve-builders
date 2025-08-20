@@ -7,10 +7,10 @@ import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.main.menu.MenuManagerPage;
+import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
 import com.azarenka.evebuilders.main.menu.MenuTradePage;
-import com.azarenka.evebuilders.main.menu.page.OrdersPage;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -44,7 +44,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         this.controller = controller;
         countSubmittedRequests = controller.countRequests();
         countNewOrders = controller.countNewOrders();
-        addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), OrdersPage.class,
+        addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), MenuOrdersPage.class,
             new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER}, VaadinIcon.HOME.create(),
             countNewOrders, "tab-order-menu");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
@@ -80,7 +80,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         countSubmittedRequests = controller.countRequests();
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasBuilderPermission() || BuilderPermission.hasAdminPermission()) {
-            tabMap.get(OrdersPage.class)
+            tabMap.get(MenuOrdersPage.class)
                 .updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
             tabMap.get(MenuConstructionPage.class).updateLabel(getTranslation("menu.tab.construction"),
                 LineAwesomeIcon.INDUSTRY_SOLID.create());
