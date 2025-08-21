@@ -12,30 +12,15 @@ import java.time.LocalDate;
 
 public interface IMarketOfferService {
 
-    String createDraft(String sellerUsername,
-                       String marketItemTypeId,
-                       String locationId,
-                       long qtyTotal,
-                       BigDecimal pricePerUnit,
-                       LocalDate expiresOn);
+    String createDraft(String sellerUsername, String marketItemTypeId, String locationId, long qtyTotal,
+                       BigDecimal pricePerUnit, LocalDate expiresOn);
 
     void activate(String offerId, String actorUsername);
 
-    void update(String offerId,
-                String actorUsername,
-                BigDecimal pricePerUnit,
-                Long qtyTotal,
-                LocalDate expiresOn);
+    void update(String offerId, String actorUsername, BigDecimal pricePerUnit, Long qtyTotal, LocalDate expiresOn);
 
     void cancel(String offerId, String actorUsername, boolean force);
 
-    Page<MarketRowDTO> search(
-        MaterialType materialType,
-        MarketOfferStatus[] statuses,
-        String locationId,
-        BigDecimal minPrice,
-        BigDecimal maxPrice,
-        Long minQty,
-        Long maxQty,
-        Pageable pageable);
+    Page<MarketRowDTO> search(MaterialType materialType, MarketOfferStatus[] statuses, String locationId,
+                              BigDecimal minPrice, BigDecimal maxPrice, Long minQty, Long maxQty, Pageable pageable);
 }

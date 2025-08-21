@@ -93,14 +93,11 @@ public class MarketOfferService implements IMarketOfferService {
 
         var offer = getOfferOrThrow(offerId);
         ensureActorIsSeller(offer, actorUsername);
-
-        // Разрешим апдейт в DRAFT/ACTIVE
         if (offer.getStatus() != MarketOfferStatus.DRAFT && offer.getStatus() != MarketOfferStatus.ACTIVE) {
             throw new ValidationException("Only DRAFT/ACTIVE offer can be updated");
         }
         if (pricePerUnit != null) {
             if (pricePerUnit.signum() <= 0) throw new ValidationException("pricePerUnit must be > 0");
-            // TODO: запрет апдейта цены при активных резервах (когда они будут)
             offer.setPricePerUnit(pricePerUnit);
         }
         if (qtyTotal != null) {

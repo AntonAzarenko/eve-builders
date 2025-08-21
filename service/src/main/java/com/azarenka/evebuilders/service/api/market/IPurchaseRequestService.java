@@ -11,37 +11,18 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface IPurchaseRequestService {
-    /** Создать заявку в статусе DRAFT */
-    String createDraft(String requesterUsername,
-                       String marketItemTypeId,
-                       String locationId,
-                       long qtyNeeded,
-                       BigDecimal pricePerUnit,
-                       LocalDate deadline);
 
-    /** Активировать заявку (qtyRemaining>0, не EXPIRED) */
+    String createDraft(String requesterUsername, String marketItemTypeId, String locationId, long qtyNeeded,
+                       BigDecimal pricePerUnit, LocalDate deadline);
+
     void activate(String requestId, String actorUsername);
 
-    /** Обновить заявку (цена/дедлайн/qtyNeeded — в рамках правил) */
-    void update(String requestId,
-                String actorUsername,
-                BigDecimal pricePerUnit,
-                Long qtyNeeded,
-                LocalDate deadline);
+    void update(String requestId, String actorUsername, BigDecimal pricePerUnit, Long qtyNeeded, LocalDate deadline);
 
-    /** Отменить заявку */
     void cancel(String requestId, String actorUsername, boolean force);
 
-    /** Поиск/листинг заявок */
-    Page<RequestRowDTO> search(
-        MaterialType materialType,
-        MarketRequestStatus[] statuses,
-        String locationId,
-        BigDecimal minPrice,
-        BigDecimal maxPrice,
-        Long minQty,
-        Long maxQty,
-        LocalDate minDeadline,
-        LocalDate maxDeadline,
-        Pageable pageable);
+
+    Page<RequestRowDTO> search(MaterialType materialType, MarketRequestStatus[] statuses, String locationId,
+                               BigDecimal minPrice, BigDecimal maxPrice, Long minQty, Long maxQty,
+                               LocalDate minDeadline, LocalDate maxDeadline, Pageable pageable);
 }
