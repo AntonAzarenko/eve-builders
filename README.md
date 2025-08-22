@@ -4,6 +4,15 @@
 
 # Release notes'
 
+## Version 1.6.3
+
+### Fixes
+- Move CorporationContraction tab to order tab
+- Fix Color on UI dor dark theme
+- Add sorting for requests tab
+- Fix calculation issue for last components
+- Change role distributing 
+
 ## Version 1.6.2 
 
 ### Fixes

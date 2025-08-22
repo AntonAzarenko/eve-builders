@@ -185,7 +185,10 @@ public class OrderFilterPopupComponent extends Div {
 
     private void initTypeOrderLayout() {
         VerticalLayout typesOrderLayout = VaadinUtils.initCommonVerticalLayout();
-        String[] values = GroupTypeEnum.SHIPS.getValues();
+        String[] values = new String[]{
+            GroupTypeEnum.SHIPS.name(),
+            GroupTypeEnum.MODULES.name()
+        };
         typeOrderCombobox = new CheckboxGroup<>();
         typeOrderCombobox.setWidthFull();
         typeOrderCombobox.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);

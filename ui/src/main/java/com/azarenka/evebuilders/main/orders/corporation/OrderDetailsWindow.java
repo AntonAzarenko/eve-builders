@@ -2,15 +2,11 @@ package com.azarenka.evebuilders.main.orders.corporation;
 
 import com.azarenka.evebuilders.common.util.BuilderPermission;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
-import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -22,19 +18,15 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 public class OrderDetailsWindow extends CommonDialogComponent implements LocaleChangeObserver {
 
     private Grid<DistributedOrder> grid;
     private ListDataProvider<DistributedOrder> dataProvider;
-    private IOrderViewController controller;
-    private Button checkOrderButton;
 
-    public OrderDetailsWindow(IOrderViewController controller, List<DistributedOrder> orders, String orderNumber) {
+    public OrderDetailsWindow(List<DistributedOrder> orders, String orderNumber) {
         super("order-details-window", true);
         super.applyCommonProperties("order_info", true);
-        this.controller = controller;
         dataProvider = DataProvider.ofCollection(orders);
         super.setWidth("1000px");
         super.setHeight("400px");
@@ -43,13 +35,6 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
         layout.add(initGrid());
         add(layout);
         getFooter().add(initButtonsLayout());
-        updateButtonStatus();
-    }
-
-    private void updateButtonStatus() {
-        Optional<DistributedOrder> selectedItem = grid.getSelectionModel().getFirstSelectedItem();
-        var isSelected = selectedItem.isPresent();
-        checkOrderButton.setEnabled(isSelected && selectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED);
     }
 
     private Grid<DistributedOrder> initGrid() {
@@ -59,7 +44,6 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
             shipOrderDtoColumn.setSortable(true);
             shipOrderDtoColumn.setResizable(true);
         });
-        grid.addSelectionListener(event -> updateButtonStatus());
         return grid;
     }
 
@@ -76,18 +60,7 @@ public class OrderDetailsWindow extends CommonDialogComponent implements LocaleC
         var layout = new HorizontalLayout();
         layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
         layout.setWidthFull();
-        var adminsLayout = new HorizontalLayout();
-        layout.add(adminsLayout, createCloseButton());
-        checkOrderButton = new Button(VaadinIcon.CHECK_SQUARE.create());
-        checkOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ICON);
-        checkOrderButton.addClickListener(event -> {
-            Optional<DistributedOrder> distributedOrderOptional = grid.getSelectionModel().getFirstSelectedItem();
-            distributedOrderOptional.ifPresent(distributedOrder -> {
-                controller.checkOrder(distributedOrderOptional.get());
-            });
-        });
-        adminsLayout.add(checkOrderButton);
-        checkOrderButton.setVisible(BuilderPermission.hasAdminPermission());
+        layout.add(createCloseButton());
         return layout;
     }
 

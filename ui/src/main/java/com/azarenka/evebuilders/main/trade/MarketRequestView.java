@@ -79,19 +79,16 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         getStyle().set("padding", "0 10px 0 10px");
         initContent();
 
-
         grid.setItems(new CallbackDataProvider<>(
             this::fetch, this::count
         ));
 
-        // Первичная загрузка карточек синхронизируем с таблицей по необходимости
         filterButton.addClickListener(e -> grid.getDataProvider().refreshAll());
         reset.addClickListener(e -> {
             clearFilters();
             grid.getDataProvider().refreshAll();
         });
 
-        // Начальная отрисовка карточек
         refreshCards();
     }
 
@@ -107,7 +104,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
     }
 
     private Stream<RequestRowDTO> fetch(Query<RequestRowDTO, Void> q) {
-      
+
         var data = List.of(
             new RequestRowDTO("REQ-101", "builder.alfa", "Tritanium", "34",
                 100_000, 45_000, new BigDecimal("4.22")
@@ -337,13 +334,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         @SuppressWarnings("unchecked")
         DataProvider<RequestRowDTO, Void> provider =
             (DataProvider<RequestRowDTO, Void>) grid.getDataProvider();
-        var query = new Query<RequestRowDTO, Void>(
-            0,
-            50,
-            Collections.emptyList(),
-            null,
-            null
-        );
+        var query = new Query<RequestRowDTO, Void>(0, 50, Collections.emptyList(), null, null);
 
         provider.fetch(query).forEach(row -> cards.add(card(row)));
     }
@@ -354,7 +345,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         card.getStyle().set("border-radius", "12px");
         card.getStyle().set("padding", "12px");
         card.getStyle().set("width", "320px");
-        card.getStyle().set("box-shadow","5px 8px 8px 5px rgb(0 0 0 / 39%)");
+        card.getStyle().set("box-shadow", "5px 8px 8px 5px rgb(0 0 0 / 39%)");
 
 
         var title = new H2(r.resourceName() + " • " + r.pricePerUnit() + " ISK");

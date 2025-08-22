@@ -9,5 +9,6 @@ public enum OrderStatusEnum {
     DISCARDED,
     EXPIRED,
     STOPPED,
-    WAITING_FOR_APPROVAL;
+    WAITING_FOR_APPROVAL,
+    ARCHIVED;
 }

@@ -1,6 +1,5 @@
 package com.azarenka.evebuilders.main.orders.corporation;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.Order;
@@ -13,7 +12,6 @@ import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
-import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -85,24 +83,6 @@ public class OrdersViewController implements IOrderViewController {
     }
 
     @Override
-    public void checkOrder(DistributedOrder distributedOrder) {
-        var contractReports = contractService.getContractReport(distributedOrder);
-        new OrderContractReportWindow(contractReports, distributedOrder, this).open();
-    }
-
-    @Override
-    public void completeOrder(DistributedOrder distributedOrder, boolean applyEntire,
-                              List<ContractValidationReport> contractReports) {
-        if (applyEntire) {
-            showCompleterOrderWindow(distributedOrder);
-        } else {
-            contractReports.forEach(contract -> {
-                showCompleterReportsWindow(distributedOrder, contract);
-            });
-        }
-    }
-
-    @Override
     public void saveFilter(OrderFilter filter) {
         orderFilterService.saveFilter(filter);
     }
@@ -121,25 +101,6 @@ public class OrdersViewController implements IOrderViewController {
                 distributedOrderService.update(order, readyCount);
                 UI.getCurrent().refreshCurrentRoute(true);
             });
-        confirmDialog.open();
-    }
-
-    private void showCompleterReportsWindow(DistributedOrder distributedOrder,
-                                            ContractValidationReport contractReport) {
-        var confirmDialog = new ConfirmDialog();
-        confirmDialog.setHeader("Confirmation Window");
-        confirmDialog.setText(
-            String.format("Are you sure you want to move to COMPLETE status for \n %s",
-                contractReport.getContract().getContractId()));
-        confirmDialog.setConfirmText("Принять");
-        confirmDialog.addConfirmListener(event -> {
-            var readyCount = contractReport.getCountItems();
-            distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
-            distributedOrderService.update(distributedOrder, readyCount);
-            UI.getCurrent().refreshCurrentRoute(true);
-        });
-        confirmDialog.setCancelText("Cancel");
-        confirmDialog.addCancelListener(event -> confirmDialog.close());
         confirmDialog.open();
     }
 }

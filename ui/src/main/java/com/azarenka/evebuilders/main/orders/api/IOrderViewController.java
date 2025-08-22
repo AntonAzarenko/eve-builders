@@ -29,11 +29,6 @@ public interface IOrderViewController {
 
     List<DistributedOrder> getDistributedOrdersByOrderNumber(String orderNumber);
 
-    void checkOrder(DistributedOrder distributedOrder);
-
-    void completeOrder(DistributedOrder distributedOrder, boolean applyEntire,
-                       List<ContractValidationReport> contractReports);
-
     void saveFilter(OrderFilter filter);
 
     OrderFilter getFilter();

@@ -169,7 +169,8 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
                 OrderStatusEnum.COMPLETED,
                 OrderStatusEnum.EXPIRED,
                 OrderStatusEnum.STOPPED,
-                OrderStatusEnum.DISCARDED)
+                OrderStatusEnum.DISCARDED,
+                OrderStatusEnum.ARCHIVED)
             .withDistributedFilter()
             .withTypeOrderFilter()
             .withCountFreeFilter()
@@ -191,7 +192,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
     private void openOrderInfo() {
         String orderNumber = grid.getSelectionModel().getFirstSelectedItem().get().getOrderNumber();
         var orders = controller.getDistributedOrdersByOrderNumber(orderNumber);
-        OrderDetailsWindow orderDetailsWindow = new OrderDetailsWindow(controller, orders, orderNumber);
+        OrderDetailsWindow orderDetailsWindow = new OrderDetailsWindow(orders, orderNumber);
         orderDetailsWindow.open();
     }
 

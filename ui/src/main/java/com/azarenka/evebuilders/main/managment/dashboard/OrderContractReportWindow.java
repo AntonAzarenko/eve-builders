@@ -1,10 +1,14 @@
-package com.azarenka.evebuilders.main.orders.corporation;
+package com.azarenka.evebuilders.main.managment.dashboard;
 
+import com.azarenka.evebuilders.common.util.VaadinUtils;
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
-import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
+import com.azarenka.evebuilders.main.managment.api.IDashBoardController;
 import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -19,10 +23,10 @@ public class OrderContractReportWindow extends CommonDialogComponent {
     private Button completeButton;
     private Button applyButton;
     private DistributedOrder order;
-    private IOrderViewController controller;
+    private IDashBoardController controller;
 
     public OrderContractReportWindow(List<ContractValidationReport> reports, DistributedOrder order,
-                                     IOrderViewController controller) {
+                                     IDashBoardController controller) {
         super("order_contract_report_header", true);
         this.reports = reports;
         this.order = order;
@@ -51,14 +55,17 @@ public class OrderContractReportWindow extends CommonDialogComponent {
     }
 
     private HorizontalLayout initButtonsLayout() {
-        completeButton = new Button(VaadinIcon.COMPILE.create());
+        completeButton = VaadinUtils.createLumoButton(VaadinIcon.COMPILE);
         completeButton.addClickListener(event -> {
-            controller.completeOrder(order, true, reports);
+            showCompleterOrderWindow(order);
         });
-        applyButton = new Button(VaadinIcon.CHECK.create());
+        applyButton = VaadinUtils.createLumoButton(VaadinIcon.CHECK);
         applyButton.addClickListener(event -> {
-            controller.completeOrder(order, false, reports);
+            reports.forEach(contract -> {
+                showCompleterReportsWindow(order, contract);
+            });
         });
+        updateButtonStatus();
         HorizontalLayout horizontalLayout = new HorizontalLayout(completeButton, applyButton, createCloseButton());
         horizontalLayout.setWidthFull();
         horizontalLayout.setJustifyContentMode(JustifyContentMode.END);
@@ -70,5 +77,43 @@ public class OrderContractReportWindow extends CommonDialogComponent {
         horizontalLayout.setWidthFull();
         horizontalLayout.add(new Span(title), new Span(value));
         return horizontalLayout;
+    }
+
+    private void showCompleterOrderWindow(DistributedOrder order) {
+        var confirmDialog = new ConfirmDialog(
+            "Confirmation Window",
+            String.format("Are you sure you want to COMPLETE this order for  %s", order.getUserName()), "Ok",
+            event -> {
+                var readyCount = order.getCount();
+                controller.update(order, readyCount);
+                this.close();
+                UI.getCurrent().refreshCurrentRoute(true);
+            });
+        confirmDialog.open();
+    }
+
+    private void showCompleterReportsWindow(DistributedOrder distributedOrder,
+                                            ContractValidationReport contractReport) {
+        var confirmDialog = new ConfirmDialog();
+        confirmDialog.setHeader("Confirmation Window");
+        confirmDialog.setText(
+            String.format("Are you sure you want to move to COMPLETE status for \n %s",
+                contractReport.getContract().getContractId()));
+        confirmDialog.setConfirmText("Принять");
+        confirmDialog.addConfirmListener(event -> {
+            var readyCount = contractReport.getCountItems();
+            distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+            controller.update(distributedOrder, readyCount);
+            this.close();
+            UI.getCurrent().refreshCurrentRoute(true);
+        });
+        confirmDialog.setCancelText("Cancel");
+        confirmDialog.addCancelListener(event -> confirmDialog.close());
+        confirmDialog.open();
+    }
+
+    private void updateButtonStatus() {
+        var isEnabled = !reports.isEmpty() && reports.get(0).getCountItems() != 0;
+        applyButton.setEnabled(isEnabled);
     }
 }
