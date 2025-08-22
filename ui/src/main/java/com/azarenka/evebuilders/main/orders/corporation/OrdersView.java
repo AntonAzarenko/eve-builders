@@ -8,6 +8,7 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
@@ -49,6 +50,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -151,7 +153,7 @@ public class OrdersView extends View
         SplitLayout splitLayout = new SplitLayout();
         VerticalLayout layout = VaadinUtils.initCommonVerticalLayout();
         layout.add(initFilterLayout(), initGrid());
-        layout.getStyle().set("padding", "0px 5px 0px 5px");
+        layout.getStyle().set("padding", "0px 5px 30px 5px");
         layout.setWidthFull();
         splitLayout.addToPrimary(layout);
         splitLayout.addToSecondary(metadataLayout);
@@ -254,8 +256,10 @@ public class OrdersView extends View
     }
 
     private void addColumns() {
+        Function<ShipOrderDto, String> statusText =
+            o -> o.getOrderStatus() == null ? "" : o.getOrderStatus().name();
         addColumn(ShipOrderDto::getOrderNumber, "130px");
-        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid);
+        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid, statusText);
         addColumn(ShipOrderDto::getItemName, "150px");
         addNumberColumn(ShipOrderDto::getCount, "100px");
         addNumberColumn(order -> order.getCount() - order.getInProgressCount(), "90px");

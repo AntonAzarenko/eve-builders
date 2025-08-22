@@ -9,6 +9,7 @@ import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
@@ -44,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -75,7 +77,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private void initMainLayout() {
-        super.getStyle().set("padding", "0px 5px 0px 5px");
+        super.getStyle().set("padding", "0px 5px 30px 5px");
         SplitLayout splitLayout = new SplitLayout();
         splitLayout.setWidthFull();
         add(initToolBarLayout(), initFilterLayout());
@@ -242,8 +244,10 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
     }
 
     private void addColumns() {
+        Function<DistributedOrder, String> statusText =
+            o -> o.getOrderStatus() == null ? "" : o.getOrderStatus().name();
         addColumn(DistributedOrder::getOrderNumber, "130px");
-        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid);
+        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid, statusText);
         addColumn(DistributedOrder::getShipName, "150px");
         addNumberColumn(DistributedOrder::getCount, "130px");
         addNumberColumn(DistributedOrder::getCountReady, "130px");

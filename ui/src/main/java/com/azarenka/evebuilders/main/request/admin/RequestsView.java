@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -59,7 +60,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     }
 
     private void initMainLayout() {
-        super.getStyle().set("padding", "0px 5px 0px 5px");
+        super.getStyle().set("padding", "0px 5px 30px 5px");
         add(initToolBarLayout(), initGrid());
         updateButtonStatus();
     }
@@ -173,7 +174,9 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     }
 
     private void addColumns() {
-        addBadgeColumn(value -> badge(value.getRequestStatus()), "200px", grid);
+        Function<RequestOrder, String> statusText =
+            o -> o.getRequestStatus() == null ? "" : o.getRequestStatus().name();
+        addBadgeColumn(value -> badge(value.getRequestStatus()), "200px", grid, statusText);
         addColumn(RequestOrder::getItemName);
         addColumn(RequestOrder::getPriority);
         addNumberColumn(RequestOrder::getCount);
@@ -210,15 +213,15 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        grid.getColumns().get(0).setHeader(getTranslation("table.column.request_id"));
-        grid.getColumns().get(1).setHeader(getTranslation("table.column.status"));
-        grid.getColumns().get(2).setHeader(getTranslation("table.column.nomination"));
-        grid.getColumns().get(3).setHeader(getTranslation("table.column.priority"));
-        grid.getColumns().get(4).setHeader(getTranslation("table.column.count"));
-        grid.getColumns().get(5).setHeader(getTranslation("table.column.price"));
-        grid.getColumns().get(6).setHeader(getTranslation("table.column.created_by"));
-        grid.getColumns().get(7).setHeader(getTranslation("table.column.create_date_request"));
-        grid.getColumns().get(8).setHeader(getTranslation("table.column.deadline"));
+        grid.getColumns().get(8).setHeader(getTranslation("table.column.request_id"));
+        grid.getColumns().get(0).setHeader(getTranslation("table.column.status"));
+        grid.getColumns().get(1).setHeader(getTranslation("table.column.nomination"));
+        grid.getColumns().get(2).setHeader(getTranslation("table.column.priority"));
+        grid.getColumns().get(3).setHeader(getTranslation("table.column.count"));
+        grid.getColumns().get(4).setHeader(getTranslation("table.column.price"));
+        grid.getColumns().get(5).setHeader(getTranslation("table.column.created_by"));
+        grid.getColumns().get(6).setHeader(getTranslation("table.column.create_date_request"));
+        grid.getColumns().get(7).setHeader(getTranslation("table.column.deadline"));
         searchField.setPlaceholder(getTranslation("request.search.placeholder"));
         redjectRequestButton.setText(getTranslation("button.request_reject"));
         createOrderButton.setText(getTranslation("button.app.create"));

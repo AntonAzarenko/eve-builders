@@ -4,6 +4,13 @@
 
 # Release notes'
 
+## 1.6.4.1
+
+### Fixes
+- Fixed navigation to the landing page
+- Fixed sorting for status columns for all views
+- Fixed apply orders from staff
+
 ## 1.6.4
 
 ### Added

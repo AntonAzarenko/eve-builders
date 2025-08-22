@@ -4,6 +4,7 @@ import static com.azarenka.evebuilders.domain.OrderStatusEnum.DISTRIBUTED;
 import static com.azarenka.evebuilders.domain.OrderStatusEnum.NEW;
 
 import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.Component;
@@ -13,6 +14,10 @@ import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
+
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.function.Function;
 
 public interface IGridColumnAdder<T> extends IOrderStatusToStringConverter {
 
@@ -53,9 +58,13 @@ public interface IGridColumnAdder<T> extends IOrderStatusToStringConverter {
     }
 
     default Grid.Column<T> addBadgeColumn(ValueProvider<T, Component> provider,
-                                          String width, Grid<T> grid) {
+                                          String width, Grid<T> grid, Function<T, String> function) {
         Grid.Column<T> column = grid.addColumn(new ComponentRenderer(provider));
         column.setWidth(width);
+        column.setComparator(Comparator.comparing(
+            function,
+            java.text.Collator.getInstance(Locale.getDefault())
+        ));
         return column;
     }
 
