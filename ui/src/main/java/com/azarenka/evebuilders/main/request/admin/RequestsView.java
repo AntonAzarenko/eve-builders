@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.request.admin;
 
+import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
@@ -39,7 +40,8 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "requests", layout = MenuRequestCenterPage.class)
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
 @PageTitle("Requests")
-public class RequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
+public class RequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
+    IGridColumnAdder<RequestOrder> {
 
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
@@ -49,6 +51,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     private Button createOrderButton;
     private Button redjectRequestButton;
     private Button showFitButton;
+    private Button moveToArchived;
 
     public RequestsView(@Autowired IRequestController controller) {
         this.controller = controller;
@@ -89,9 +92,15 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
             Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
             firstSelectedItem.ifPresent(this::clickFitButton);
         });
-
+        moveToArchived = VaadinUtils.createLumoButton(VaadinIcon.ARCHIVE);
+        moveToArchived.addClickListener(event -> {
+            var requestOrder = grid.getSelectedItems().stream().findFirst().get();
+            requestOrder.setRequestStatus(RequestOrderStatusEnum.ARCHIVED);
+            controller.updateRequest(requestOrder);
+            UI.getCurrent().refreshCurrentRoute(true);
+        });
         var layout =
-            new HorizontalLayout(applyButton, createOrderButton, redjectRequestButton, showFitButton, searchField);
+            new HorizontalLayout(applyButton, createOrderButton, redjectRequestButton, showFitButton, moveToArchived, searchField);
         layout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         layout.setWidthFull();
         return layout;
@@ -135,6 +144,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
             (firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.APPROVED ||
                 firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.CREATED ||
                 firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.SUBMITTED));
+        moveToArchived.setEnabled(isSelected && firstSelectedItem.get().getRequestStatus() == RequestOrderStatusEnum.COMPLETED);
     }
 
     private void clearSearch() {
@@ -163,8 +173,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
     }
 
     private void addColumns() {
-        addColumn(RequestOrder::getId);
-        addColumn(value -> convertRequestStatus(value.getRequestStatus()));
+        addBadgeColumn(value -> badge(value.getRequestStatus()), "200px", grid);
         addColumn(RequestOrder::getItemName);
         addColumn(RequestOrder::getPriority);
         addNumberColumn(RequestOrder::getCount);
@@ -172,6 +181,7 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
         addColumn(RequestOrder::getCreatedBy);
         addColumn(order -> order.getCreatedDate().toString()).setWidth("200px");
         addColumn(order -> order.getFinishDate().toString());
+        addColumn(RequestOrder::getId);
     }
 
     private Grid.Column<RequestOrder> addAmountColumn(ValueProvider<RequestOrder, BigDecimal> provider) {

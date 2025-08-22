@@ -1,17 +1,23 @@
 package com.azarenka.evebuilders.main.request;
 
+import com.azarenka.evebuilders.domain.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.request.api.IRequestController;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.util.ImageService;
 import com.vaadin.flow.component.html.Image;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +33,8 @@ public class RequestController implements IRequestController {
     private IRequestOrderService requestOrderService;
     @Autowired
     private IFitLoaderService fitLoaderService;
+    @Autowired
+    private IOrderService orderService;
 
     @Override
     public List<Fit> gitAllFits() {
@@ -93,8 +101,15 @@ public class RequestController implements IRequestController {
     }
 
     @Override
+    @Transactional
     public void updateRequest(RequestOrder requestOrder) {
-        requestOrderService.update(requestOrder);
+        RequestOrder updated = requestOrderService.update(requestOrder);
+        if (updated.getRequestStatus().equals(RequestOrderStatusEnum.ARCHIVED)) {
+            Order byOrderNumber = orderService.getByRequestId(updated.getId());
+            if (Objects.nonNull(byOrderNumber) && byOrderNumber.getOrderStatus() == OrderStatusEnum.COMPLETED) {
+                orderService.updateStatus(OrderStatusEnum.ARCHIVED, byOrderNumber.getId());
+            }
+        }
     }
 
     @Override

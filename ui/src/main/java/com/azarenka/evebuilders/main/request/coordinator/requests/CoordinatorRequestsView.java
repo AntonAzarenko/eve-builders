@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.request.coordinator.requests;
 
+import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
@@ -45,7 +46,8 @@ import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "my-requests", layout = MenuRequestCenterPage.class)
 @RolesAllowed({"ROLE_COORDINATOR"})
-public class CoordinatorRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
+public class CoordinatorRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
+    IGridColumnAdder<RequestOrder> {
 
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
@@ -176,7 +178,6 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
         createRequestView.open();
     }
 
-
     private void clearSearch() {
         searchField.clearText();
         searchByText("");
@@ -264,8 +265,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private void addColumns() {
-        addColumn(value -> convertRequestStatus(value.getRequestStatus()))
-            .setWidth("135px");
+        addBadgeColumn(value -> badge(value.getRequestStatus()), "150px", grid);
         addColumn(RequestOrder::getItemName).setWidth("145px");
         addColumn(RequestOrder::getPriority).setWidth("115px");
         addNumberColumn(RequestOrder::getCount).setWidth("90px");

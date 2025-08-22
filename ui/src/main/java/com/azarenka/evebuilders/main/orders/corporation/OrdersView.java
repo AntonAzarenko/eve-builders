@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.orders.corporation;
 
+import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
@@ -54,7 +55,8 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "main", layout = MenuOrdersPage.class)
 @PageTitle("Orders")
 @RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
-public class OrdersView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
+public class OrdersView extends View
+    implements LocaleChangeObserver, IOrderStatusToStringConverter, IGridColumnAdder<ShipOrderDto> {
 
     private final IOrderViewController controller;
     private ListDataProvider<ShipOrderDto> dataProvider;
@@ -253,7 +255,7 @@ public class OrdersView extends View implements LocaleChangeObserver, IOrderStat
 
     private void addColumns() {
         addColumn(ShipOrderDto::getOrderNumber, "130px");
-        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "130px");
+        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid);
         addColumn(ShipOrderDto::getItemName, "150px");
         addNumberColumn(ShipOrderDto::getCount, "100px");
         addNumberColumn(order -> order.getCount() - order.getInProgressCount(), "90px");

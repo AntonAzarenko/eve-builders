@@ -207,7 +207,7 @@ public class LeftSidePanel extends View {
         Button copyButton = VaadinUtils.createLumoButton(VaadinIcon.COPY);
         copyButton.addClickListener( e -> {
             StringBuilder sb = new StringBuilder();
-            aggregated.forEach((name, qty) -> sb.append(name).append(" ").append(qty).append("\n"));
+            aggregated.forEach((name, qty) -> sb.append(name).append(" \t").append(qty).append("\n"));
             VaadinUtils.copyToClipboard(summaryGrid, sb.toString(),
                 String.format("Скопировано айтемов %s", aggregated.entrySet().stream().count()));
         });

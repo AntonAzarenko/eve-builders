@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main.orders.myorders;
 
+import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
@@ -49,7 +50,8 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "corporation", layout = MenuOrdersPage.class)
 @PageTitle("Constructions")
 @RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_BUILDER"})
-public class CorporationConstructionsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter {
+public class CorporationConstructionsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
+    IGridColumnAdder<DistributedOrder> {
 
     private ListDataProvider<DistributedOrder> dataProvider;
     private Grid<DistributedOrder> grid;
@@ -241,7 +243,7 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
 
     private void addColumns() {
         addColumn(DistributedOrder::getOrderNumber, "130px");
-        addColumn(value -> convertOrderStatus(value.getOrderStatus()), "200px");
+        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid);
         addColumn(DistributedOrder::getShipName, "150px");
         addNumberColumn(DistributedOrder::getCount, "130px");
         addNumberColumn(DistributedOrder::getCountReady, "130px");

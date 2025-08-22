@@ -24,7 +24,6 @@ public class RequestOrderService implements IRequestOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestOrderService.class);
 
-
     @Autowired
     private IRequestOrderRepository requestOrderRepository;
     @Autowired
