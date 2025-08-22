@@ -161,6 +161,11 @@ public class OrderService implements IOrderService {
         telegramIntegrationService.sendInfoMessage(String.format("Заказ %s был удален", orderNumber), threadPingId);
     }
 
+    @Override
+    public Order getByRequestId(String requestId) {
+        return orderRepository.findOrderByRequestId(requestId);
+    }
+
     private String createOrderNumber() {
         var date = LocalDate.now();
         int seqNum = orderRepository.findTodayOrdersCount(date);

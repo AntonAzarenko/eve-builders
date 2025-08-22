@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/add_roles.yaml
   - include:
       file: db/changelog/changeset-1.5.yaml
+  - include:
+      file: db/changelog/changeset-1.7.yaml

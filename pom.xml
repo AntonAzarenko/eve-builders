@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.1</version>
+        <version>3.5.4</version>
         <relativePath/>
     </parent>
     <groupId>com.azarenka</groupId>
@@ -23,12 +23,12 @@
     </modules>
 
     <properties>
-        <app.version>1.6.2</app.version>
+        <app.version>1.6.4</app.version>
         <project.version>${app.version}</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
-        <vaadin.version>24.4.4</vaadin.version>
+        <vaadin.version>24.8.6</vaadin.version>
     </properties>
     <dependencies>
         <!-- tag::starter[] -->

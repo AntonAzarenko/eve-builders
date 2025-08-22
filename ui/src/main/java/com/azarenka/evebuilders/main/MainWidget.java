@@ -7,14 +7,12 @@ import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.main.menu.MenuManagerPage;
+import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
-import com.azarenka.evebuilders.main.menu.page.OrdersPage;
-import com.azarenka.evebuilders.main.orders.OrdersView;
+import com.azarenka.evebuilders.main.menu.MenuTradePage;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -26,9 +24,9 @@ import com.vaadin.flow.spring.annotation.UIScope;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-import jakarta.annotation.security.PermitAll;
-
 import java.util.Map;
+
+import jakarta.annotation.security.PermitAll;
 
 @Route(value = "/landing", layout = BuildersApplicationUi.class)
 @PermitAll
@@ -46,20 +44,23 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         this.controller = controller;
         countSubmittedRequests = controller.countRequests();
         countNewOrders = controller.countNewOrders();
-        addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), OrdersPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, VaadinIcon.HOME.create(),
+        addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), MenuOrdersPage.class,
+            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER}, VaadinIcon.HOME.create(),
             countNewOrders, "tab-order-menu");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_USER}, IconFactory.lineAwesome(
-                LineAwesomeIcon.INDUSTRY_SOLID)
-            , "tab-construction-menu");
+            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER}, IconFactory.lineAwesome(
+                LineAwesomeIcon.INDUSTRY_SOLID), "tab-construction-menu");
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
+            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
+        addTabIfAllowedWithBadge(getTranslation("menu.tab.trade"), MenuTradePage.class,
+            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER, Role.ROLE_MINER, Role.ROLE_ADMIN},
+            LineAwesomeIcon.TRADE_FEDERATION.create(), countSubmittedRequests,
+            "tab-trade-menu");
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
-                new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
+            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
-                new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
-                countSubmittedRequests, "tab-request-menu");
+            new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
+            countSubmittedRequests, "tab-request-menu");
     }
 
     @Override
@@ -78,18 +79,26 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     public void localeChange(LocaleChangeEvent event) {
         countSubmittedRequests = controller.countRequests();
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
-        if (BuilderPermission.hasUserPermission() || BuilderPermission.hasAdminPermission()) {
-            tabMap.get(OrdersPage.class).updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
+        if (BuilderPermission.hasBuilderPermission() || BuilderPermission.hasAdminPermission()) {
+            tabMap.get(MenuOrdersPage.class)
+                .updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
             tabMap.get(MenuConstructionPage.class).updateLabel(getTranslation("menu.tab.construction"),
                 LineAwesomeIcon.INDUSTRY_SOLID.create());
         }
+        if (BuilderPermission.hasBuilderPermission() || BuilderPermission.hasAdminPermission()
+            || BuilderPermission.hasMinerPermission()) {
+            tabMap.get(MenuTradePage.class).updateLabel(getTranslation("menu.tab.trade"),
+                LineAwesomeIcon.TRADE_FEDERATION.create(), 0);
+        }
         if (BuilderPermission.hasAdminPermission()) {
-            tabMap.get(MenuManagerPage.class).updateLabel(getTranslation("menu.tab.manger.orders"), VaadinIcon.COG.create());
-            tabMap.get(MenuStaffPage.class).updateLabel(getTranslation("menu.tab.personal"), VaadinIcon.SPECIALIST.create());
+            tabMap.get(MenuManagerPage.class)
+                .updateLabel(getTranslation("menu.tab.manger.orders"), VaadinIcon.COG.create());
+            tabMap.get(MenuStaffPage.class)
+                .updateLabel(getTranslation("menu.tab.personal"), VaadinIcon.SPECIALIST.create());
         }
         if (BuilderPermission.hasCoordinatorPermission() || BuilderPermission.hasAdminPermission()) {
             tabMap.get(MenuRequestCenterPage.class).updateLabel(getTranslation("menu.tab.request"),
-                    VaadinIcon.DASHBOARD.create(), countSubmittedRequests);
+                VaadinIcon.DASHBOARD.create(), countSubmittedRequests);
         }
     }
 }

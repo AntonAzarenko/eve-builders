@@ -29,4 +29,6 @@ public interface IOrderRepository extends JpaRepository<Order, String> {
 
     List<Order> findAll(Specification<Order> spec);
 
+    Order findOrderByRequestId(String requestId);
+
 }

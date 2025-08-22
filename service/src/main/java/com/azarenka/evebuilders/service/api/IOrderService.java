@@ -36,4 +36,6 @@ public interface IOrderService {
     List<Order> getOriginalOrderList();
 
     void removeOrder(String orderNumber);
+
+    Order getByRequestId(String requestId);
 }

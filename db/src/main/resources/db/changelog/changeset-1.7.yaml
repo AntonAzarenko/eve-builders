@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: replace-role-user-with-builder
+      author: anton
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              UPDATE builders.user_info
+              SET roles = array_replace(roles, 'ROLE_USER', 'ROLE_BUILDER')
+              WHERE 'ROLE_USER' = ANY(roles);

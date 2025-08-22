@@ -11,10 +11,12 @@ import org.springframework.security.core.GrantedAuthority;
 public enum Role implements GrantedAuthority {
 
     ROLE_VIEWER,
-    ROLE_USER,
+    ROLE_BUILDER,
     ROLE_ADMIN,
     ROLE_SUPER_ADMIN,
-    ROLE_COORDINATOR;
+    ROLE_COORDINATOR,
+    ROLE_MANAGER,
+    ROLE_MINER;
 
     @Id
     @Column(name = "name", nullable = false, unique = true)

@@ -3,6 +3,8 @@ package com.azarenka.evebuilders.main.constructions.assembly;
 import com.azarenka.evebuilders.domain.dto.MaterialType;
 import com.azarenka.evebuilders.domain.dto.ProductionNode;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -344,21 +346,24 @@ public class AssemblyState {
 
 
     private int applyAllBonusesToTotal(ProductionNode parent, int total) {
-        if (total == 1) {
-            return 1;
-        }
-        double modifier = 1.0;
+        if (total <= 0) return 0;
+        if (total == 1) return 1;
+        BigDecimal factor = BigDecimal.ONE;
+        BigDecimal facility = (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType()))
+            ? BigDecimal.valueOf(getTataraMaterialModifier())
+            : BigDecimal.valueOf(getSotiyoMaterialModifier());
+        factor = factor.multiply(facility);
         Double bpPercent = efficiencyMap.get(parent);
-        if (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType())) {
-            modifier *= getTataraMaterialModifier();
-        } else {
-            modifier *= getSotiyoMaterialModifier();
+        if (bpPercent != null && bpPercent > 0.0) {
+            BigDecimal bpFrac = BigDecimal.valueOf(bpPercent).divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+            factor = factor.multiply(BigDecimal.ONE.subtract(bpFrac));
         }
-        if (bpPercent != null && bpPercent > 0) {
-            double bpFraction = bpPercent / 100.0;
-            modifier *= (1 - bpFraction);
-        }
-        return (int) Math.ceil(total * modifier);
+        BigDecimal v = BigDecimal.valueOf(total).multiply(factor);
+        v = v.setScale(2, RoundingMode.HALF_UP);
+        v = v.setScale(0, RoundingMode.CEILING);
+        if (v.compareTo(BigDecimal.ZERO) <= 0) return 0;
+        if (v.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) return Integer.MAX_VALUE;
+        return v.intValue();
     }
 
     public double getSotiyoMaterialModifier() {
@@ -452,12 +457,12 @@ public class AssemblyState {
                     nodes.stream().anyMatch(this::isRootExcluded);
                 int unitsTotal = 0;
                 Map<String, ProductionNode> parentSamples = new HashMap<>();
-                for (ProductionNode n : nodes) {
-                    ProductionNode p = n.getParent();
-                    if (p == null || isExcludedForCalc(p) || isExcludedForCalc(n)) {
+                for (ProductionNode node : nodes) {
+                    ProductionNode nodeParent = node.getParent();
+                    if (nodeParent == null || isExcludedForCalc(nodeParent) || isExcludedForCalc(node)) {
                         continue;
                     }
-                    parentSamples.putIfAbsent(p.getTypeName(), p);
+                    parentSamples.putIfAbsent(nodeParent.getTypeName(), nodeParent);
                 }
                 for (var pEntry : parentSamples.entrySet()) {
                     String pType = pEntry.getKey();
@@ -467,10 +472,12 @@ public class AssemblyState {
                     if (parentBatches == 0) {
                         continue;
                     }
-                    int perBatch = parent.getEffectivePerBatch(childType) > 0
-                        ? parent.getEffectivePerBatch(childType)
-                        : parent.getRecipeQuantityBase(childType);
-                    unitsTotal += parentBatches * perBatch;
+                    int basePerBatch = parent.getRecipeQuantityBase(childType);
+                    long totalBaseLong = (long) basePerBatch * (long) parentBatches;
+                    int totalBase = totalBaseLong > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalBaseLong;
+                    int needWithBonuses = applyAllBonusesToTotal(parent, totalBase);
+                    int needFromParent = Math.max(parentBatches, needWithBonuses);
+                    unitsTotal += needFromParent;
                 }
                 if (unitsTotal == 0 && rootExcludedGroup) {
                     int buyQty = nodes.stream()

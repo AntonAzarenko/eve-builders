@@ -36,6 +36,9 @@ public interface IOrderStatusToStringConverter extends LocaleChangeObserver {
             case REJECTED -> {
                 return getTranslation("label.rejected");
             }
+            case ARCHIVED -> {
+                return getTranslation("label.archived");
+            }
             default -> {
                 return StringUtils.EMPTY;
             }
@@ -67,6 +70,9 @@ public interface IOrderStatusToStringConverter extends LocaleChangeObserver {
             }
             case STOPPED -> {
                 return getTranslation("label.stopped");
+            }
+            case ARCHIVED -> {
+                return getTranslation("label.archived");
             }
             default -> {
                 return StringUtils.EMPTY;

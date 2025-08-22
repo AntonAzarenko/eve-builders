@@ -4,6 +4,30 @@
 
 # Release notes'
 
+## 1.6.4
+
+### Added
+- Added **status badges** for request/item statuses.
+- Added ability to **archive orders** (for both POL and Requests).
+  - When archiving a **Request** that has a related **Order** in status *Completed*, the order will also be moved to the archive.
+
+### Changed
+- Upgraded **Spring framework** version.
+- Completely redesigned **staff order acceptance flow** and moved it from the **Orders** tab to the **Order Management** tab.
+
+### Fixed / Improved
+- Fixed **sorting** on the **Requests** tab.
+- When **copying an item from the cart**, a **tab delimiter** is now used instead of a space, making it easier to paste values into tables/spreadsheets.
+
+## Version 1.6.3
+
+### Fixes
+- Move CorporationContraction tab to order tab
+- Fix Color on UI dor dark theme
+- Add sorting for requests tab
+- Fix calculation issue for last components
+- Change role distributing 
+
 ## Version 1.6.2 
 
 ### Fixes

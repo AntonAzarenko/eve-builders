@@ -23,8 +23,13 @@ public class BuilderPermission {
                 .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
     }
 
-    public static boolean hasUserPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_USER})
+    public static boolean hasBuilderPermission() {
+        return Arrays.stream(new Role[]{Role.ROLE_BUILDER})
                 .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+    }
+
+    public static boolean hasMinerPermission() {
+        return Arrays.stream(new Role[]{Role.ROLE_MINER})
+            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
     }
 }

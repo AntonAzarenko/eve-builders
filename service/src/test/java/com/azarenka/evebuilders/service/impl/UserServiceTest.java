@@ -47,7 +47,7 @@ class UserServiceTest {
         sampleUser.setUsername(username);
         sampleUser.setCharacterId(characterId);
         sampleUser.setLanguage(language);
-        sampleUser.setRoles(Set.of(Role.ROLE_USER));
+        sampleUser.setRoles(Set.of(Role.ROLE_BUILDER));
     }
 
     @Test
@@ -153,7 +153,7 @@ class UserServiceTest {
 
     @Test
     void updateUserRolesUserExistsUpdatesRoles() {
-        Set<Role> newRoles = Set.of(Role.ROLE_USER);
+        Set<Role> newRoles = Set.of(Role.ROLE_BUILDER);
         UserDto userDto = new UserDto(username, characterId, newRoles);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(sampleUser));
         userService.updateUserRoles(userDto, newRoles);

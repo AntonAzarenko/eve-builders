@@ -3,6 +3,7 @@ package com.azarenka.evebuilders.service.impl;
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.repository.database.IUserTokenRepository;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
+import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ public class UserTokenService implements IUserTokenService {
 
     @Autowired
     private IUserTokenRepository repository;
+    @Autowired
+    private TokenRefreshService tokenRefreshService;
 
     @Override
     @Transactional
@@ -24,7 +27,10 @@ public class UserTokenService implements IUserTokenService {
 
     @Override
     public String getUserToken(String userId) {
-        return repository.findById(userId).orElseThrow().getAccessToken();
+        return tokenRefreshService
+            .refreshTokenIfNeeded(userId)
+            .defaultIfEmpty(repository.findById(userId).orElseThrow().getAccessToken())
+            .block();
     }
 
     @Override

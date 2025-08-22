@@ -2,6 +2,8 @@ package com.azarenka.evebuilders.service.impl;
 
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.repository.database.IUserTokenRepository;
+import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,10 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import reactor.core.publisher.Mono;
+
 @ExtendWith(MockitoExtension.class)
 class UserTokenServiceTest {
     @Mock
     private IUserTokenRepository repository;
+    @Mock
+    private TokenRefreshService refreshService;
 
     @InjectMocks
     private UserTokenService userTokenService;
@@ -49,6 +55,7 @@ class UserTokenServiceTest {
     @Test
     void testGetUserTokenWhenUserExistsReturnsToken() {
         when(repository.findById(userId)).thenReturn(Optional.of(token));
+        when(refreshService.refreshTokenIfNeeded(userId)).thenReturn(Mono.empty());
         String result = userTokenService.getUserToken(userId);
         assertEquals(accessToken, result);
         verify(repository).findById(userId);
