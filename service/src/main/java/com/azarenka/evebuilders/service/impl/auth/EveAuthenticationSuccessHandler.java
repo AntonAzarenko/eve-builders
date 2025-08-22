@@ -28,6 +28,6 @@ public class EveAuthenticationSuccessHandler  implements AuthenticationSuccessHa
             tokenRefresherService.setUidCookie(principal.getUser().getUid(), response);
         }
         // редирект или просто продолжение
-        response.sendRedirect("/landing");
+        response.sendRedirect("/orders/main");
     }
 }

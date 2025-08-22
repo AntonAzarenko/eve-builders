@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.security;
 
+import com.azarenka.evebuilders.main.MainWidget;
 import com.azarenka.evebuilders.service.impl.ProductionTreeService;
 import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 import com.vaadin.flow.component.UI;
@@ -27,11 +28,11 @@ public class AccessDeniedView extends VerticalLayout implements HasErrorParamete
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessDeniedView.class);
 
     public AccessDeniedView() {
-        add(new Button(VaadinIcon.BACKSPACE.create(), event -> UI.getCurrent().navigate("/landing")));
+        add(new Button(VaadinIcon.BACKSPACE.create(), event -> UI.getCurrent().navigate(MainWidget.class)));
         add(new H1(getTranslation("errors.message.access_denied")));
         add(new Paragraph(getTranslation("errors.message.access_denied.message")));
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        UI.getCurrent().navigate("/landing");
+        UI.getCurrent().navigate(MainWidget.class);
     }
 
     @Override

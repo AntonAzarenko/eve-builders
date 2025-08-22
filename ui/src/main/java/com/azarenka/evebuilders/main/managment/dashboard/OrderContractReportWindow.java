@@ -64,6 +64,7 @@ public class OrderContractReportWindow extends CommonDialogComponent {
             reports.forEach(contract -> {
                 showCompleterReportsWindow(order, contract);
             });
+            UI.getCurrent().refreshCurrentRoute(true);
         });
         updateButtonStatus();
         HorizontalLayout horizontalLayout = new HorizontalLayout(completeButton, applyButton, createCloseButton());
@@ -86,7 +87,6 @@ public class OrderContractReportWindow extends CommonDialogComponent {
             event -> {
                 var readyCount = order.getCount();
                 controller.update(order, readyCount);
-                this.close();
                 UI.getCurrent().refreshCurrentRoute(true);
             });
         confirmDialog.open();
@@ -104,8 +104,6 @@ public class OrderContractReportWindow extends CommonDialogComponent {
             var readyCount = contractReport.getCountItems();
             distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
             controller.update(distributedOrder, readyCount);
-            this.close();
-            UI.getCurrent().refreshCurrentRoute(true);
         });
         confirmDialog.setCancelText("Cancel");
         confirmDialog.addCancelListener(event -> confirmDialog.close());

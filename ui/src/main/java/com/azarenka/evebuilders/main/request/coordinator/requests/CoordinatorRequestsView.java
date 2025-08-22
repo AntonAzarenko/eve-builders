@@ -37,10 +37,12 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -77,7 +79,7 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private void initMainLayout() {
-        super.getStyle().set("padding", "0px 5px 0px 5px");
+        super.getStyle().set("padding", "5px 5px 30px 5px");
         add(initSearchFieldLayout(), initToolBarLayout(), initGrid());
         updateStatusButton();
     }
@@ -265,7 +267,9 @@ public class CoordinatorRequestsView extends View implements LocaleChangeObserve
     }
 
     private void addColumns() {
-        addBadgeColumn(value -> badge(value.getRequestStatus()), "150px", grid);
+        Function<RequestOrder, String> statusText =
+            o -> o.getRequestStatus() == null ? "" : o.getRequestStatus().name();
+        addBadgeColumn(value -> badge(value.getRequestStatus()), "150px", grid, statusText);
         addColumn(RequestOrder::getItemName).setWidth("145px");
         addColumn(RequestOrder::getPriority).setWidth("115px");
         addNumberColumn(RequestOrder::getCount).setWidth("90px");
