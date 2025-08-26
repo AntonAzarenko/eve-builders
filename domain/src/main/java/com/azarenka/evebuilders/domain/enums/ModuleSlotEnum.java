@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.domain;
+package com.azarenka.evebuilders.domain.enums;
 
 public enum ModuleSlotEnum {
 

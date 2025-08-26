@@ -4,7 +4,6 @@ import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.Contract;
 import com.azarenka.evebuilders.domain.dto.ContractItem;
-import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IInvTypeService;
 
@@ -15,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -29,7 +28,10 @@ public class ContractValidationService {
 
     public void validateContract(Contract contract, List<ContractItem> items, Order order,
                                  DistributedOrder distributedOrder, ContractValidationReport report) {
-        var fitInfo = parseFit(fitLoaderService.getFitById(order.getFitId()).getTextFit());
+        String fitId = order.getFitId();
+        var fitInfo = Objects.nonNull(fitId)
+            ? parseFit(fitLoaderService.getFitById(order.getFitId()).getTextFit())
+            : new FitInfo(order.getShipName(), Map.of());
         var shipType = invTypesService.getInvTypeByModuleName(fitInfo.shipTypeName());
         int shipCount = items.stream()
             .filter(i -> i.getTypeId() == shipType.getTypeID() && i.isIncluded())

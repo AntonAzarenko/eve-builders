@@ -19,7 +19,7 @@ public class RouteNotFoundRedirect extends RouteNotFoundError {
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteNotFoundRedirect.class);
 
     public RouteNotFoundRedirect() {
-        UI.getCurrent().getPage().setLocation("/landing");
+        UI.getCurrent().getPage().setLocation("/orders/main");
     }
 
     @Override

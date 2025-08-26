@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.domain.dto;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 

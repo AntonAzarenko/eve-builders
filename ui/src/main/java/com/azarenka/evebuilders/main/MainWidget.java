@@ -10,6 +10,7 @@ import com.azarenka.evebuilders.main.menu.MenuManagerPage;
 import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
+import com.azarenka.evebuilders.main.menu.MenuStatisticPage;
 import com.azarenka.evebuilders.main.menu.MenuTradePage;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -52,6 +53,9 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
                 LineAwesomeIcon.INDUSTRY_SOLID), "tab-construction-menu");
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
             new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
+        addTabIfAllowed(getTranslation("menu.tab.statistic"), MenuStatisticPage.class,
+            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER, Role.ROLE_MINER, Role.ROLE_ADMIN, Role.ROLE_COORDINATOR},
+            LineAwesomeIcon.CHART_BAR.create(), "tab-statistic-menu");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.trade"), MenuTradePage.class,
             new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER, Role.ROLE_MINER, Role.ROLE_ADMIN},
             LineAwesomeIcon.TRADE_FEDERATION.create(), countSubmittedRequests,
@@ -87,6 +91,8 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         }
         if (BuilderPermission.hasBuilderPermission() || BuilderPermission.hasAdminPermission()
             || BuilderPermission.hasMinerPermission()) {
+            tabMap.get(MenuStatisticPage.class).updateLabel(getTranslation("menu.tab.statistic"),
+                LineAwesomeIcon.CHART_BAR.create());
             tabMap.get(MenuTradePage.class).updateLabel(getTranslation("menu.tab.trade"),
                 LineAwesomeIcon.TRADE_FEDERATION.create(), 0);
         }

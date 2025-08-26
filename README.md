@@ -4,6 +4,14 @@
 
 # Release notes'
 
+## 1.6.5
+
+### Fixes
+- Fixed navigation to the landing page
+
+### Added
+- Statistic menu to monitor statistic players
+
 ## 1.6.4.1
 
 ### Fixes

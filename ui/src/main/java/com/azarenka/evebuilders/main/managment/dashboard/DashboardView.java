@@ -5,7 +5,7 @@ import static com.azarenka.evebuilders.service.util.DecimalFormatter.maybeToText
 
 import com.azarenka.evebuilders.component.StatCard;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.main.managment.api.IDashBoardController;

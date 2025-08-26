@@ -1,10 +1,6 @@
 package com.azarenka.evebuilders.common.util;
 
-import static com.azarenka.evebuilders.domain.OrderStatusEnum.DISTRIBUTED;
-import static com.azarenka.evebuilders.domain.OrderStatusEnum.NEW;
-
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
-import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.Component;
