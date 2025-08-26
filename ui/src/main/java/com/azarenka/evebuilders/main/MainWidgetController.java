@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.main;
 
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.service.api.IOrderService;

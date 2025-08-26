@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.main.managment.create;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.GroupTypeEnum;
+import com.azarenka.evebuilders.domain.enums.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.db.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;

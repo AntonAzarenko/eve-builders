@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.domain.db;
 
-import com.azarenka.evebuilders.domain.ModuleSlotEnum;
+import com.azarenka.evebuilders.domain.enums.ModuleSlotEnum;
 import jakarta.persistence.*;
 
 @Entity

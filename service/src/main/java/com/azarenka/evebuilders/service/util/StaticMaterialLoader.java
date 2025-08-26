@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.util;
 
-import com.azarenka.evebuilders.domain.ModuleSlotEnum;
+import com.azarenka.evebuilders.domain.enums.ModuleSlotEnum;
 import com.azarenka.evebuilders.domain.dto.file.*;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;

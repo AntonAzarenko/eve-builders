@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.main.managment.dashboard;
 import com.azarenka.evebuilders.common.util.IGridColumnAdder;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.main.managment.api.IDashBoardController;
 import com.azarenka.evebuilders.main.menu.MenuManagerPage;

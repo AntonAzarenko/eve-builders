@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.component;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
-import com.azarenka.evebuilders.domain.GroupTypeEnum;
-import com.azarenka.evebuilders.domain.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.GroupTypeEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClientCallable;
