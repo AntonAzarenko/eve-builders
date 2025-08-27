@@ -74,7 +74,7 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
         super.onAttach(attachEvent);
         tabs.addSelectedChangeListener(selectionEvent -> {
             if (!noNavigation) {
-                UI.getCurrent().navigate(((NavigationTab) selectionEvent.getSelectedTab()).getHref());
+                UI.getCurrent().navigate(((NavigationTab) selectionEvent.getSelectedTab()).getNavigationTarget());
             }
             noNavigation = false;
         });

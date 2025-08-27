@@ -70,12 +70,14 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        BuildersApplicationUi parent = (BuildersApplicationUi) getParent().get();
-        Tabs tabs = getTabs();
+        var parent = (BuildersApplicationUi) getParent().orElseThrow();
+        var tabs = getTabs();
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
-        remove(tabs);
+       /* if (tabs.getParent().orElse(null) == this) {
+            remove(tabs);
+        }*/
         parent.addToDrawer(tabs);
-        drawerToggle.getElement().setAttribute("slot", "navbar");
+        parent.addToNavbar(drawerToggle);
         parent.getElement().insertChild(0, drawerToggle.getElement());
     }
 
