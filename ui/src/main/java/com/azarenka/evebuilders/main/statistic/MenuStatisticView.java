@@ -212,10 +212,10 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
         card.setWidth("220px");
         card.setHeight(heightPx, Unit.PIXELS);
         var icon = createIcon(place);
-        var userName = userStat.displayName();
-        var image = controller.getCharacterPortrait(userName);
-        var avatar = new Avatar(userName, image.getSrc());
-        var name = new Span(userStat != null ? userStat.displayName() : "—");
+        final String userName = (userStat != null) ? userStat.displayName() : "—";
+        var image = (userStat != null) ? controller.getCharacterPortrait(userName) : null;
+        var avatar = new Avatar(userName);
+        var name = new Span(userName);
         var value = new Span(userStat != null ? ("«" + userStat.value() + "»") : "—");
         var rank = new Span("#" + place);
 

@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.service.api.market;
 
-import com.azarenka.evebuilders.domain.dto.market.OrderRowDTO;
+import com.azarenka.evebuilders.domain.dto.market.DealRowDTO;
 import com.azarenka.evebuilders.domain.enums.MarketOrderStatus;
 
 import org.springframework.data.domain.Page;
@@ -12,7 +12,7 @@ public interface ITradeOrderService {
 
     String convertReservationToOrder(String reservationId, String actorUsername);
 
-    Page<OrderRowDTO> listMyOrders(String username, MarketOrderStatus[] statuses, Pageable pageable);
+    Page<DealRowDTO> listMyOrders(String username, MarketOrderStatus[] statuses, Pageable pageable);
 
     void cancel(String orderId, String actorUsername, boolean force);
 

@@ -5,7 +5,7 @@ import static org.apache.catalina.manager.JspHelper.formatNumber;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.dto.market.MarketFilter;
-import com.azarenka.evebuilders.domain.dto.market.RequestRowDTO;
+import com.azarenka.evebuilders.domain.dto.market.DemandRowDTO;
 import com.azarenka.evebuilders.main.menu.MenuTradePage;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -54,9 +54,9 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "requests", layout = MenuTradePage.class)
 @RolesAllowed({"ROLE_SUPER_ADMIN", "ROLE_MINER", "ROLE_ADMIN"})
 @PageTitle("Market Requests")
-public class MarketRequestView extends View implements LocaleChangeObserver {
+public class MarketDemandView extends View implements LocaleChangeObserver {
 
-    private final Grid<RequestRowDTO> grid = new Grid<>(RequestRowDTO.class, false);
+    private final Grid<DemandRowDTO> grid = new Grid<>(DemandRowDTO.class, false);
     private final FlexLayout cards = new FlexLayout();
 
     private final MultiSelectComboBox<String> resource = new MultiSelectComboBox<>("Ресурс");
@@ -75,7 +75,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
 
     private final MarketFilter current = new MarketFilter();
 
-    public MarketRequestView() {
+    public MarketDemandView() {
         getStyle().set("padding", "0 10px 0 10px");
         initContent();
 
@@ -103,18 +103,18 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         expand(grid);
     }
 
-    private Stream<RequestRowDTO> fetch(Query<RequestRowDTO, Void> q) {
+    private Stream<DemandRowDTO> fetch(Query<DemandRowDTO, Void> q) {
 
         var data = List.of(
-            new RequestRowDTO("REQ-101", "builder.alfa", "Tritanium", "34",
+            new DemandRowDTO("REQ-101", "builder.alfa", "Tritanium", "34",
                 100_000, 45_000, new BigDecimal("4.22")
                 , "Jita IV - Moon 4",
                 LocalDate.now().plusDays(20), "PARTIALLY_FILLED"),
-            new RequestRowDTO("REQ-119", "builder.bravo", "Pyerite", "35",
+            new DemandRowDTO("REQ-119", "builder.bravo", "Pyerite", "35",
                 50_000, 50_000, new BigDecimal("8.33")
                 , "Perimeter - TTT",
                 LocalDate.now().plusDays(8), "ACTIVE"),
-            new RequestRowDTO("REQ-200", "builder.charlie", "Scordite", "1228",
+            new DemandRowDTO("REQ-200", "builder.charlie", "Scordite", "1228",
                 12_000, 0, new BigDecimal("40.1")
                 , "Amarr VIII - Emperor Family Academy",
                 LocalDate.now().plusDays(3), "COMPLETED")
@@ -130,13 +130,13 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COMPACT);
         grid.setHeight("100%");
 
-        grid.addColumn(RequestRowDTO::requestId)
+        grid.addColumn(DemandRowDTO::requestId)
             .setHeader("Request ID").setAutoWidth(true).setFlexGrow(0);
 
-        grid.addColumn(RequestRowDTO::requesterUsername)
+        grid.addColumn(DemandRowDTO::requesterUsername)
             .setHeader("Requester").setAutoWidth(true).setFlexGrow(0);
 
-        grid.addColumn(RequestRowDTO::resourceName)
+        grid.addColumn(DemandRowDTO::resourceName)
             .setHeader("Resource").setAutoWidth(true);
 
         grid.addColumn(new ComponentRenderer<>(item -> {
@@ -168,10 +168,10 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
                 r -> r.pricePerUnit(), NumberFormat.getNumberInstance(Locale.US)))
             .setHeader("Price (ISK/u)").setAutoWidth(true).setFlexGrow(0);
 
-        grid.addColumn(RequestRowDTO::locationName)
+        grid.addColumn(DemandRowDTO::locationName)
             .setHeader("Location").setAutoWidth(true);
 
-        grid.addColumn(new LocalDateRenderer<>(RequestRowDTO::deadline, "yyyy-MM-dd"))
+        grid.addColumn(new LocalDateRenderer<>(DemandRowDTO::deadline, "yyyy-MM-dd"))
             .setHeader("Deadline").setAutoWidth(true).setFlexGrow(0);
 
         grid.addColumn(new ComponentRenderer<>(row -> badge(row.status())))
@@ -185,7 +185,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         })).setHeader("Действия").setAutoWidth(true).setFlexGrow(0);
     }
 
-    private boolean filter(RequestRowDTO r, MarketFilter f) {
+    private boolean filter(DemandRowDTO r, MarketFilter f) {
         if (f.getResource() != null && !f.getResource().isBlank()
             && !r.resourceName().toLowerCase(Locale.ROOT).contains(f.getResource().toLowerCase(Locale.ROOT))) {
             return false;
@@ -218,7 +218,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         return true;
     }
 
-    private int count(Query<RequestRowDTO, Void> q) {
+    private int count(Query<DemandRowDTO, Void> q) {
         return (int) fetch(new Query<>(0, Integer.MAX_VALUE, q.getSortOrders(), q.getInMemorySorting(), null)).count();
     }
 
@@ -274,7 +274,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         return s;
     }
 
-    private void openFulfillDialog(RequestRowDTO row) {
+    private void openFulfillDialog(DemandRowDTO row) {
         var dlg = new Dialog();
         dlg.setHeaderTitle("Fulfill Request");
         dlg.setModal(true);
@@ -332,14 +332,14 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         cards.removeAll();
         // перерисовываем карточки из текущих данных грida
         @SuppressWarnings("unchecked")
-        DataProvider<RequestRowDTO, Void> provider =
-            (DataProvider<RequestRowDTO, Void>) grid.getDataProvider();
-        var query = new Query<RequestRowDTO, Void>(0, 50, Collections.emptyList(), null, null);
+        DataProvider<DemandRowDTO, Void> provider =
+            (DataProvider<DemandRowDTO, Void>) grid.getDataProvider();
+        var query = new Query<DemandRowDTO, Void>(0, 50, Collections.emptyList(), null, null);
 
         provider.fetch(query).forEach(row -> cards.add(card(row)));
     }
 
-    private Div card(RequestRowDTO r) {
+    private Div card(DemandRowDTO r) {
         var card = new Div();
         card.getStyle().set("border", "1px solid var(--lumo-contrast-20pct)");
         card.getStyle().set("border-radius", "12px");
@@ -370,7 +370,7 @@ public class MarketRequestView extends View implements LocaleChangeObserver {
         return card;
     }
 
-    private void openDeliveredDialog(RequestRowDTO order) {
+    private void openDeliveredDialog(DemandRowDTO order) {
         Dialog dlg = new Dialog();
         dlg.setHeaderTitle("Подтвердить поставку");
 

@@ -5,10 +5,14 @@ import java.time.LocalDate;
 
 public class MarketFilter {
 
-    private String resource; String location;
-    private Long minQty; Long maxQty;
-    private BigDecimal minPrice; BigDecimal maxPrice;
-    private LocalDate minDeadline; LocalDate maxDeadline;
+    private String resource;
+    private String location;
+    private Long minQty;
+    private Long maxQty;
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
+    private LocalDate minDeadline;
+    private LocalDate maxDeadline;
     private String status;
 
     public String getResource() {

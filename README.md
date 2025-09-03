@@ -4,6 +4,9 @@
 
 # Release notes'
 
+## 1.6.5.2
+- Fixed access denied widget
+
 ## 1.6.5
 
 ### Fixes
