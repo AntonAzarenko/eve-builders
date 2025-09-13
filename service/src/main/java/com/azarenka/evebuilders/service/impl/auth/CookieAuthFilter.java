@@ -55,7 +55,6 @@ public class CookieAuthFilter extends OncePerRequestFilter {
                     User user = userService.getByUserId(uid).orElseThrow();
                     if (token.getExpiresAt().isBefore(LocalDateTime.now().plusSeconds(60))) {
                         tokenRefresherService.refresh(token);
-                        LOGGER.info("User {} token refreshed.", user.getUsername());
                     }
                     EveUserPrincipal principal = new EveUserPrincipal(user, Map.of());
                     UsernamePasswordAuthenticationToken authenticationToken =

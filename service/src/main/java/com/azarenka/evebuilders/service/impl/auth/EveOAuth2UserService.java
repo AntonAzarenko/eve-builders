@@ -4,16 +4,17 @@ import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.domain.dto.EveUserPrincipal;
+import com.azarenka.evebuilders.domain.enums.AAGroupsEnum;
 import com.azarenka.evebuilders.service.api.IAuthIntegrationService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
+import com.azarenka.evebuilders.service.impl.AllianceAuthService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +52,9 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private AllianceAuthService allianceAuthService;
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -59,6 +64,7 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         User user = existingUser.orElseGet(() ->
             getUserBasedOnTokenResponse(userRequest, attributes, Locale.US));
         if (!checkAuth(user)) {
+            defineRole(user);
             LOGGER.info("User {} doesn't have permissions", characterName);
             throw new OAuth2AuthenticationException(
                 new OAuth2Error("invalid_user", "User does not have permissions", "")
@@ -89,9 +95,8 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         user.setCorporationName(eveCharacterService.getCharacterCorporationName(accessToken));
         user.setAllianceName(eveCharacterService.getCharacterAllianceName(accessToken));
         user.setMainCharacter(true);
-        defineRole(characterName, user);
         user.setLanguage(locale.getLanguage());
-        user.setTheme("light");
+        user.setTheme("dark");
         var userName = SecurityUtils.getUserName();
         if (Objects.nonNull(userName)) {
             userService.getByUsername(userName).ifPresent(mainUser -> {
@@ -106,20 +111,55 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     public boolean checkAuth(User user) {
-        if (env.acceptsProfiles(Profiles.of("prod"))) {
-            return ALLIANCE_NAMES.contains(user.getAllianceName())
-                && checkIndustryGroup(user);
-        } else {
-            return true;
+        var groupIdsByUsername = allianceAuthService.findGroupIdsByUsername(user.getUsername());
+        LOGGER.info("User {} has groups {}", user.getUsername(), groupIdsByUsername);
+        var isAdminGroup = checkAdminGroup(groupIdsByUsername, user);
+        var isIndustryGroup = checkIndustryGroup(groupIdsByUsername, user);
+        var isMiningGroup = checkMiningGroup(groupIdsByUsername, user);
+        return ALLIANCE_NAMES.contains(user.getAllianceName())
+            && isIndustryGroup
+            || isMiningGroup
+            || isAdminGroup;
+    }
+
+    private boolean checkIndustryGroup(List<Integer> groupIdsByUsername, User user) {
+        boolean contains = groupIdsByUsername.contains(AAGroupsEnum.INDUSTRY.getGroupId());
+        if (contains) {
+            var roles = user.getRoles();
+            if (Objects.isNull(roles)) roles = new HashSet<>();
+            roles.add(Role.ROLE_BUILDER);
+            user.setRoles(roles);
         }
+        return contains;
     }
 
-    private boolean checkIndustryGroup(User user) {
-        return authIntegrationService.checkUser(user.getUsername());
+    private boolean checkMiningGroup(List<Integer> groupIdsByUsername, User user) {
+        boolean contains = groupIdsByUsername.contains(AAGroupsEnum.MINING.getGroupId());
+        if (contains) {
+            var roles = user.getRoles();
+            if (Objects.isNull(roles)) roles = new HashSet<>();
+            roles.add(Role.ROLE_MINER);
+            user.setRoles(roles);
+        }
+        return contains;
     }
 
-    private void defineRole(String userName, User user) {
-        user.setRoles(Set.of(Role.ROLE_VIEWER));
+    private boolean checkAdminGroup(List<Integer> groupIdsByUsername, User user) {
+        boolean contains = groupIdsByUsername.contains(AAGroupsEnum.DEPARTMENT_OF_INDUSTRY.getGroupId());
+        if (contains) {
+            var roles = user.getRoles();
+            if (Objects.isNull(roles)) roles = new HashSet<>();
+            roles.add(Role.ROLE_ADMIN);
+            roles.add(Role.ROLE_SUPER_ADMIN);
+            user.setRoles(roles);
+        }
+        return contains;
+    }
+
+    private void defineRole(User user) {
+        if (Objects.isNull(user.getRoles()) || user.getRoles().isEmpty()) {
+            user.setRoles(Set.of(Role.ROLE_VIEWER));
+        }
     }
 
     private void createToken(OAuth2UserRequest userRequest, User user) {

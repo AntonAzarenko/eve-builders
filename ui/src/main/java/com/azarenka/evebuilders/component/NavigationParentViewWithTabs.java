@@ -9,13 +9,15 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.AbstractIcon;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class NavigationParentViewWithTabs extends NavigableParentView implements AfterNavigationObserver {
 
@@ -33,10 +35,11 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
     }
 
     public void addView(Class<? extends Component> viewClass, String label, AbstractIcon<?> tabIcon, String className) {
-        addView(viewClass, label, null, tabIcon, 0,  className);
+        addView(viewClass, label, null, tabIcon, 0, className);
     }
 
-    public void addView(Class<? extends Component> viewClass, String label, String tabId, AbstractIcon<?> tabIcon, Integer badgeCount, String className) {
+    public void addView(Class<? extends Component> viewClass, String label, String tabId, AbstractIcon<?> tabIcon,
+                        Integer badgeCount, String className) {
         this.addClassName(className);
         NavigationTab tab = new NavigationTab(viewClass, label, tabIcon, badgeCount);
         if (tabId != null) {
@@ -46,9 +49,10 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
         tabMap.put(viewClass, tab);
     }
 
-    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission, AbstractIcon<?> tabIcon,  String className) {
+    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
+                                AbstractIcon<?> tabIcon, String className) {
         boolean hasPermission = Arrays.stream(viewPermission)
-                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
         if (hasPermission) {
             addView(viewClass, caption, tabIcon, className);
         }
@@ -57,7 +61,7 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
     public void addTabIfAllowedWithBadge(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
                                          AbstractIcon<?> tabIcon, Integer badgeCount, String className) {
         boolean hasPermission = Arrays.stream(viewPermission)
-                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
         if (hasPermission) {
             addView(viewClass, caption, null, tabIcon, badgeCount, className);
         }
