@@ -16,7 +16,8 @@ public enum Role implements GrantedAuthority {
     ROLE_SUPER_ADMIN,
     ROLE_COORDINATOR,
     ROLE_MANAGER,
-    ROLE_MINER;
+    ROLE_MINER,
+    ROLE_CEO;
 
     @Id
     @Column(name = "name", nullable = false, unique = true)

@@ -72,6 +72,7 @@ spring:
               - esi-mail.send_mail.v1
               - esi-contracts.read_corporation_contracts.v1
               - esi-contracts.read_character_contracts.v1
+              - esi-fleets.read_fleet.v1
             authorization-grant-type: authorization_code
             redirect-uri: ${eve.redirectUri}
             client-name: EVE Online
@@ -124,6 +125,8 @@ eve:
     uri: https://login.eveonline.com/oauth/verify
   webclient:
     baseUrl: https://esi.evetech.net
+  fleet:
+    members: /fleets/{fleet_id}/members
 
 timrod:
   api:

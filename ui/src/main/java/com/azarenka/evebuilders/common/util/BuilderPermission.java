@@ -32,4 +32,9 @@ public class BuilderPermission {
         return Arrays.stream(new Role[]{Role.ROLE_MINER})
             .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
     }
+
+    public static boolean hasCeoPermission() {
+        return Arrays.stream(new Role[]{Role.ROLE_CEO})
+            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+    }
 }
