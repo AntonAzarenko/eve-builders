@@ -75,7 +75,7 @@ public class RequestOrderService implements IRequestOrderService {
     @Override
     public List<RequestOrder> getAllRequestOrders() {
         return requestOrderRepository.findAll().stream()
-            .sorted(Comparator.comparing(RequestOrder::getRequestStatus).reversed())
+            .sorted(Comparator.comparing(RequestOrder::getRequestStatus))
             .toList();
     }
 

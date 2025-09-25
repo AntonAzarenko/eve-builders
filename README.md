@@ -4,6 +4,14 @@
 
 # Release notes'
 
+## 1.6.6
+
+### Added
+- Statistic menu to monitor FLEET of statistic players
+
+## 1.6.5.2
+- Fixed access denied widget
+
 ## 1.6.5
 
 ### Fixes

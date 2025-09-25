@@ -13,7 +13,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.theme.Theme;
 
 import java.util.Locale;
 import java.util.Optional;

@@ -24,7 +24,7 @@ import java.util.Map;
         entityManagerFactoryRef = "sqliteEntityManager",
         transactionManagerRef = "sqliteTransactionManager"
 )
-public class SQLiteConfig {
+public class DataBaseSQLiteConfig {
 
     @Value("${app.sqlite.path}")
     private String sqlitePath;

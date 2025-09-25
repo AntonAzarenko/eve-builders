@@ -10,14 +10,19 @@ app:
 
 spring:
   datasource:
-    mysql:
-      url: ${SPRING.DATASOURCE.MYSQL.URL}
-      driver-class-name: ${SPRING.DATASOURCE.MYSQL.DRIVER-CLASS-NAME}
-      username: ${SPRING.DATASOURCE.MYSQL.USERNAME}
-      password: ${SPRING.DATASOURCE.MYSQL.PASSWORD}
+    postgresql:
+      url: ${SPRING.DATASOURCE.POSTGRESQL.URL}
+      driver-class-name: ${SPRING.DATASOURCE.POSTGRESQL.DRIVER-CLASS-NAME}
+      username: ${SPRING.DATASOURCE.POSTGRESQL.USERNAME}
+      password: ${SPRING.DATASOURCE.POSTGRESQL.PASSWORD}
     sqlite:
       url: ${SPRING.DATASOURCE.SQLITE.URL}
       driver-class-name: ${SPRING.DATASOURCE.SQLITE.DRIVER-CLASS-NAME}
+    mariadb:
+      url: ${SPRING.DATASOURCE.MARIADB.URL}
+      username: ${SPRING.DATASOURCE.MARIADB.USERNAME}
+      password: ${SPRING.DATASOURCE.MARIADB.PASSWORD}
+      driver-class-name: ${SPRING.DATASOURCE.MARIADB.DRIVER-CLASS-NAME}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -67,6 +72,7 @@ spring:
               - esi-mail.send_mail.v1
               - esi-contracts.read_corporation_contracts.v1
               - esi-contracts.read_character_contracts.v1
+              - esi-fleets.read_fleet.v1
             authorization-grant-type: authorization_code
             redirect-uri: ${eve.redirectUri}
             client-name: EVE Online
@@ -119,6 +125,8 @@ eve:
     uri: https://login.eveonline.com/oauth/verify
   webclient:
     baseUrl: https://esi.evetech.net
+  fleet:
+    members: /fleets/{fleet_id}/members
 
 timrod:
   api:

@@ -27,7 +27,6 @@ public class StatisticController implements IStatisticController {
     private EvePortraitService evePortraitService;
     @Autowired
     private IUserService userService;
-
     @Autowired
     private IStatisticService service;
 

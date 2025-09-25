@@ -2,6 +2,8 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.service.impl.UserTokenService;
+import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +45,6 @@ public class TokenRefresherService {
     }
 
     public UserToken refresh(UserToken token) {
-        LOGGER.info("Refreshing token for user: {}", token.getUserId());
         var form = createParams(token);
         var response = webClient.post()
                 .uri(tokenUri)
@@ -63,7 +64,7 @@ public class TokenRefresherService {
             token.setAccessToken(newAccessToken);
             token.setExpiresAt(LocalDateTime.ofInstant(newExpiry, ZoneId.systemDefault()));
             userTokenService.save(token);
-            LOGGER.info("Token refreshed for user: {}", token.getUserId());
+            LOGGER.info("Token refreshed for user: {}", SecurityUtils.getUserName());
         }
         return token;
     }

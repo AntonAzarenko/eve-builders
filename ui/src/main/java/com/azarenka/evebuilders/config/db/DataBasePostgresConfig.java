@@ -21,15 +21,15 @@ import javax.sql.DataSource;
         entityManagerFactoryRef = "dbEntityManager",
         transactionManagerRef = "dbTransactionManager"
 )
-public class DataBaseSQLConfig {
+public class DataBasePostgresConfig {
 
-    @Value("${spring.datasource.mysql.url}")
+    @Value("${spring.datasource.postgresql.url}")
     private String url;
-    @Value("${spring.datasource.mysql.username}")
+    @Value("${spring.datasource.postgresql.username}")
     private String username;
-    @Value("${spring.datasource.mysql.password}")
+    @Value("${spring.datasource.postgresql.password}")
     private String password;
-    @Value("${spring.datasource.mysql.driver-class-name}")
+    @Value("${spring.datasource.postgresql.driver-class-name}")
     private String driver;
 
     @Bean(name = "dbDataSource")

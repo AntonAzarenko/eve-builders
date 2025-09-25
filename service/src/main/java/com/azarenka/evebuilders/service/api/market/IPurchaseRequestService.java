@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.api.market;
 
 import com.azarenka.evebuilders.domain.dto.MaterialType;
-import com.azarenka.evebuilders.domain.dto.market.RequestRowDTO;
+import com.azarenka.evebuilders.domain.dto.market.DemandRowDTO;
 import com.azarenka.evebuilders.domain.enums.MarketRequestStatus;
 
 import org.springframework.data.domain.Page;
@@ -22,7 +22,7 @@ public interface IPurchaseRequestService {
     void cancel(String requestId, String actorUsername, boolean force);
 
 
-    Page<RequestRowDTO> search(MaterialType materialType, MarketRequestStatus[] statuses, String locationId,
-                               BigDecimal minPrice, BigDecimal maxPrice, Long minQty, Long maxQty,
-                               LocalDate minDeadline, LocalDate maxDeadline, Pageable pageable);
+    Page<DemandRowDTO> search(MaterialType materialType, MarketRequestStatus[] statuses, String locationId,
+                              BigDecimal minPrice, BigDecimal maxPrice, Long minQty, Long maxQty,
+                              LocalDate minDeadline, LocalDate maxDeadline, Pageable pageable);
 }

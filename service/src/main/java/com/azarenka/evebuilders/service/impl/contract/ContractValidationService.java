@@ -29,7 +29,7 @@ public class ContractValidationService {
     public void validateContract(Contract contract, List<ContractItem> items, Order order,
                                  DistributedOrder distributedOrder, ContractValidationReport report) {
         String fitId = order.getFitId();
-        var fitInfo = Objects.nonNull(fitId)
+        var fitInfo = (Objects.nonNull(fitId) && !fitId.isEmpty())
             ? parseFit(fitLoaderService.getFitById(order.getFitId()).getTextFit())
             : new FitInfo(order.getShipName(), Map.of());
         var shipType = invTypesService.getInvTypeByModuleName(fitInfo.shipTypeName());
