@@ -64,7 +64,6 @@ public class TokenRefresherService {
             token.setAccessToken(newAccessToken);
             token.setExpiresAt(LocalDateTime.ofInstant(newExpiry, ZoneId.systemDefault()));
             userTokenService.save(token);
-            LOGGER.info("Token refreshed for user: {}", SecurityUtils.getUserName());
         }
         return token;
     }

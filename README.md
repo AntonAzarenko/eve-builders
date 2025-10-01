@@ -4,6 +4,10 @@
 
 # Release notes'
 
+## 1.6.7
+### Added
+- API for new application 'Casino'
+
 ## 1.6.6
 
 ### Added

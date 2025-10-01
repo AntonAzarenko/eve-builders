@@ -138,3 +138,6 @@ vaadin:
     first-delay: 900
     second-delay: -1
     third-delay: -1
+
+casino:
+  api-token: ${CASINO_API_TOKEN}

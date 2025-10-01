@@ -10,4 +10,5 @@ public interface IFlitStatisticService {
 
     List<UserFleetStat> buildLeaderboard(FleetMetric metric, LocalDate from, LocalDate to);
 
+    List<UserFleetStat> getFleetStats();
 }

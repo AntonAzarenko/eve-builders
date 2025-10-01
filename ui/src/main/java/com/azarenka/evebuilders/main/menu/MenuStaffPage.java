@@ -17,6 +17,8 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
 
+import java.util.Map;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @RoutePrefix("staff")
@@ -34,20 +36,20 @@ public class MenuStaffPage extends NavigationParentViewWithTabs implements Local
             new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.FOLDER.create(), "tab-manager.properties");
         addTabIfAllowed(getTranslation("tab.staff.fleet_avtivity"), StaffFleetActivityDashboard.class,
             new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN, Role.ROLE_CEO}, VaadinIcon.FEMALE.create(),
-            "tab-staff-fleet_avtivity");
+            "tab-staff-fleet_activity");
     }
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        Tabs tabs = getTabs();
+        Map<Class<?>, NavigationTab> tabMap = getTabMap();
         if (BuilderPermission.hasAdminPermission()) {
-            ((NavigationTab) tabs.getTabAt(0)).updateLabel(getTranslation("tab.manager.dashboard"),
+            tabMap.get(StaffDashboard.class).updateLabel(getTranslation("tab.manager.dashboard"),
                 VaadinIcon.CROSSHAIRS.create());
-            ((NavigationTab) tabs.getTabAt(1)).updateLabel(getTranslation("tab.manager.properties"),
+            tabMap.get(StaffProperties.class).updateLabel(getTranslation("tab.manager.properties"),
                 VaadinIcon.FOLDER.create());
         }
         if (BuilderPermission.hasAdminPermission() || BuilderPermission.hasCeoPermission()) {
-            ((NavigationTab) tabs.getTabAt(2)).updateLabel(getTranslation("tab.staff.fleet_avtivity"),
+            tabMap.get(StaffFleetActivityDashboard.class).updateLabel(getTranslation("tab.staff.fleet_avtivity"),
                 VaadinIcon.FEMALE.create());
         }
     }

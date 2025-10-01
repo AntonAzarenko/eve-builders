@@ -3,11 +3,11 @@ package com.azarenka.evebuilders.domain.authdb;
 public class UserFlightsInfo {
 
     private final String username;
-    private final long characterId;
-    private final long appearancesCount;
+    private final Long characterId;
+    private final Long appearancesCount;
     private final boolean teamspeakConnected;
 
-    public UserFlightsInfo(String username, long characterId, long appearancesCount, boolean teamspeakConnected) {
+    public UserFlightsInfo(String username, Long characterId, Long appearancesCount, boolean teamspeakConnected) {
         this.username = username;
         this.characterId = characterId;
         this.appearancesCount = appearancesCount;
@@ -18,7 +18,7 @@ public class UserFlightsInfo {
         return username;
     }
 
-    public long getAppearancesCount() {
+    public Long getAppearancesCount() {
         return appearancesCount;
     }
 
@@ -26,7 +26,7 @@ public class UserFlightsInfo {
         return teamspeakConnected;
     }
 
-    public long getCharacterId() {
+    public Long getCharacterId() {
         return characterId;
     }
 }

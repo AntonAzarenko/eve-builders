@@ -29,7 +29,6 @@ public class FlitStatisticService implements IFlitStatisticService {
             .comparingLong(UserFlightsInfo::getAppearancesCount).reversed()
             .thenComparing(UserFlightsInfo::getUsername, String.CASE_INSENSITIVE_ORDER));
 
-        // 3) ранжируем (DENSE_RANK по appearancesCount)
         List<UserFleetStat> out = new ArrayList<>(raw.size());
         long prevValue = Long.MIN_VALUE;
         int rank = 0;
@@ -46,12 +45,19 @@ public class FlitStatisticService implements IFlitStatisticService {
             out.add(new UserFleetStat(
                 u.getUsername(),
                 u.getCharacterId(),
-                rank,                       // место
-                value,                      // значение (сколько КТА)
-                metric,                     // метрика (KTA_ALL/KTA_MONTH)
-                u.isTeamspeakConnected()    // active: можем подсвечивать, если подключен TS
+                rank,
+                value,
+                metric,
+                u.isTeamspeakConnected()
             ));
         }
         return out;
+    }
+
+    @Override
+    public List<UserFleetStat> getFleetStats() {
+        LocalDate from = LocalDate.of(2017, 1, 1);
+        LocalDate to = LocalDate.now().plusDays(2);
+        return buildLeaderboard(FleetMetric.CTA_ALL, from, to);
     }
 }

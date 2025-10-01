@@ -41,7 +41,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/login/oauth2/code/eveonline"),
                                 new AntPathRequestMatcher("/unauthorized"),
-                                new AntPathRequestMatcher("/api/**", "POST")
+                                new AntPathRequestMatcher("/api/**")
                         ).permitAll()
 
                 );
