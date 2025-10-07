@@ -4,7 +4,13 @@
 
 # Release notes'
 
+## 1.6.7.1
+
+### Added
+- Added service to calculate value for CTA 
+
 ## 1.6.7
+
 ### Added
 - API for new application 'Casino'
 
