@@ -5,11 +5,11 @@ import com.azarenka.evebuilders.domain.enums.FleetMetric;
 import com.vaadin.flow.component.html.Image;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 public interface IFleetStatisticController {
 
-    List<UserFleetStat> fetchLeaderboard(FleetMetric metric, LocalDate from, LocalDate to);
+    Set<UserFleetStat> fetchLeaderboard(FleetMetric metric, LocalDate from, LocalDate to);
 
     Image getCharacterPortrait(long characterId);
 }

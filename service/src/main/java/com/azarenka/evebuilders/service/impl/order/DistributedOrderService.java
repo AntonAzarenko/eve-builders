@@ -63,7 +63,7 @@ public class DistributedOrderService implements IDistributedOrderService {
     public DistributedOrder save(String orderNumber, int count, String userName) {
         DistributedOrder distributedOrder = new DistributedOrder();
         var shipOrderDto = orderService.getOrderById(orderNumber);
-        if (shipOrderDto.getCount() - shipOrderDto.getInProgressCount() > count) {
+        if (shipOrderDto.getCount() - shipOrderDto.getInProgressCount() >= count) {
             Optional<DistributedOrder> orderOptional = distributedOrderRepository
                 .findByOrderNumberAndUserName(orderNumber, userName);
             if (orderOptional.isPresent()) {

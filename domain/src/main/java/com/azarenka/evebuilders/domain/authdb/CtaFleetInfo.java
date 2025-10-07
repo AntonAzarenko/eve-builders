@@ -9,6 +9,7 @@ public class CtaFleetInfo {
     private String fleetName;
     private String hash;
     private Integer creatorId;
+    private Integer characterId;
     private String doctrine;
     private String fleetType;
 
@@ -16,13 +17,14 @@ public class CtaFleetInfo {
     }
 
     public CtaFleetInfo(String doctrine, Integer id, LocalDateTime createdAt, String fleetName, String hash,
-                        Integer creatorId, String fleetType) {
+                        Integer creatorId,Integer characterId, String fleetType) {
         this.doctrine = doctrine;
         this.id = id;
         this.createdAt = createdAt;
         this.fleetName = fleetName;
         this.hash = hash;
         this.creatorId = creatorId;
+        this.characterId = characterId;
         this.fleetType = fleetType;
     }
 
@@ -80,5 +82,13 @@ public class CtaFleetInfo {
 
     public void setFleetType(String fleetType) {
         this.fleetType = fleetType;
+    }
+
+    public Integer getCharacterId() {
+        return characterId;
+    }
+
+    public void setCharacterId(Integer characterId) {
+        this.characterId = characterId;
     }
 }

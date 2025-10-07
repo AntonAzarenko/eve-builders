@@ -47,9 +47,17 @@ public class CasinoUserService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
+    public CasinoUser getCasinoUserByCharacterId(Integer characterId) {
+        LOGGER.info("Get CasinoUser by CharacterId={}", characterId);
+        var casinoUser = repository.findByCharacterId(characterId).orElse((null));
+        LOGGER.info("CasinoUser was found  CharacterId={}, CharacterName={}", characterId, casinoUser.getCharacterName());
+        return casinoUser;
+    }
+
     @Transactional
     public UserInfo insertUserInfo(UserInfo payload) {
-        LOGGER.info("User insert {}", payload);
+        LOGGER.info("User insert by payload Payload={}", payload);
         int characterId = payload.getCharacterId();
         int points = payload.getCountPoints();
         repository.updatePointsAndDateByCharacterId(characterId, points, LocalDate.now());
@@ -58,7 +66,7 @@ public class CasinoUserService {
 
     @Transactional
     public void insertUserInfo(List<CasinoUser> casinoUsers) {
-        LOGGER.info("User insert {}", casinoUsers);
+        LOGGER.info("User insert by casino user. User={}", casinoUsers);
         repository.saveAll(casinoUsers);
     }
 
@@ -76,5 +84,10 @@ public class CasinoUserService {
             userInfos.add(userInfo);
         });
         return userInfos;
+    }
+
+    public void save(CasinoUser character) {
+        LOGGER.info("CasinoUser insert {}", character);
+        repository.save(character);
     }
 }
