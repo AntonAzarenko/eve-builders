@@ -113,7 +113,7 @@ public class CasinoUser {
     @Override
     public String toString() {
         return "CasinoUser{" +
-            ", characterId=" + characterId +
+            "  characterId=" + characterId +
             ", characterName='" + characterName + '\'' +
             ", countPoints=" + countPoints +
             ", createDate=" + createDate +

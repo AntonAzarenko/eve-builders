@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +43,19 @@ public class FlitStatisticService implements IFlitStatisticService {
         Map<String, UserFlightsInfo> lastInfo = new HashMap<>();
 
         for (CtaFleetInfo fleet : fleets) {
+            // 1) Собираем всех уникальных участников одного флота
+            Set<String> usernamesInFleet = new HashSet<>();
+
             List<UserFlightsInfo> participants = fleetTrackerRepository.findUserFlights(fleet.getId());
             if (participants != null) {
                 for (UserFlightsInfo u : participants) {
                     if (u == null || u.getUsername() == null) continue;
-                    counts.computeIfAbsent(u.getUsername(), k -> new LongAdder()).increment();
-                    lastInfo.putIfAbsent(u.getUsername(), u);
+                    usernamesInFleet.add(u.getUsername());
+                    // можно хранить "последнюю" инфу (если так нужно) — заменяем putIfAbsent на put
+                    lastInfo.put(u.getUsername(), u);
                 }
             }
+
             UserFlightsInfo fc = null;
             if (fleet.getCharacterId() != null && fleet.getCharacterId() != 0L) {
                 fc = fleetTrackerRepository.findUserInfoByCharacterId(fleet.getCharacterId());
@@ -58,10 +64,16 @@ public class FlitStatisticService implements IFlitStatisticService {
             }
 
             if (fc != null && fc.getUsername() != null) {
-                counts.computeIfAbsent(fc.getUsername(), k -> new LongAdder()).increment();
-                lastInfo.putIfAbsent(fc.getUsername(), fc);
+                usernamesInFleet.add(fc.getUsername());
+                lastInfo.put(fc.getUsername(), fc);
+            }
+
+            // 2) Инкрементим счётчик строго по уникальным именам в рамках флота
+            for (String username : usernamesInFleet) {
+                counts.computeIfAbsent(username, k -> new LongAdder()).increment();
             }
         }
+
         List<Map.Entry<String, LongAdder>> sorted = new ArrayList<>(counts.entrySet());
         sorted.sort(Comparator
             .<Map.Entry<String, LongAdder>>comparingLong(e -> e.getValue().longValue()).reversed()
