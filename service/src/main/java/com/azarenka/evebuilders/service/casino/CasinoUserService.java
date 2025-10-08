@@ -30,16 +30,18 @@ public class CasinoUserService {
     @Autowired
     private RewardService rewardService;
 
-    @Transactional(readOnly = true)
     public UserInfo getByCharacterId(Integer characterId) {
-        LOGGER.info("GetByCharacterId {}", characterId);
         if (characterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "characterId is required");
         }
         CasinoUser user = repository.findByCharacterId(characterId).orElse((null));
         if (Objects.isNull(user)) {
+            LOGGER.info("Character not found CharacterId={}",
+                characterId);
             return null;
         }
+        LOGGER.info("Get information for user CharacterId={}, CharacterName={}, Points={}",
+            characterId, user.getCharacterName(), user.getCountPoints());
         UserInfo dto = new UserInfo();
         dto.setCharacterId(user.getCharacterId());
         dto.setCharacterName(user.getCharacterName());
@@ -51,7 +53,7 @@ public class CasinoUserService {
     public CasinoUser getCasinoUserByCharacterId(Integer characterId) {
         LOGGER.info("Get CasinoUser by CharacterId={}", characterId);
         var casinoUser = repository.findByCharacterId(characterId).orElse((null));
-        LOGGER.info("CasinoUser was found  CharacterId={}, CharacterName={}", characterId, casinoUser.getCharacterName());
+        LOGGER.info("CasinoUser was found  CharacterId={}, CharacterName={}", characterId, Objects.nonNull(casinoUser) ? casinoUser.getCharacterName(): "Empty name");
         return casinoUser;
     }
 

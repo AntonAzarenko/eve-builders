@@ -71,19 +71,20 @@ public class UpdateFleetInfoService {
                         character.setCountPoints(1);
                     }
                     casinoUserService.save(character);
-                    UserFlightsInfo fc;
-                    if (Objects.nonNull(fleetInfo.getCharacterId()) && fleetInfo.getCharacterId() != 0) {
-                        fc = fleetTrackerRepository.findUserInfoByCharacterId(fleetInfo.getCharacterId());
-                    } else {
-                        fc = fleetTrackerRepository.findUserInfoByCreatorId(fleetInfo.getCreatorId());
-                    }
-                    LOGGER.info("Updated FC. FleetId={}, FcName: {}", fleetInfo.getId(), fc.getUsername());
-                    var casinoUserByCharacterId =
-                        casinoUserService.getCasinoUserByCharacterId(Math.toIntExact(fc.getCharacterId()));
-                    casinoUserService.save(casinoUserByCharacterId);
-                    LOGGER.info("Saved FC. FleetId={}, FcName: {}", fleetInfo.getId(),
-                        casinoUserByCharacterId.getCharacterName());
+
                 });
+                UserFlightsInfo fc;
+                if (Objects.nonNull(fleetInfo.getCharacterId()) && fleetInfo.getCharacterId() != 0) {
+                    fc = fleetTrackerRepository.findUserInfoByCharacterId(fleetInfo.getCharacterId());
+                } else {
+                    fc = fleetTrackerRepository.findUserInfoByCreatorId(fleetInfo.getCreatorId());
+                }
+                LOGGER.info("Updated FC. FleetId={}, FcName: {}", fleetInfo.getId(), fc.getUsername());
+                var casinoUserByCharacterId =
+                    casinoUserService.getCasinoUserByCharacterId(Math.toIntExact(fc.getCharacterId()));
+                casinoUserService.save(casinoUserByCharacterId);
+                LOGGER.info("Saved FC. FleetId={}, FcName: {}", fleetInfo.getId(),
+                    casinoUserByCharacterId.getCharacterName());
             } else {
                 LOGGER.debug("Fleet already existed. FleetId={}, UserFlights count: {}", fleetInfo.getId(),
                     userFlights.size());
