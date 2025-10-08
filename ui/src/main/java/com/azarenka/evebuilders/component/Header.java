@@ -31,7 +31,7 @@ import java.util.Optional;
 public class Header extends HorizontalLayout implements LocaleChangeObserver, RouterLayout {
 
     private final ComboBox<String> localeComboboxField = new ComboBox<>();
-    private final Image logo = new Image("/themes/builders/img/holdmyprobs_logo.jpg", "alt");
+    private final Image logo = new Image("/themes/builders/img/favicon.png", "alt");
     private Span title;
     private Image avatar;
     private Button addCharacterButton;

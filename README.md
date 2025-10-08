@@ -4,6 +4,10 @@
 
 # Release notes'
 
+## 1.6.7.2
+- Adjusted service to calculate value for CTA
+- Adjust favicon
+
 ## 1.6.7.1
 
 ### Added

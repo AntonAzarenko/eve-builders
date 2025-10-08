@@ -148,3 +148,4 @@ vaadin:
 
 casino:
   api-token: ${CASINO_API_TOKEN}
+  start_fleet_info_date: 2025-09-01T00:00:00

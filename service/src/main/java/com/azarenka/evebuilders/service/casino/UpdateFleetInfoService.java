@@ -10,6 +10,7 @@ import com.azarenka.evebuilders.repository.database.casino.RewardedFleetReposito
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,8 @@ public class UpdateFleetInfoService {
     private AAFleetTrackerRepository fleetTrackerRepository;
     @Autowired
     private RewardedFleetRepository rewardedFleetRepository;
+    @Value("${casino.start_fleet_info_date}")
+    private LocalDateTime localDateTime;
 
     //@Scheduled(cron = "0 0 3 * * *", zone = "Europe/Moscow")
     @Deprecated
@@ -45,7 +48,7 @@ public class UpdateFleetInfoService {
     }
 
     public void updateDailyUserFleetInfo() {
-        List<CtaFleetInfo> fleetsByDate = fleetTrackerRepository.findFleetsByDate(LocalDateTime.of(2025, 10, 1, 4, 0));
+        List<CtaFleetInfo> fleetsByDate = fleetTrackerRepository.findFleetsByDate(localDateTime);
         updateUsersFleetInfo(fleetsByDate);
     }
 
