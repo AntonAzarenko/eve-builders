@@ -4,7 +4,14 @@
 
 # Release notes'
 
+## 1.6.8
+
+### Added
+- Add logic to find information about staff
+
 ## 1.6.7.2
+
+### Added
 - Adjusted service to calculate value for CTA
 - Adjust favicon
 
