@@ -93,7 +93,7 @@ public class ProcessDistributedOrderView extends View implements IGridColumnAdde
         checkOrderButton.addClickListener(event -> {
             Optional<DistributedOrder> distributedOrderOptional = grid.getSelectionModel().getFirstSelectedItem();
             distributedOrderOptional.ifPresent(distributedOrder -> {
-                var contractReports = controller.getReporOtrder(distributedOrderOptional.get());
+                var contractReports = controller.getReportOtrder(distributedOrderOptional.get());
                 var orderContractReportWindow =
                     new OrderContractReportWindow(contractReports, distributedOrder, controller);
                 orderContractReportWindow.open();

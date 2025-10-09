@@ -110,7 +110,6 @@ public class FlitStatisticService implements IFlitStatisticService {
         return out;
     }
 
-
     @Override
     public Set<UserFleetStat> getFleetStats() {
         LocalDate from = LocalDate.of(2017, 1, 1);

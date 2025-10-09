@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.main.managment.api;
+package com.azarenka.evebuilders.service.api;
 
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.UserDto;
@@ -6,8 +6,7 @@ import com.azarenka.evebuilders.domain.dto.UserDto;
 import java.util.List;
 import java.util.Set;
 
-public interface IStaffController {
-
+public interface IStaffService {
 
     List<UserDto> getAllUsers();
 

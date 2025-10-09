@@ -12,7 +12,7 @@ public interface IDashBoardController {
 
     List<DistributedOrder> getDistributedOrders();
 
-    List<ContractValidationReport> getReporOtrder(DistributedOrder distributedOrder);
+    List<ContractValidationReport> getReportOtrder(DistributedOrder distributedOrder);
 
     void update(DistributedOrder distributedOrder, Integer readyCount);
 }
