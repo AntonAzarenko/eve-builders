@@ -5,13 +5,11 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.dto.UserDto;
-import com.azarenka.evebuilders.main.managment.dashboard.DashboardView;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
 import com.azarenka.evebuilders.main.staff.StaffByStateView.StaffUserInfo;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -22,7 +20,6 @@ import com.vaadin.flow.server.VaadinSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -96,7 +93,9 @@ public class StaffByStateView extends View implements IGridColumnAdder<StaffUser
                 String lastOrderDate = "";
                 if (count > 0) {
                     Optional<DistributedOrder> max =
-                        distributedOrders.stream().max(Comparator.comparing(DistributedOrder::getCreatedDate));
+                        distributedOrders.stream()
+                            .filter(order -> order.getUserName().equals(userDto.getUsername()))
+                            .max(Comparator.comparing(DistributedOrder::getCreatedDate));
                     if (max.isPresent()) {
                         lastOrderDate = max.get().getCreatedDate().toString();
                     }

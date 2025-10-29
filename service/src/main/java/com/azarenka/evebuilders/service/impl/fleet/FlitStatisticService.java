@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -43,15 +42,15 @@ public class FlitStatisticService implements IFlitStatisticService {
         Map<String, UserFlightsInfo> lastInfo = new HashMap<>();
 
         for (CtaFleetInfo fleet : fleets) {
-            // 1) Собираем всех уникальных участников одного флота
             Set<String> usernamesInFleet = new HashSet<>();
 
             List<UserFlightsInfo> participants = fleetTrackerRepository.findUserFlights(fleet.getId());
             if (participants != null) {
                 for (UserFlightsInfo u : participants) {
-                    if (u == null || u.getUsername() == null) continue;
+                    if (u == null || u.getUsername() == null) {
+                        continue;
+                    }
                     usernamesInFleet.add(u.getUsername());
-                    // можно хранить "последнюю" инфу (если так нужно) — заменяем putIfAbsent на put
                     lastInfo.put(u.getUsername(), u);
                 }
             }
@@ -68,7 +67,6 @@ public class FlitStatisticService implements IFlitStatisticService {
                 lastInfo.put(fc.getUsername(), fc);
             }
 
-            // 2) Инкрементим счётчик строго по уникальным именам в рамках флота
             for (String username : usernamesInFleet) {
                 counts.computeIfAbsent(username, k -> new LongAdder()).increment();
             }

@@ -1,7 +1,9 @@
 package com.azarenka.evebuilders.rest.api;
 
+import com.azarenka.evebuilders.domain.casino.HistoryCta;
 import com.azarenka.evebuilders.domain.casino.dto.UserInfo;
 import com.azarenka.evebuilders.service.casino.CasinoUserService;
+import com.azarenka.evebuilders.service.casino.HistoryService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,8 @@ public class CasinoUserController {
 
     @Autowired
     private CasinoUserService userService;
+    @Autowired
+    private HistoryService historyService;
 
     @GetMapping(path = "/character")
     public ResponseEntity<UserInfo> getByCharacterId(@RequestParam Integer characterId) {
@@ -65,5 +69,15 @@ public class CasinoUserController {
         }
         UserInfo saved = userService.insertUserInfo(payload);
         return ResponseEntity.status(201).body(saved);
+    }
+
+    @GetMapping(path = "/characterStory")
+    public ResponseEntity<List<HistoryCta>> getByCharacters(@RequestParam Integer characterId) {
+        List<HistoryCta> historyCta = historyService.getHistoryCta(characterId);
+        if (Objects.nonNull(historyCta)) {
+            return ResponseEntity.ok(historyCta);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

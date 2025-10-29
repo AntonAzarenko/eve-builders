@@ -51,15 +51,15 @@ public class CasinoUserService {
 
     @Transactional(readOnly = true)
     public CasinoUser getCasinoUserByCharacterId(Integer characterId) {
-        LOGGER.info("Get CasinoUser by CharacterId={}", characterId);
+        LOGGER.debug("Get CasinoUser by CharacterId={}", characterId);
         var casinoUser = repository.findByCharacterId(characterId).orElse((null));
-        LOGGER.info("CasinoUser was found  CharacterId={}, CharacterName={}", characterId, Objects.nonNull(casinoUser) ? casinoUser.getCharacterName(): "Empty name");
+        LOGGER.debug("CasinoUser was found  CharacterId={}, CharacterName={}", characterId, Objects.nonNull(casinoUser) ? casinoUser.getCharacterName(): "Empty name");
         return casinoUser;
     }
 
     @Transactional
     public UserInfo insertUserInfo(UserInfo payload) {
-        LOGGER.info("User insert by payload Payload={}", payload);
+        LOGGER.debug("User insert by payload Payload={}", payload);
         int characterId = payload.getCharacterId();
         int points = payload.getCountPoints();
         repository.updatePointsAndDateByCharacterId(characterId, points, LocalDate.now());
