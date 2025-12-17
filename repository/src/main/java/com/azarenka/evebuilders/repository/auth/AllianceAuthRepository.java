@@ -1,13 +1,12 @@
 package com.azarenka.evebuilders.repository.auth;
 
-import com.azarenka.evebuilders.domain.authdb.UserFlightsInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.UserFlightsInfo;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;

@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.security;
 
 import com.azarenka.evebuilders.main.MainWidget;
 import com.azarenka.evebuilders.main.orders.corporation.OrdersView;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;

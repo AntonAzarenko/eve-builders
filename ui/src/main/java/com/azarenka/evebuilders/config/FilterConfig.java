@@ -1,6 +1,6 @@
 package com.azarenka.evebuilders.config;
 
-import com.azarenka.evebuilders.rest.api.ApiTokenFilter;
+import com.azarenka.evebuilders.rest.api.casino.ApiTokenFilter;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

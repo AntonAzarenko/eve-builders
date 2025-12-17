@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.repository.auth;
 
-import com.azarenka.evebuilders.domain.authdb.CtaFleetInfo;
-import com.azarenka.evebuilders.domain.authdb.UserFlightsInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.CtaFleetInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.UserFlightsInfo;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

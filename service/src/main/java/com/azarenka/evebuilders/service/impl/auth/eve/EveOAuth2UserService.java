@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.db.User;
@@ -99,6 +99,7 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         user.setMainCharacter(true);
         user.setLanguage(locale.getLanguage());
         user.setTheme("dark");
+        user.setEnabled(true);
         var userName = SecurityUtils.getUserName();
         if (Objects.nonNull(userName)) {
             userService.getByUsername(userName).ifPresent(mainUser -> {

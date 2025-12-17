@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.service.impl;
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.repository.database.IUserTokenRepository;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

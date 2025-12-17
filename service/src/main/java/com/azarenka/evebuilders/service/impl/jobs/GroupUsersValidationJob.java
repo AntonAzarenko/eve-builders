@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.service.impl.jobs;
 
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.AuthIntegrationService;
+import com.azarenka.evebuilders.service.impl.auth.eve.AuthIntegrationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

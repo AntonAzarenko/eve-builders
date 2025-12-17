@@ -109,3 +109,18 @@ databaseChangeLog:
             referencedColumnNames: uid
             onDelete: CASCADE
             onUpdate: CASCADE
+
+  - changeSet:
+      id: 2025-16-12
+      author: anton
+      changes:
+        - addColumn:
+            schemaName: builders
+            tableName: user_info
+            columns:
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.domain.authdb;
+package com.azarenka.evebuilders.domain.auth.authdb;
 
 public class UserFlightsInfo {
 

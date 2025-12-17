@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.rest.api;
+package com.azarenka.evebuilders.rest.api.casino;
 
 import com.azarenka.evebuilders.domain.casino.Reward;
 import com.azarenka.evebuilders.service.casino.UpdateFleetInfoService;

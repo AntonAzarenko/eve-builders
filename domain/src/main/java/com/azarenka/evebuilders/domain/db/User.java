@@ -1,9 +1,20 @@
 package com.azarenka.evebuilders.domain.db;
 
-import jakarta.persistence.*;
-
 import java.util.List;
 import java.util.Set;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "user_info", schema = "builders")
@@ -12,28 +23,30 @@ public class User {
     @Id
     @Column(name = "uid")
     private String uid;
-    @Column(name="user_name",unique = true, nullable = false)
+    @Column(name = "user_name", unique = true, nullable = false)
     private String username;
-    @Column(name="character_id",nullable = false)
+    @Column(name = "character_id", nullable = false)
     private String characterId;
-    @Column(name="character_info", length = 10000)
+    @Column(name = "character_info", length = 10000)
     private String characterInfo;
     @Column(name = "password")
     private String password;
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
-    @Column(name="main_id")
+    @Column(name = "main_id")
     private String mainId;
-    @Column(name="is_main_character")
+    @Column(name = "is_main_character")
     private Boolean isMainCharacter;
-    @Column(name="corp_name")
+    @Column(name = "corp_name")
     private String corporationName;
-    @Column(name="alliance_name")
+    @Column(name = "alliance_name")
     private String allianceName;
     @Column(name = "language")
     private String language;
     @Column(name = "theme", columnDefinition = "VARCHAR(255) DEFAULT 'light'")
     private String theme;
+    @Column(nullable = false)
+    private boolean enabled = true;
 
     public String getTheme() {
         return theme;
@@ -48,10 +61,10 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "roles",
-            schema = "builders",
-            joinColumns = @JoinColumn(name = "user_uid", referencedColumnName = "uid"),
-            inverseJoinColumns = @JoinColumn(name = "role_name", referencedColumnName = "name")
+        name = "roles",
+        schema = "builders",
+        joinColumns = @JoinColumn(name = "user_uid", referencedColumnName = "uid"),
+        inverseJoinColumns = @JoinColumn(name = "role_name", referencedColumnName = "name")
     )
     public Set<Role> getRoles() {
         return roles;
@@ -139,5 +152,13 @@ public class User {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

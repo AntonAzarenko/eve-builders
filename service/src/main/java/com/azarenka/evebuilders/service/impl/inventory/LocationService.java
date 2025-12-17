@@ -4,7 +4,7 @@ import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.LocationInfo;
 import com.azarenka.evebuilders.service.impl.UserService;
 import com.azarenka.evebuilders.service.impl.UserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 import com.azarenka.evebuilders.service.impl.intergarion.LocationIntegrationService;
 
 import org.springframework.beans.factory.annotation.Autowired;

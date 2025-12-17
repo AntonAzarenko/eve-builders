@@ -2,7 +2,6 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.service.impl.UserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

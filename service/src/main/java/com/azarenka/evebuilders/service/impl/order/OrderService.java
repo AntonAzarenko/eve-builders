@@ -14,7 +14,7 @@ import com.azarenka.evebuilders.repository.database.properties.IReceiverReposito
 import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
 import org.slf4j.Logger;

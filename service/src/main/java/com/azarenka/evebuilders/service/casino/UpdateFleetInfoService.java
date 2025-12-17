@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.casino;
 
-import com.azarenka.evebuilders.domain.authdb.CtaFleetInfo;
-import com.azarenka.evebuilders.domain.authdb.UserFlightsInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.CtaFleetInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.UserFlightsInfo;
 import com.azarenka.evebuilders.domain.casino.CasinoUser;
 import com.azarenka.evebuilders.domain.casino.HistoryCta;
 import com.azarenka.evebuilders.domain.casino.RewardedFleet;
@@ -47,7 +47,7 @@ public class UpdateFleetInfoService {
         updateUsersFleetInfo(fleetTrackerRepository.findFleetsByDate(LocalDateTime.of(2020, 10, 1, 4, 0)));
     }
 
-    @Scheduled(cron = "0 0/30 * * * *")
+    @Scheduled(cron = "0 0 0/2 * * *")
     @Transactional
     public void updateDailyUserFleetInfoJob() {
         List<CtaFleetInfo> fleetsByDate = fleetTrackerRepository.findFleetsByDate(LocalDateTime.now().minusHours(24));

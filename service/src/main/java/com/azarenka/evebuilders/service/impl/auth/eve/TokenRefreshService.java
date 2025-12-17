@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.service.api.IUserTokenService;

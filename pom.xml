@@ -19,6 +19,7 @@
         <module>domain</module>
         <module>repository</module>
         <module>service</module>
+        <module>controller</module>
         <module>ui</module>
     </modules>
 
@@ -27,11 +28,10 @@
         <project.version>${app.version}</project.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <vaadin.version>24.8.6</vaadin.version>
     </properties>
     <dependencies>
-        <!-- tag::starter[] -->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
@@ -124,7 +124,6 @@
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>

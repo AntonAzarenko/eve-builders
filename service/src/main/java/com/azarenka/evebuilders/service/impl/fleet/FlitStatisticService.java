@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.service.impl.fleet;
 
-import com.azarenka.evebuilders.domain.authdb.CtaFleetInfo;
-import com.azarenka.evebuilders.domain.authdb.UserFlightsInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.CtaFleetInfo;
+import com.azarenka.evebuilders.domain.auth.authdb.UserFlightsInfo;
 import com.azarenka.evebuilders.domain.dto.UserFleetStat;
 import com.azarenka.evebuilders.domain.enums.FleetMetric;
 import com.azarenka.evebuilders.repository.auth.AAFleetTrackerRepository;

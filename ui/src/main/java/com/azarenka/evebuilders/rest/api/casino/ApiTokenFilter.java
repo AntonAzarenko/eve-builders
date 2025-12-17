@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.rest.api;
+package com.azarenka.evebuilders.rest.api.casino;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

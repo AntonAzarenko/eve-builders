@@ -8,6 +8,13 @@ app:
   telegram_thread_ping_id: ${APP.TELEGRAM_THREAD_PING_ID}
   telegram_thread_request_id: ${APP.TELEGRAM_THREAD_REQUEST_ID}
 
+  jwt:
+    issuer: "angular-app"
+    secret: ${JWT_SECRET}
+    access-ttl-seconds: 900
+    refresh-ttl-seconds: 1209600
+    refresh-cookie-name: "refresh_token"
+
 spring:
   datasource:
     postgresql:
