@@ -93,4 +93,8 @@ public class ContractService implements IContractService {
         var corporationContracts = contractsClient.getCorporationContracts(userToken, corporationId);
         return filterContract(corporationContracts, userId, orderNumber);
     }
+
+    public void setCorporationId(Long corporationId) {
+        this.corporationId = corporationId;
+    }
 }

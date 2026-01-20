@@ -68,6 +68,7 @@ class ContractServiceTest {
 
     @Test
     void testGetContractReportNoContractsFoundReturnsErrorReport() {
+        contractService.setCorporationId(98771596L);
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
         when(userService.getUserToken()).thenReturn("token");
         when(contractsClient.getCorporationContracts("token", 98771596L)).thenReturn(Collections.emptyList());
@@ -89,6 +90,7 @@ class ContractServiceTest {
 
     @Test
     void testGetContractReportContractsExistValidationCalled() {
+        contractService.setCorporationId(98771596L);
         Contract contract = new Contract();
         contract.setContractId(999L);
         contract.setIssuerId(123456L);
