@@ -15,6 +15,10 @@ app:
     refresh-ttl-seconds: 1209600
     refresh-cookie-name: "refresh_token"
 
+  eve:
+    corporation:
+      id: ${EVE.CORPORATION.ID}
+
 spring:
   datasource:
     postgresql:
