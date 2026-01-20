@@ -14,7 +14,7 @@ import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;

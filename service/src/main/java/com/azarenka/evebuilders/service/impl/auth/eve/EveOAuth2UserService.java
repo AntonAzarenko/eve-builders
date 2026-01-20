@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.db.User;
@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -64,12 +65,12 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         User user = existingUser.orElseGet(() ->
             getUserBasedOnTokenResponse(userRequest, attributes, Locale.US));
         if (!checkAuth(user)) {
-            defineRole(user);
             LOGGER.info("User {} doesn't have permissions", characterName);
             throw new OAuth2AuthenticationException(
                 new OAuth2Error("invalid_user", "User does not have permissions", "")
             );
         }
+        defineRole(user);
         userService.saveUser(user);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof EveUserPrincipal currentPrincipal) {
@@ -87,16 +88,18 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         var characterName = (String) attributes.get("CharacterName");
         var characterInfoJson = eveCharacterService.getCharacterInfo(accessToken, characterId);
         var userId = UUID.randomUUID().toString();
+        LOGGER.info("Authenticating user {}. CharacterInfo={} ",characterName, characterInfoJson);
         user.setUid(userId);
         user.setUsername(characterName);
         user.setCharacterId(characterId);
         user.setCharacterInfo(characterInfoJson);
         user.setPassword("");
-        user.setCorporationName(eveCharacterService.getCharacterCorporationName(accessToken));
-        user.setAllianceName(eveCharacterService.getCharacterAllianceName(accessToken));
+        user.setCorporationName(eveCharacterService.getCharacterCorporationName(characterInfoJson));
+        user.setAllianceName(eveCharacterService.getCharacterAllianceName(characterInfoJson));
         user.setMainCharacter(true);
         user.setLanguage(locale.getLanguage());
         user.setTheme("dark");
+        user.setEnabled(true);
         var userName = SecurityUtils.getUserName();
         if (Objects.nonNull(userName)) {
             userService.getByUsername(userName).ifPresent(mainUser -> {
@@ -111,15 +114,19 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     public boolean checkAuth(User user) {
-        var groupIdsByUsername = allianceAuthService.findGroupIdsByUsername(user.getUsername());
-        LOGGER.info("User {} has groups {}", user.getUsername(), groupIdsByUsername);
-        var isAdminGroup = checkAdminGroup(groupIdsByUsername, user);
-        var isIndustryGroup = checkIndustryGroup(groupIdsByUsername, user);
-        var isMiningGroup = checkMiningGroup(groupIdsByUsername, user);
-        return ALLIANCE_NAMES.contains(user.getAllianceName())
-            && isIndustryGroup
-            || isMiningGroup
-            || isAdminGroup;
+        if (env.acceptsProfiles(Profiles.of("prod"))) {
+            var groupIdsByUsername = allianceAuthService.findGroupIdsByUsername(user.getUsername());
+            LOGGER.info("User {} has groups {}", user.getUsername(), groupIdsByUsername);
+            var isAdminGroup = checkAdminGroup(groupIdsByUsername, user);
+            var isIndustryGroup = checkIndustryGroup(groupIdsByUsername, user);
+            var isMiningGroup = checkMiningGroup(groupIdsByUsername, user);
+            return/* ALLIANCE_NAMES.contains(user.getAllianceName())
+                &&*/ isIndustryGroup
+                || isMiningGroup
+                || isAdminGroup;
+        } else {
+            return true;
+        }
     }
 
     private boolean checkIndustryGroup(List<Integer> groupIdsByUsername, User user) {

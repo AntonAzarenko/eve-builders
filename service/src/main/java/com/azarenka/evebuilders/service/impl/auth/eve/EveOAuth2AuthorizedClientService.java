@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;

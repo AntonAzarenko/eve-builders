@@ -4,6 +4,27 @@
 
 # Release notes'
 
+## 1.6.8
+
+### Added
+- Add logic to find information about staff
+
+## 1.6.7.2
+
+### Added
+- Adjusted service to calculate value for CTA
+- Adjust favicon
+
+## 1.6.7.1
+
+### Added
+- Added service to calculate value for CTA 
+
+## 1.6.7
+
+### Added
+- API for new application 'Casino'
+
 ## 1.6.6
 
 ### Added

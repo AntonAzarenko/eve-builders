@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.main.managment.api.IStaffController;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

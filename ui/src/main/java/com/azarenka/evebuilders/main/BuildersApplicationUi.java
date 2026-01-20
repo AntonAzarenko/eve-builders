@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.component.exception.IndustryErrorHandler;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;

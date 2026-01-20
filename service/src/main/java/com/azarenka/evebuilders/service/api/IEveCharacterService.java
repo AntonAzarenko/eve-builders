@@ -10,8 +10,8 @@ public interface IEveCharacterService {
 
     String getCharacterNameFromToken(String accessToken);
 
-    String getCharacterCorporationName(String accessToken);
+    String getCharacterCorporationName(String json);
 
-    String getCharacterAllianceName(String accessToken);
+    String getCharacterAllianceName(String json);
 
 }

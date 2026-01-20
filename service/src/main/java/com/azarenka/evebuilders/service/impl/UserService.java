@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

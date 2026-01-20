@@ -1,6 +1,5 @@
 package com.azarenka.evebuilders.config.db;
 
-import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -15,11 +14,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+import jakarta.persistence.EntityManagerFactory;
+
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "com.azarenka.evebuilders.repository.database",
-        entityManagerFactoryRef = "dbEntityManager",
-        transactionManagerRef = "dbTransactionManager"
+    basePackages = "com.azarenka.evebuilders.repository.database",
+    entityManagerFactoryRef = "dbEntityManager",
+    transactionManagerRef = "dbTransactionManager"
 )
 public class DataBasePostgresConfig {
 
@@ -36,11 +37,11 @@ public class DataBasePostgresConfig {
     @Primary
     public DataSource mysqlDataSource() {
         return DataSourceBuilder.create()
-                .url(url)
-                .username(username)
-                .password(password)
-                .driverClassName(driver)
-                .build();
+            .url(url)
+            .username(username)
+            .password(password)
+            .driverClassName(driver)
+            .build();
     }
 
     @Bean(name = "dbEntityManager")
@@ -48,16 +49,19 @@ public class DataBasePostgresConfig {
     public LocalContainerEntityManagerFactoryBean mysqlEntityManagerFactory(EntityManagerFactoryBuilder builder,
                                                                             @Qualifier("dbDataSource") DataSource dataSource) {
         return builder
-                .dataSource(dataSource)
-                .packages("com.azarenka.evebuilders.domain.db")
-                .persistenceUnit("postgres")
-                .build();
+            .dataSource(dataSource)
+            .packages(
+                "com.azarenka.evebuilders.domain.db",
+                "com.azarenka.evebuilders.domain.casino"
+            )
+            .persistenceUnit("postgres")
+            .build();
     }
 
     @Bean(name = "dbTransactionManager")
     @Primary
     public PlatformTransactionManager mysqlTransactionManager(
-            @Qualifier("dbEntityManager") EntityManagerFactory entityManagerFactory) {
+        @Qualifier("dbEntityManager") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
 }

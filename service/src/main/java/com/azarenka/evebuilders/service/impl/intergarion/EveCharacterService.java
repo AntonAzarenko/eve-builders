@@ -2,14 +2,15 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.azarenka.evebuilders.domain.db.Alliance;
-import com.azarenka.evebuilders.domain.db.Corporation;
 import com.azarenka.evebuilders.service.api.IEveAllianceService;
 import com.azarenka.evebuilders.service.api.IEveCharacterService;
 import com.azarenka.evebuilders.service.api.IEveCorporationService;
-import com.azarenka.evebuilders.service.impl.auth.EveAuthService;
+import com.azarenka.evebuilders.service.impl.auth.eve.EveAuthService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -21,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class EveCharacterService implements IEveCharacterService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EveCharacterService.class);
 
     @Value("${eve.character.uri}")
     private String characterUrl;
@@ -58,7 +61,8 @@ public class EveCharacterService implements IEveCharacterService {
     @Override
     public String getCharacterNameFromToken(String accessToken) {
         if (accessToken == null || !accessToken.contains(".")) {
-            throw new IllegalArgumentException("Invalid JWT format: Token must contain header, payload, and signature.");
+            throw new IllegalArgumentException(
+                "Invalid JWT format: Token must contain header, payload, and signature.");
         }
         DecodedJWT decodedJWT = JWT.decode(accessToken);
         String characterName = decodedJWT.getClaim("name").asString();
@@ -69,20 +73,16 @@ public class EveCharacterService implements IEveCharacterService {
     }
 
     @Override
-    public String getCharacterCorporationName(String accessToken) {
-        String characterId = getCharacterIdFromToken(accessToken);
-        String corpId = getParameter(getCharacterInfo(accessToken, characterId), "corporation_id",
-                String.class);
-        Corporation corporation = corporationService.getCorporation(corpId);
+    public String getCharacterCorporationName(String json) {
+        var corpId = getParameter(json, "corporation_id", String.class);
+        var corporation = corporationService.getCorporation(corpId);
         return corporation.getName();
     }
 
     @Override
-    public String getCharacterAllianceName(String accessToken) {
-        String characterId = getCharacterIdFromToken(accessToken);
-        String allianceId = getParameter(getCharacterInfo(accessToken, characterId), "alliance_id",
-                String.class);
-        Alliance alliance = allianceService.getAlliance(allianceId);
+    public String getCharacterAllianceName(String json) {
+        var allianceId = getParameter(json, "alliance_id", String.class);
+        var alliance = allianceService.getAlliance(allianceId);
         return alliance.getName();
     }
 

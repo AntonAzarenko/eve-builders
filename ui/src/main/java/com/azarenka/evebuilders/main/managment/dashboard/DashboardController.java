@@ -34,7 +34,7 @@ public class DashboardController implements IDashBoardController {
     }
 
     @Override
-    public List<ContractValidationReport> getReporOtrder(DistributedOrder distributedOrder) {
+    public List<ContractValidationReport> getReportOtrder(DistributedOrder distributedOrder) {
         return contractService.getContractReport(distributedOrder);
     }
 

@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.component;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;

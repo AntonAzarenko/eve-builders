@@ -23,8 +23,10 @@ import com.vaadin.flow.router.Route;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -170,12 +172,13 @@ public class FleetStatistic extends View implements LocaleChangeObserver {
     }
 
     private void reload() {
-        List<UserFleetStat> stats = controller.fetchLeaderboard(currentMetric, periodFrom, periodTo);
+        Set<UserFleetStat> stats = controller.fetchLeaderboard(currentMetric, periodFrom, periodTo);
         renderPodium(stats);
         grid.setItems(stats);
     }
 
-    private void renderPodium(List<UserFleetStat> stats) {
+    private void renderPodium(Set<UserFleetStat> statistic) {
+        List<UserFleetStat> stats = new ArrayList<>(statistic);
         podiumContainer.removeAll();
 
         var row = new HorizontalLayout();

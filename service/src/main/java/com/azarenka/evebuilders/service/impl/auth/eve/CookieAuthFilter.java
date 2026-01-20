@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.db.UserToken;
@@ -40,6 +40,12 @@ public class CookieAuthFilter extends OncePerRequestFilter {
         this.userTokenService = userTokenService;
         this.userService = userService;
         this.tokenRefresherService = tokenRefresherService;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/api/");
     }
 
     @Override

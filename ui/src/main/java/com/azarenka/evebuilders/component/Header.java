@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.component;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -31,7 +31,7 @@ import java.util.Optional;
 public class Header extends HorizontalLayout implements LocaleChangeObserver, RouterLayout {
 
     private final ComboBox<String> localeComboboxField = new ComboBox<>();
-    private final Image logo = new Image("/themes/builders/img/holdmyprobs_logo.jpg", "alt");
+    private final Image logo = new Image("/themes/builders/img/favicon.png", "alt");
     private Span title;
     private Image avatar;
     private Button addCharacterButton;

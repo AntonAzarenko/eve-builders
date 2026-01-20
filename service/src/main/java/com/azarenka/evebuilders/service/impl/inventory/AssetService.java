@@ -10,8 +10,8 @@ import com.azarenka.evebuilders.repository.litesql.EveIconRepository;
 import com.azarenka.evebuilders.repository.litesql.InvTypesRepository;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
-import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 import com.azarenka.evebuilders.service.impl.intergarion.AssetIntegrationService;
 
 import org.slf4j.Logger;

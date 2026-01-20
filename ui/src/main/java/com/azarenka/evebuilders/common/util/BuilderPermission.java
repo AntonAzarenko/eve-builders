@@ -1,7 +1,7 @@
 package com.azarenka.evebuilders.common.util;
 
 import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 
 import java.util.Arrays;
 import java.util.Objects;

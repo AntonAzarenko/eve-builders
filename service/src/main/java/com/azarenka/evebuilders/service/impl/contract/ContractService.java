@@ -9,6 +9,7 @@ import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveContractsIntegrationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ public class ContractService implements IContractService {
     private IUserService userService;
 
     //TODO reimplement logic to remove hardcoded value and use database
-    private final Long corporationId = 98771596L;
+    @Value("${app.eve.corporation.id}")
+    private Long corporationId;
 
     public List<ContractValidationReport> getContractReport(DistributedOrder distributedOrder) {
         List<ContractValidationReport> reportList = new ArrayList<>();
@@ -90,5 +92,9 @@ public class ContractService implements IContractService {
         var userId = Long.parseLong(user.getCharacterId());
         var corporationContracts = contractsClient.getCorporationContracts(userToken, corporationId);
         return filterContract(corporationContracts, userId, orderNumber);
+    }
+
+    public void setCorporationId(Long corporationId) {
+        this.corporationId = corporationId;
     }
 }

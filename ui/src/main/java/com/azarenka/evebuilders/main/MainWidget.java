@@ -61,7 +61,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
             LineAwesomeIcon.TRADE_FEDERATION.create(), countSubmittedRequests,
             "tab-trade-menu");
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
-            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
+            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_CEO}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
             new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
             countSubmittedRequests, "tab-request-menu");

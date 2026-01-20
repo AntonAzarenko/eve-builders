@@ -3,6 +3,7 @@ package com.azarenka.evebuilders.main.orders.corporation;
 import com.azarenka.evebuilders.common.util.INumberFormater;
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.CommonDialogComponent;
 import com.azarenka.evebuilders.main.commonview.FitView;
@@ -66,7 +67,9 @@ public class TakeOrderWindow extends CommonDialogComponent implements LocaleChan
     }
 
     private boolean isValid() {
-        return binder.validate().isOk();
+        Order originalOrderByOrderNumber = controller.getOriginalOrderByOrderNumber(shipOrderDto.getOrderNumber());
+        var freeCount = originalOrderByOrderNumber.getCount() - originalOrderByOrderNumber.getInProgressCount();
+        return binder.validate().isOk() && orderTexfieldMap.get(shipOrderDto).getValue() <= freeCount;
     }
 
     private void initContent() {

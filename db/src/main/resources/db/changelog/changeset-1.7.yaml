@@ -10,3 +10,117 @@ databaseChangeLog:
               UPDATE builders.user_info
               SET roles = array_replace(roles, 'ROLE_USER', 'ROLE_BUILDER')
               WHERE 'ROLE_USER' = ANY(roles);
+
+  - changeSet:
+      id: create-casino-box
+      author: anton
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: casino_box
+            columns:
+              - column:
+                  name: uid
+                  type: varchar(64)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: box_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: character_id
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: claimed
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: create_date
+                  type: date
+                  defaultValueComputed: CURRENT_DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reward_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: update_date
+                  type: date
+                  defaultValueComputed: CURRENT_DATE
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: create-casino-reward
+      author: anton
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            schemaName: builders
+            tableName: casino_reward
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: casino_reward
+            columns:
+              - column:
+                  name: uid
+                  type: varchar(64)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_casino_reward
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: box_type
+                  type: varchar(255)   # EnumType.STRING в БД хранится строкой
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: add-fk-casino-box-reward
+      author: anton
+      changes:
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: casino_box
+            baseColumnNames: reward_id
+            constraintName: fk_casino_box_reward
+            referencedTableSchemaName: builders
+            referencedTableName: casino_reward
+            referencedColumnNames: uid
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+  - changeSet:
+      id: 2025-16-12
+      author: anton
+      changes:
+        - addColumn:
+            schemaName: builders
+            tableName: user_info
+            columns:
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

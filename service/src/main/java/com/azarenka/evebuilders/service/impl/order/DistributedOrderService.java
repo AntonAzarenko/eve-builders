@@ -1,6 +1,5 @@
 package com.azarenka.evebuilders.service.impl.order;
 
-import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.AuditOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
@@ -9,6 +8,7 @@ import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.dto.TelegramRequestOrder;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
 import com.azarenka.evebuilders.service.api.IAuditService;
@@ -18,7 +18,7 @@ import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
 import org.slf4j.Logger;
@@ -61,30 +61,34 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public DistributedOrder save(String orderNumber, int count, String userName) {
-        DistributedOrder distributedOrder;
+        DistributedOrder distributedOrder = new DistributedOrder();
         var shipOrderDto = orderService.getOrderById(orderNumber);
-        Optional<DistributedOrder> orderOptional = distributedOrderRepository
-            .findByOrderNumberAndUserName(orderNumber, userName);
-        if (orderOptional.isPresent()) {
-            distributedOrder = orderOptional.get();
-            distributedOrder.setCount(distributedOrder.getCount() + count);
-            distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
-        } else {
-            distributedOrder = buildDistributedOrder(shipOrderDto, count, userName);
+        if (shipOrderDto.getCount() - shipOrderDto.getInProgressCount() >= count) {
+            Optional<DistributedOrder> orderOptional = distributedOrderRepository
+                .findByOrderNumberAndUserName(orderNumber, userName);
+            if (orderOptional.isPresent()) {
+                distributedOrder = orderOptional.get();
+                distributedOrder.setCount(distributedOrder.getCount() + count);
+                distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+            } else {
+                distributedOrder = buildDistributedOrder(shipOrderDto, count, userName);
+            }
+            DistributedOrder save = distributedOrderRepository.save(distributedOrder);
+            shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
+            if (shipOrderDto.getOrderStatus() == OrderStatusEnum.NEW) {
+                shipOrderDto.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+            }
+            if (shipOrderDto.getCount().equals(shipOrderDto.getInProgressCount())) {
+                shipOrderDto.setOrderStatus(OrderStatusEnum.DISTRIBUTED);
+            }
+            orderService.updateOrder(shipOrderDto);
+            telegramIntegrationService.sendMessage(
+                TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName),
+                threadRequestId);
+            return save;
         }
-        DistributedOrder save = distributedOrderRepository.save(distributedOrder);
-        shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
-        if (shipOrderDto.getOrderStatus() == OrderStatusEnum.NEW) {
-            shipOrderDto.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
-        }
-        if (shipOrderDto.getCount().equals(shipOrderDto.getInProgressCount())) {
-            shipOrderDto.setOrderStatus(OrderStatusEnum.DISTRIBUTED);
-        }
-        orderService.updateOrder(shipOrderDto);
-        telegramIntegrationService.sendMessage(
-            TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName),
-            threadRequestId);
-        return save;
+
+        return distributedOrder;
     }
 
     @Override

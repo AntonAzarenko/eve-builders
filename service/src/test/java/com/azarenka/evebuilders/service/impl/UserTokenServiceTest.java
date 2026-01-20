@@ -2,7 +2,7 @@ package com.azarenka.evebuilders.service.impl;
 
 import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.repository.database.IUserTokenRepository;
-import com.azarenka.evebuilders.service.impl.auth.TokenRefreshService;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

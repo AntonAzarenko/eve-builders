@@ -1,10 +1,12 @@
 package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.azarenka.evebuilders.service.api.integration.IEveMailIntegrationService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
@@ -21,18 +23,27 @@ public class EveMailIntegrationService extends EveAbstractIntegrationConnection 
 
     public void sendMail(String accessToken, String characterId, String recipientId, String subject, String body) {
         Map<String, Object> requestBody = Map.of("subject", subject, "body", body, "recipients", List.of(Map.of(
-                "recipient_id", recipientId,
-                "recipient_type", "character"
+            "recipient_id", recipientId,
+            "recipient_type", "character"
         )));
         webClient.post()
-                .uri(uriBuilder -> uriBuilder.path(mailSendUrl).build(Map.of("characterId", characterId)))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
-                .retrieve()
-                .toBodilessEntity()
-                .doOnSuccess(resp -> LOGGER.info("Mail sent from={} to={}", characterId, recipientId))
-                .doOnError(err -> LOGGER.error("Failed to send mail: " + err.getMessage()))
-                .then().subscribe();
+            .uri(uriBuilder -> uriBuilder.path(mailSendUrl).build(Map.of("characterId", characterId)))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(requestBody)
+            .retrieve()
+            .onStatus(
+                HttpStatusCode::isError,
+                response -> {
+                    LOGGER.error(
+                        "Error response while send an email CharacterId=[{}], RecipientId=[{}], Body=[{}], status={}",
+                        characterId, recipientId, body, response.statusCode());
+                    return response.createException();
+                }
+            )
+            .toBodilessEntity()
+            .doOnSuccess(resp -> LOGGER.info("Mail sent from={} to={}", characterId, recipientId))
+            .doOnError(err -> LOGGER.error("Failed to send mail: " + err.getMessage()))
+            .then().subscribe();
     }
 }

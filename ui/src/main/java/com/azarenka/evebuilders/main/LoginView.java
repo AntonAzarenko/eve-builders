@@ -42,7 +42,7 @@ public class LoginView extends AppLayout {
         Span description = new Span("""
                 Construction Management Application.
                 """);
-        Image image = new Image("/themes/builders/img/holdmyprobs_logo.jpg", "asd");
+        Image image = new Image("/themes/builders/img/favicon.png", "asd");
         image.setWidth("64px");
         VerticalLayout div = new VerticalLayout();
         div.setWidth("400px");

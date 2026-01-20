@@ -11,5 +11,7 @@ public interface IStaffController {
 
     List<UserDto> getAllUsers();
 
+    List<UserDto> getUserWhoHasOneOrder();
+
     void updateUserRoles(UserDto user, Set<Role> selectedRoles);
 }

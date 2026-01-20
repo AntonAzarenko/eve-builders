@@ -14,6 +14,10 @@ public class AllianceAuthService {
     private AllianceAuthRepository allianceAuthRepository;
 
     public List<Integer> findGroupIdsByUsername(String userName) {
-        return allianceAuthRepository.findGroupIdsByUsername(userName);
+        List<Integer> groupIdsByUsername1 = allianceAuthRepository.findGroupIdsByUsername(userName);
+        if (groupIdsByUsername1 != null  && groupIdsByUsername1.size() > 0) {
+            return groupIdsByUsername1;
+        }
+        return allianceAuthRepository.findGroupIdsByUsername(userName.replace(" ", "_"));
     }
 }

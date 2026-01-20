@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.service.impl.auth;
+package com.azarenka.evebuilders.service.impl.auth.eve;
 
 import com.azarenka.evebuilders.domain.dto.EveUserPrincipal;
 import com.azarenka.evebuilders.service.impl.intergarion.TokenRefresherService;

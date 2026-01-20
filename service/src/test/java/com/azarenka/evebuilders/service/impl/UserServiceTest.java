@@ -5,7 +5,7 @@ import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.service.api.IUserTokenService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

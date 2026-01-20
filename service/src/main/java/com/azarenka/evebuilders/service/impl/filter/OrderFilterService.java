@@ -3,7 +3,7 @@ package com.azarenka.evebuilders.service.impl.filter;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.repository.database.properties.IOrderFilterRepository;
 import com.azarenka.evebuilders.service.api.IOrderFilterService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 public class OrderFilterService implements IOrderFilterService {

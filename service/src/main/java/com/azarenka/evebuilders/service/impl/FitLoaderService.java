@@ -6,7 +6,7 @@ import com.azarenka.evebuilders.repository.database.IFitRepository;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
-import com.azarenka.evebuilders.service.impl.auth.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.util.FitConverter;
 
 import org.slf4j.Logger;
