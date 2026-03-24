@@ -34,9 +34,9 @@ public class MenuStaffPage extends NavigationParentViewWithTabs implements Local
             "tab-manager.dashboard");
         addTabIfAllowed(getTranslation("tab.manager.properties"), StaffProperties.class,
             new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.FOLDER.create(), "tab-manager.properties");
-        addTabIfAllowed(getTranslation("tab.staff.fleet_avtivity"), StaffFleetActivityDashboard.class,
+        /*addTabIfAllowed(getTranslation("tab.staff.fleet_avtivity"), StaffFleetActivityDashboard.class,
             new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN, Role.ROLE_CEO}, VaadinIcon.FEMALE.create(),
-            "tab-staff-fleet_activity");
+            "tab-staff-fleet_activity");*/
     }
 
     @Override
@@ -48,9 +48,9 @@ public class MenuStaffPage extends NavigationParentViewWithTabs implements Local
             tabMap.get(StaffProperties.class).updateLabel(getTranslation("tab.manager.properties"),
                 VaadinIcon.FOLDER.create());
         }
-        if (BuilderPermission.hasAdminPermission() || BuilderPermission.hasCeoPermission()) {
+      /*  if (BuilderPermission.hasAdminPermission() || BuilderPermission.hasCeoPermission()) {
             tabMap.get(StaffFleetActivityDashboard.class).updateLabel(getTranslation("tab.staff.fleet_avtivity"),
                 VaadinIcon.FEMALE.create());
-        }
+        }*/
     }
 }

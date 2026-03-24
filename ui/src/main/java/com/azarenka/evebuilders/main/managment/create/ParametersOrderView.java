@@ -446,14 +446,14 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 List<InvType> typesByGroupIds = controller.getTypesByGroupIds(invGroupsById.stream()
                         .map(InvGroup::getGroupID)
                         .toList());
-                groupsComboBox.setValue(invGroupsById.stream()
-                        .filter(e -> e.getGroupID().equals(fit.getGroupId()))
-                        .findFirst()
-                        .get());
-                itemsComboBox.setValue(typesByGroupIds.stream()
-                        .filter(e -> e.getTypeID().equals(fit.getTypeId()))
-                        .findFirst()
-                        .get());
+                var invGroups = invGroupsById.stream()
+                    .filter(e -> e.getGroupID().equals(fit.getGroupId()))
+                    .findFirst();
+                invGroups.ifPresent(group -> {groupsComboBox.setValue(group);});
+                var items = typesByGroupIds.stream()
+                    .filter(e -> e.getTypeID().equals(fit.getTypeId()))
+                    .findFirst();
+                items.ifPresent(type -> itemsComboBox.setValue(type));
             }
         });
         showFitButton = new Button(VaadinIcon.FILE_START.create(), event -> {
@@ -477,7 +477,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
     }
 
     private void initRightsholderLayout() {
-        rightsholderField.setItems(OrderRights.values());
+        rightsholderField.setItems(OrderRights.GROUP);
         rightsholderField.setWidthFull();
         binder.forField(rightsholderField)
                 .withValidator(requiredValidator)

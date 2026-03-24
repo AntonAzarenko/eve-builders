@@ -120,6 +120,9 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
             var isAdminGroup = checkAdminGroup(groupIdsByUsername, user);
             var isIndustryGroup = checkIndustryGroup(groupIdsByUsername, user);
             var isMiningGroup = checkMiningGroup(groupIdsByUsername, user);
+            if (user.getRoles().contains(Role.ROLE_SUPER_ADMIN)) {
+                return true;
+            }
             return/* ALLIANCE_NAMES.contains(user.getAllianceName())
                 &&*/ isIndustryGroup
                 || isMiningGroup

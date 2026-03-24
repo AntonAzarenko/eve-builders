@@ -2,9 +2,9 @@ package com.azarenka.evebuilders.main.managment.create;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ExistingOrdersView extends View implements LocaleChangeObserver {
@@ -77,14 +78,16 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
             grid.getSelectionModel().getFirstSelectedItem().ifPresent(order -> {
                 if (order.getOrderStatus() == OrderStatusEnum.NEW) {
                     controller.removeOrder(order.getOrderNumber());
-                    controller.updateRequestStatusOrder(
-                            controller.getRequestOrderById(order.getRequestId()), RequestOrderStatusEnum.SUBMITTED);
-                    String message = String.format("Заказ %s был удален", order.getOrderNumber());
+                    if (Objects.nonNull(order.getRequestId())) {
+                        var requestOrderById = controller.getRequestOrderById(order.getRequestId());
+                        controller.updateRequestStatusOrder(requestOrderById, RequestOrderStatusEnum.SUBMITTED);
+                    }
+                    var message = String.format("Заказ %s был удален", order.getOrderNumber());
                     Notification.show(message);
                     UI.getCurrent().refreshCurrentRoute(true);
                 } else {
                     Notification.show(String.format("Заказ %s не может быть удален так как уже находится в работе",
-                            order.getOrderNumber()), 3000, Notification.Position.MIDDLE);
+                        order.getOrderNumber()), 3000, Notification.Position.MIDDLE);
                 }
             });
         });
@@ -145,7 +148,9 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
     }
 
     private String formatIsk(BigDecimal value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("ru", "RU"));
         symbols.setGroupingSeparator(' ');
@@ -157,7 +162,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
         Optional<Order> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         boolean isOrderSelected = firstSelectedItem.isPresent();
         boolean isEditButtonEnabled =
-                isOrderSelected && firstSelectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED;
+            isOrderSelected && firstSelectedItem.get().getOrderStatus() != OrderStatusEnum.COMPLETED;
         recycleButton.setEnabled(isOrderSelected);
         repeatOrderButton.setEnabled(isOrderSelected);
         editButton.setEnabled(isEditButtonEnabled);
