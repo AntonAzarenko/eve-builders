@@ -123,6 +123,11 @@
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.40.0</version> <!-- или актуальная на 2026 год -->
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

@@ -6,8 +6,11 @@ import com.azarenka.evebuilders.domain.dto.Contract;
 import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
+import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.intergarion.EveContractsIntegrationService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,9 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 public class ContractService implements IContractService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContractService.class);
 
     @Autowired
     private EveContractsIntegrationService contractsClient;
@@ -38,6 +44,8 @@ public class ContractService implements IContractService {
         var userToken = userService.getUserToken();
         Optional<User> optionalUser = userService.getByUsername(distributedOrder.getUserName());
         if (optionalUser.isPresent()) {
+            LOGGER.info("Find contracts for: {}. Searcher={}, ContractFromUser={} ", corporationId,
+                SecurityUtils.getUserName(), optionalUser.get().getUsername());
             var contracts = findContracts(optionalUser.get(), userToken, distributedOrder.getOrderNumber());
             if (!contracts.isEmpty()) {
                 contracts.forEach(contract -> {
@@ -56,6 +64,7 @@ public class ContractService implements IContractService {
                 report.setErrorMessage("No contract found for order number " + distributedOrder.getOrderNumber());
                 reportList.add(report);
             }
+            LOGGER.info("Found {} contracts", contracts.size());
         } else {
             var report = new ContractValidationReport();
             report.setValid(false);
@@ -79,18 +88,33 @@ public class ContractService implements IContractService {
     }
 
     private List<Contract> filterContract(List<Contract> contracts, long issuerId, String noteContains) {
-        return contracts.stream()
-            .filter(contract -> contract.getIssuerId() == issuerId)
-            .filter(contract -> Objects.nonNull(contract.getTitle()) && contract.getTitle().contains(noteContains))
-            .filter(
-                contract -> Objects.nonNull(contract.getStatus()) && contract.getStatus()
-                    .equalsIgnoreCase("outstanding"))
+        LOGGER.info("Start filterContract: totalContracts={}, issuerId={}, noteContains={}",
+            contracts.size(), issuerId, noteContains);
+        List<Contract> byIssuer = contracts.stream()
+            .filter(c -> c.getIssuerId() == issuerId)
             .toList();
+        LOGGER.info("After issuerId filter: count={}", byIssuer.size());
+        List<Contract> base = byIssuer.isEmpty() ? contracts : byIssuer;
+        if (byIssuer.isEmpty()) {
+            LOGGER.warn("No contracts found by issuerId={}, fallback to all corporation contracts", issuerId);
+        }
+        List<Contract> byStatus = base.stream()
+            .filter(c -> c.getStatus() != null && c.getStatus().equalsIgnoreCase("outstanding"))
+            .toList();
+        LOGGER.info("After status=outstanding filter: count={}", byStatus.size());
+        List<Contract> byTitle = byStatus.stream()
+            .filter(c -> c.getTitle() != null && c.getTitle().contains(noteContains))
+            .toList();
+        LOGGER.info("After title contains note filter: count={}", byTitle.size());
+        return byTitle;
     }
 
     private List<Contract> findContracts(User user, String userToken, String orderNumber) {
         var userId = Long.parseLong(user.getCharacterId());
         var corporationContracts = contractsClient.getCorporationContracts(userToken, corporationId);
+        LOGGER.info("Find corporation's contract for corporationID={}. Searcher={}, Count={}", corporationId,
+            SecurityUtils.getUserName(),
+            corporationContracts.size());
         return filterContract(corporationContracts, userId, orderNumber);
     }
 
