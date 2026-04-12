@@ -83,7 +83,7 @@ public class OrderContractReportWindow extends CommonDialogComponent {
     private void showCompleterOrderWindow(DistributedOrder order) {
         var confirmDialog = new ConfirmDialog(
             "Confirmation Window",
-            String.format("Are you sure you want to COMPLETE this order for  %s", order.getUserName()), "Ok",
+            String.format("Are you sure you want to  fully COMPLETE this order without validation for %s", order.getUserName()), "Ok",
             event -> {
                 var readyCount = order.getCount();
                 controller.update(order, readyCount);
@@ -97,7 +97,7 @@ public class OrderContractReportWindow extends CommonDialogComponent {
         var confirmDialog = new ConfirmDialog();
         confirmDialog.setHeader("Confirmation Window");
         confirmDialog.setText(
-            String.format("Are you sure you want to move to COMPLETE status for \n %s",
+            String.format("Are you sure you want to apply the contact \n %s",
                 contractReport.getContract().getContractId()));
         confirmDialog.setConfirmText("Принять");
         confirmDialog.addConfirmListener(event -> {
