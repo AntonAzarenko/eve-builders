@@ -17,14 +17,12 @@ import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
-import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.api.integration.INotificationService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
-import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +38,6 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DistributedOrderService.class);
 
-    @Value("${app.telegram_thread_request_id}")
-    private String threadRequestId;
-
     @Autowired
     private IDistributedOrderRepository distributedOrderRepository;
     @Autowired
@@ -50,7 +45,7 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Autowired
     private IOrderService orderService;
     @Autowired
-    private ITelegramIntegrationService telegramIntegrationService;
+    private INotificationService notificationService;
     @Autowired
     private IAuditService auditService;
     @Autowired
@@ -82,9 +77,7 @@ public class DistributedOrderService implements IDistributedOrderService {
                 shipOrderDto.setOrderStatus(OrderStatusEnum.DISTRIBUTED);
             }
             orderService.updateOrder(shipOrderDto);
-            telegramIntegrationService.sendMessage(
-                TelegramMessageCreatorService.createTakeOrderMessage(shipOrderDto, count, userName),
-                threadRequestId);
+            notificationService.sendOrderTaken(shipOrderDto, count, userName);
             return save;
         }
 
@@ -115,9 +108,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         }
         distributedOrderRepository.save(distributedOrder);
         updateShipOrder(distributedOrder.getOrderNumber(), value);
-        telegramIntegrationService.sendMessage(
-            TelegramMessageCreatorService.createFinishOrderMessage(distributedOrder, ready,
-                SecurityUtils.getUserName()), threadRequestId);
+        notificationService.sendProgressUpdated(distributedOrder, ready, SecurityUtils.getUserName());
         auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
             String.format("Count was changed from %s to %s", wasReady, ready), distributedOrder.getUserName());
     }
@@ -141,9 +132,7 @@ public class DistributedOrderService implements IDistributedOrderService {
             LOGGER.info("Sending order for approval from UserName={}. OrderNumber={}", username,
                 distributedOrder.getOrderNumber());
             updateStatus(distributedOrder, orderStatusEnum);
-            telegramIntegrationService.sendMessage(
-                TelegramMessageCreatorService.createWaitingForApprovalMessage(distributedOrder, username),
-                threadRequestId);
+            notificationService.sendWaitingForApproval(distributedOrder, username);
             auditService.writeOrderAudit(AuditOrderStatusEnum.UPDATED, distributedOrder.getOrderNumber(),
                 String.format("Try to send %s items", distributedOrder.getCount()), username);
             return true;
@@ -213,9 +202,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         if (inProgressCount == 0) {
             originalOrder.setOrderStatus(OrderStatusEnum.NEW);
         }
-        telegramIntegrationService.sendMessage(
-            TelegramMessageCreatorService.createDiscardOrderMessage(order, SecurityUtils.getUserName()),
-            threadRequestId);
+        notificationService.sendOrderDiscarded(order, SecurityUtils.getUserName());
         auditService.writeOrderAudit(AuditOrderStatusEnum.DISCARDED, order.getOrderNumber(), "", order.getUserName());
     }
 

@@ -2,11 +2,25 @@ app:
   version: "@app.version@"
   sqlite:
     path: ${APP_SQLLITE_PATH}
+  notifications:
+    provider: ${APP.NOTIFICATIONS.PROVIDER:telegram}
+    telegram:
+      enabled: ${APP.NOTIFICATIONS.TELEGRAM.ENABLED:true}
+    discord:
+      enabled: ${APP.NOTIFICATIONS.DISCORD.ENABLED:false}
   telegram_bot:
     token: ${APP.TELEGRAM_BOT.TOKEN}
   telegram_chat_id: ${APP.TELEGRAM_CHAT_ID}
   telegram_thread_ping_id: ${APP.TELEGRAM_THREAD_PING_ID}
   telegram_thread_request_id: ${APP.TELEGRAM_THREAD_REQUEST_ID}
+  discord:
+    wait_response: ${APP.DISCORD.WAIT_RESPONSE:false}
+    webhook:
+      order_url: ${APP.DISCORD.WEBHOOK.ORDER.URL:}
+      request_url: ${APP.DISCORD.WEBHOOK.REQUEST.URL:}
+    thread:
+      order_id: ${APP.DISCORD.THREAD.ORDER.ID:}
+      request_id: ${APP.DISCORD.THREAD.REQUEST.ID:}
 
   jwt:
     issuer: "angular-app"
