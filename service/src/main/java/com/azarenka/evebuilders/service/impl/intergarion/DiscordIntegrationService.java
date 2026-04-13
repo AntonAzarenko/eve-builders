@@ -1,6 +1,9 @@
 package com.azarenka.evebuilders.service.impl.intergarion;
 
 import com.azarenka.evebuilders.service.api.integration.IDiscordIntegrationService;
+import com.azarenka.evebuilders.service.util.DiscordWebhookPayloadBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +24,11 @@ public class DiscordIntegrationService implements IDiscordIntegrationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiscordIntegrationService.class);
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ObjectMapper objectMapper;
+
+    public DiscordIntegrationService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Value("${app.discord.webhook.order_url:}")
     private String orderWebhookUrl;
@@ -50,7 +58,7 @@ public class DiscordIntegrationService implements IDiscordIntegrationService {
             LOGGER.debug("Discord webhook is not configured. Channel={}", channelName);
             return;
         }
-        String payloadJson = getPayloadFormatJson(messageText);
+        String payloadJson = buildPayloadJson(messageText);
         String endpoint = buildEndpoint(normalizedWebhookUrl, normalizedThreadId);
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(endpoint))
@@ -90,39 +98,12 @@ public class DiscordIntegrationService implements IDiscordIntegrationService {
         return endpoint.toString();
     }
 
-    private String getPayloadFormatJson(String messageText) {
-        return String.format("""
-            {
-              "content": "%s"
-            }
-            """, escapeJson(messageText));
-    }
-
-    private String escapeJson(String text) {
-        if (text == null) {
-            return "";
+    private String buildPayloadJson(String messageText) {
+        try {
+            return objectMapper.writeValueAsString(DiscordWebhookPayloadBuilder.buildCardPayload(messageText));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize Discord webhook payload", e);
         }
-        StringBuilder escaped = new StringBuilder(text.length() + 16);
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '\\' -> escaped.append("\\\\");
-                case '"' -> escaped.append("\\\"");
-                case '\n' -> escaped.append("\\n");
-                case '\r' -> escaped.append("\\r");
-                case '\t' -> escaped.append("\\t");
-                case '\b' -> escaped.append("\\b");
-                case '\f' -> escaped.append("\\f");
-                default -> {
-                    if (c < 0x20) {
-                        escaped.append(String.format("\\u%04x", (int) c));
-                    } else {
-                        escaped.append(c);
-                    }
-                }
-            }
-        }
-        return escaped.toString();
     }
 
     private String sanitizeResponse(String responseBody) {
