@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-03-01-managed-corporation-table
+      author: codex
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: managed_corporation
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: eve_corporation_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: corporation_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: corporation_ticker
+                  type: VARCHAR(20)
+              - column:
+                  name: owner_username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(255)
+              - column:
+                  name: updated_date
+                  type: DATE
+        - addUniqueConstraint:
+            schemaName: builders
+            tableName: managed_corporation
+            columnNames: owner_username, eve_corporation_id
+            constraintName: uq_managed_corp_owner_eve_id
+        - createIndex:
+            schemaName: builders
+            tableName: managed_corporation
+            indexName: idx_managed_corp_owner_username
+            columns:
+              - column:
+                  name: owner_username
+        - createIndex:
+            schemaName: builders
+            tableName: managed_corporation
+            indexName: idx_managed_corp_eve_corp_id
+            columns:
+              - column:
+                  name: eve_corporation_id

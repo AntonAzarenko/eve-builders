@@ -5,6 +5,7 @@ import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
+import com.azarenka.evebuilders.main.orders.corporation.ManagedCorporationsView;
 import com.azarenka.evebuilders.main.orders.corporation.OrdersView;
 import com.azarenka.evebuilders.main.orders.myorders.CorporationConstructionsView;
 import com.azarenka.evebuilders.main.orders.myorders.PersonalConstructionView;
@@ -34,6 +35,8 @@ public class MenuOrdersPage extends NavigationParentViewWithTabs implements Loca
             IconFactory.font(VaadinIcon.BRIEFCASE, "48px", "#00eaff"), "tab-corporation-orders");
         addView(CorporationConstructionsView.class, getTranslation("tab.construction.my_orders"),
             IconFactory.lineAwesome(LineAwesomeIcon.BRIEFCASE_SOLID, "48px", "#00eaff"), "tab-my-orders");
+        addView(ManagedCorporationsView.class, "My Corporations",
+            VaadinIcon.BUILDING.create(), "tab-my-corporations");
        /* addView(PersonalConstructionView.class, getTranslation("tab.construction.personal_orders"),
             IconFactory.lineAwesome(LineAwesomeIcon.PERSON_BOOTH_SOLID, "48px", "#00eaff"), "tab-my-orders");*/
     }
@@ -45,6 +48,7 @@ public class MenuOrdersPage extends NavigationParentViewWithTabs implements Loca
             VaadinIcon.BRIEFCASE.create());
         tabMap.get(CorporationConstructionsView.class).updateLabel(getTranslation("tab.construction.my_orders"),
             LineAwesomeIcon.BRIEFCASE_SOLID.create());
+        tabMap.get(ManagedCorporationsView.class).updateLabel("My Corporations", VaadinIcon.BUILDING.create());
         /*((NavigationTab) tabs.getTabAt(2)).updateLabel(getTranslation("tab.construction.personal_orders"),
             LineAwesomeIcon.PERSON_BOOTH_SOLID.create());*/
     }

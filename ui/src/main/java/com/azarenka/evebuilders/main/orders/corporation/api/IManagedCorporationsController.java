@@ -1,10 +1,10 @@
-package com.azarenka.evebuilders.service.api;
+package com.azarenka.evebuilders.main.orders.corporation.api;
 
 import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 
 import java.util.List;
 
-public interface ICorporationService {
+public interface IManagedCorporationsController {
 
     ManagedCorporation addCorporation(String corporationName);
 

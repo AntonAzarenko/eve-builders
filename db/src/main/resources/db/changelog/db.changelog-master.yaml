@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset-1.5.yaml
   - include:
       file: db/changelog/changeset-1.7.yaml
+  - include:
+      file: db/changelog/changeset-1.8-corporation-management.yaml

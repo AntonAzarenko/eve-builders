@@ -55,7 +55,7 @@ Liquibase changelogs are packaged in `db` and applied from the UI app depending 
 
 ## Key Business Flows
 1. Order management
-- Admin creates orders -> `OrderService` persists order, writes audit, sends Telegram notification.
+- Admin creates orders -> `OrderService` persists order, writes audit, sends operational notifications (Telegram and/or Discord via notification router).
 - Staff takes/distributes/completes orders via Vaadin views + service layer.
 
 2. Request center
@@ -75,6 +75,10 @@ Liquibase changelogs are packaged in `db` and applied from the UI app depending 
 ## Integrations and Background Jobs
 - EVE ESI integrations via `WebClient`-based services (`service.impl.intergarion`).
 - Telegram integration for operational notifications.
+- Discord integration for operational notifications via webhook cards (`embeds`):
+  - payload is built in `DiscordWebhookPayloadBuilder`.
+  - webhook `content` starts with `@everyone` on a dedicated first line, followed by a short summary line.
+  - payload includes `allowed_mentions.parse=["everyone"]` to enable channel-wide mention delivery.
 - Timrod group membership validation integration.
 - Scheduled jobs (`@EnableScheduling`), e.g. weekly user-group validation and periodic fleet info sync.
 
