@@ -73,7 +73,7 @@ public class ManagedCorporationsView extends View implements LocaleChangeObserve
             refreshGrid();
             VaadinUtils.showNotification(getTranslation("message.notification.corporation_added"));
         } catch (ValidationException e) {
-            VaadinUtils.showNotification(e.getMessage());
+            VaadinUtils.showNotification(getTranslation(e.getMessage()));
         } catch (Exception e) {
             VaadinUtils.showNotification(getTranslation("message.notification.corporation_add_failed"));
         }

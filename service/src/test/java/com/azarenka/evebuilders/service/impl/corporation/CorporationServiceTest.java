@@ -4,7 +4,9 @@ import com.azarenka.evebuilders.domain.db.Corporation;
 import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 import com.azarenka.evebuilders.domain.exeptions.ValidationException;
 import com.azarenka.evebuilders.repository.database.IManagedCorporationRepository;
+import com.azarenka.evebuilders.service.api.IEveCharacterService;
 import com.azarenka.evebuilders.service.api.IEveCorporationService;
+import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +32,10 @@ class CorporationServiceTest {
     private IManagedCorporationRepository managedCorporationRepository;
     @Mock
     private IEveCorporationService eveCorporationService;
+    @Mock
+    private IUserService userService;
+    @Mock
+    private IEveCharacterService eveCharacterService;
     @InjectMocks
     private CorporationService corporationService;
 
@@ -43,7 +49,12 @@ class CorporationServiceTest {
             Corporation corporation = new Corporation();
             corporation.setName("Corp One");
             corporation.setTicker("CONE");
+            corporation.setCeoId(2002);
             when(eveCorporationService.getCorporation("1001")).thenReturn(corporation);
+            when(userService.getCharacterId()).thenReturn("2002");
+            when(userService.getUserToken()).thenReturn("token");
+            when(eveCharacterService.getCharacterInfo("token", "2002"))
+                .thenReturn("{\"corporation_id\":1001}");
             when(managedCorporationRepository.save(any(ManagedCorporation.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -81,6 +92,28 @@ class CorporationServiceTest {
             when(managedCorporationRepository.existsByOwnerUsernameAndEveCorporationId("builder-user", 1001L))
                 .thenReturn(false);
             when(eveCorporationService.getCorporation("1001")).thenReturn(null);
+
+            assertThrows(ValidationException.class,
+                () -> corporationService.addCorporation("Corp One"));
+        }
+    }
+
+    @Test
+    void addCorporationThrowsWhenUserIsNotCeo() {
+        try (MockedStatic<SecurityUtils> utilities = mockStatic(SecurityUtils.class)) {
+            utilities.when(SecurityUtils::getUserName).thenReturn("builder-user");
+            when(eveCorporationService.findCorporationIdByName("Corp One")).thenReturn(1001L);
+            when(managedCorporationRepository.existsByOwnerUsernameAndEveCorporationId("builder-user", 1001L))
+                .thenReturn(false);
+            Corporation corporation = new Corporation();
+            corporation.setName("Corp One");
+            corporation.setTicker("CONE");
+            corporation.setCeoId(2002);
+            when(eveCorporationService.getCorporation("1001")).thenReturn(corporation);
+            when(userService.getCharacterId()).thenReturn("3003");
+            when(userService.getUserToken()).thenReturn("token");
+            when(eveCharacterService.getCharacterInfo("token", "3003"))
+                .thenReturn("{\"corporation_id\":1001}");
 
             assertThrows(ValidationException.class,
                 () -> corporationService.addCorporation("Corp One"));
