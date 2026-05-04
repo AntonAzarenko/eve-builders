@@ -29,6 +29,8 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
     private String corpContractsItemsUrl;
     @Value("${eve.character.contracts.url}")
     private String characterContractsItemsUrl;
+    @Value("${eve.character.contracts.items.url}")
+    private String characterContractsDetailsItemsUrl;
 
     public EveContractsIntegrationService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -162,6 +164,35 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse contract items", e);
+        }
+    }
+
+    public List<ContractItem> getCharacterContractItems(String accessToken, long characterId, long contractId) {
+        var json = webClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(characterContractsDetailsItemsUrl)
+                .build(Map.of(
+                    "character_id", characterId,
+                    "contract_id", contractId)))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                HttpStatusCode::isError,
+                response -> {
+                    LOGGER.error(
+                        "Error response while getting character contract items CharacterId=[{}], ContractId=[{}] status={}",
+                        characterId, contractId, response.statusCode());
+                    return response.createException();
+                }
+            )
+            .bodyToMono(String.class)
+            .block();
+        try {
+            return objectMapper.readValue(json, new TypeReference<>() {
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse character contract items", e);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.domain.db;
 
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,6 +38,13 @@ public class Order {
     private String destination;
     @Column(name = "receiver")
     private String receiver;
+    @Column(name = "receiver_type")
+    @Enumerated(EnumType.STRING)
+    private ReceiverTargetType receiverType;
+    @Column(name = "receiver_ref_id")
+    private String receiverRefId;
+    @Column(name = "receiver_name")
+    private String receiverName;
     @Column(name = "priority")
     private String priority;
     @Column(name = "blue_print")
@@ -188,6 +196,30 @@ public class Order {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    public ReceiverTargetType getReceiverType() {
+        return receiverType;
+    }
+
+    public void setReceiverType(ReceiverTargetType receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    public String getReceiverRefId() {
+        return receiverRefId;
+    }
+
+    public void setReceiverRefId(String receiverRefId) {
+        this.receiverRefId = receiverRefId;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
     }
 
     public String getPriority() {

@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changeset-1.7.yaml
   - include:
       file: db/changelog/changeset-1.8-corporation-management.yaml
+  - include:
+      file: db/changelog/changeset-1.9-order-receiver-routing.yaml

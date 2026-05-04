@@ -128,6 +128,8 @@ eve:
       url: /v5/characters/{characterId}/assets/
     contracts:
       url: /v1/characters/{character_id}/contracts
+      items:
+        url: /v1/characters/{character_id}/contracts/{contract_id}/items
     uri: https://esi.evetech.net/latest/characters/%s
   clientId: ${EVE.CLIENTID}
   clientSecret: ${EVE.CLIENTSECRET}

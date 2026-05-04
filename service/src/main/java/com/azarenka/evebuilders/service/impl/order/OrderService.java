@@ -6,6 +6,7 @@ import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
@@ -68,6 +69,7 @@ public class OrderService implements IOrderService {
         order.setCreatedBy(userName);
         order.setInProgressCount(0);
         order.setCountReady(0);
+        normalizeReceiverFields(order);
         notificationService.sendOrderCreated(order);
         var savedOrder = orderRepository.save(order);
         LOGGER.info("Creating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderNumber,
@@ -120,6 +122,7 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public Order updateOrder(Order orderDto) {
+        normalizeReceiverFields(orderDto);
         return orderRepository.save(orderDto);
     }
 
@@ -167,5 +170,20 @@ public class OrderService implements IOrderService {
         int seqNum = orderRepository.findTodayOrdersCount(date);
         var number = date.toString().replace("-", "");
         return String.format(ORDER_NUMBER_FORMAT, number, seqNum + 1);
+    }
+
+    private void normalizeReceiverFields(Order order) {
+        if (order.getReceiverType() == null) {
+            order.setReceiverType(ReceiverTargetType.CORPORATION);
+        }
+        if (order.getReceiverRefId() == null || order.getReceiverRefId().isBlank()) {
+            order.setReceiverRefId("0");
+        }
+        if (order.getReceiverName() == null) {
+            order.setReceiverName(order.getReceiver() == null ? "" : order.getReceiver());
+        }
+        if (order.getReceiver() == null) {
+            order.setReceiver(order.getReceiverName());
+        }
     }
 }
