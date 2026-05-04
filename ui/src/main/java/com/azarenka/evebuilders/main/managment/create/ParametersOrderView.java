@@ -253,8 +253,8 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         });
         binder.forField(categoryComboBox)
             .withValidator(requiredValidator)
-            .bind(object -> GroupTypeEnum.valueOf(object.getCategory()),
-                (object, value) -> object.setCategory(String.valueOf(value)));
+            .bind(object -> Objects.nonNull(object.getCategory()) ? GroupTypeEnum.valueOf(object.getCategory()) : null,
+                (object, value) -> object.setCategory(Objects.nonNull(value) ? value.name() : null));
     }
 
     private void initGroupCombobox() {
