@@ -24,7 +24,7 @@ public final class DiscordWebhookPayloadBuilder {
         ParsedCard parsedCard = parse(lines);
 
         Map<String, Object> embed = new LinkedHashMap<>();
-        embed.put("title", trim(parsedCard.title, TITLE_LIMIT));
+        embed.put("title", trim("EVE Builders Notification", TITLE_LIMIT));
         embed.put("color", EMBED_COLOR);
         if (!parsedCard.description.isBlank()) {
             embed.put("description", trim(parsedCard.description, DESCRIPTION_LIMIT));
@@ -34,7 +34,7 @@ public final class DiscordWebhookPayloadBuilder {
         }
 
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("content", buildContent(parsedCard.title));
+        payload.put("content", buildContent(""));
         payload.put("allowed_mentions", Map.of("parse", List.of("everyone")));
         payload.put("embeds", List.of(embed));
         return payload;
@@ -70,10 +70,8 @@ public final class DiscordWebhookPayloadBuilder {
             return new ParsedCard("EVE Builders Notification", "", List.of());
         }
 
-        String title = "EVE Builders Notification";
         List<Map<String, Object>> fields = new ArrayList<>();
         List<String> descriptionLines = new ArrayList<>();
-        boolean titleSet = false;
 
         for (String sourceLine : lines) {
             String line = sourceLine.startsWith("- ") ? sourceLine.substring(2).trim() : sourceLine;
@@ -90,17 +88,11 @@ public final class DiscordWebhookPayloadBuilder {
                     continue;
                 }
             }
-
-            if (!titleSet) {
-                title = line;
-                titleSet = true;
-            } else {
-                descriptionLines.add(line);
-            }
+            descriptionLines.add(line);
         }
 
         String description = String.join("\n", descriptionLines);
-        return new ParsedCard(trim(title, TITLE_LIMIT), trim(description, DESCRIPTION_LIMIT), fields);
+        return new ParsedCard("EVE Builders Notification", trim(description, DESCRIPTION_LIMIT), fields);
     }
 
     private static String trim(String value, int limit) {

@@ -110,6 +110,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
     }
 
     private void createOrderBasedOnRequest() {
+        applyDefaultValues();
         RequestOrder requestOrder = (RequestOrder) VaadinSession.getCurrent().getAttribute("requestOrder");
         searchByText(requestOrder.getItemName());
         datePickerField.setValue(requestOrder.getFinishDate());

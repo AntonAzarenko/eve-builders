@@ -44,6 +44,8 @@ import jakarta.annotation.security.RolesAllowed;
 public class RequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
     IGridColumnAdder<RequestOrder> {
 
+    private static final String OPEN_CREATE_ORDER_DIALOG = "openCreateOrderDialog";
+
     private SearchComponent searchField;
     private ListDataProvider<RequestOrder> dataProvider;
     private Grid<RequestOrder> grid;
@@ -118,7 +120,9 @@ public class RequestsView extends View implements LocaleChangeObserver, IOrderSt
         Optional<RequestOrder> firstSelectedItem = grid.getSelectionModel().getFirstSelectedItem();
         firstSelectedItem.ifPresent(requestOrder -> {
             VaadinSession.getCurrent().setAttribute("requestOrder", requestOrder);
+            VaadinSession.getCurrent().setAttribute(OPEN_CREATE_ORDER_DIALOG, true);
             UI.getCurrent().navigate(CreateOrderView.class);
+            UI.getCurrent().refreshCurrentRoute(true);
         });
     }
 

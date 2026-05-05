@@ -18,10 +18,8 @@ public class CommonDialogComponent extends Dialog {
         Button resizeButton = resizeModalWindowComponent.getResizeButton();
         super.getHeader().add(resizeButton);
         resizeButton.setEnabled(resizable);
-        super.setDraggable(true);
-        super.setResizable(resizable);
         super.getHeader().add(createCloseButton());
-        VaadinUtils.addComponentId(this, componentId);
+        applyCommonProperties(componentId, resizable);
     }
 
     public void applyCommonProperties(String componentId, boolean resizable) {

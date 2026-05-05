@@ -8,6 +8,8 @@ public interface INotificationService {
 
     void sendOrderCreated(Order order);
 
+    void sendOrderUpdated(Order order);
+
     void sendOrderRemoved(String orderNumber);
 
     void sendOrderTaken(ShipOrderDto orderDto, int count, String userName);

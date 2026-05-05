@@ -3,9 +3,11 @@ package com.azarenka.evebuilders.service.impl.intergarion;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.service.api.integration.INotificationService;
+import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.service.api.integration.IDiscordIntegrationService;
+import com.azarenka.evebuilders.service.api.integration.INotificationService;
 import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.impl.intergarion.message.OrderUpdateMessageBuilder;
 import com.azarenka.evebuilders.service.util.DiscordMessageCreatorService;
 import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
@@ -23,6 +25,7 @@ public class NotificationRouterService implements INotificationService {
 
     private final ITelegramIntegrationService telegramIntegrationService;
     private final IDiscordIntegrationService discordIntegrationService;
+    private final IOrderRepository orderRepository;
     private final String provider;
     private final boolean telegramEnabled;
     private final boolean discordEnabled;
@@ -32,6 +35,7 @@ public class NotificationRouterService implements INotificationService {
     public NotificationRouterService(
         ITelegramIntegrationService telegramIntegrationService,
         IDiscordIntegrationService discordIntegrationService,
+        IOrderRepository orderRepository,
         @Value("${app.notifications.provider:telegram}") String provider,
         @Value("${app.notifications.telegram.enabled:true}") boolean telegramEnabled,
         @Value("${app.notifications.discord.enabled:false}") boolean discordEnabled,
@@ -40,6 +44,7 @@ public class NotificationRouterService implements INotificationService {
     ) {
         this.telegramIntegrationService = telegramIntegrationService;
         this.discordIntegrationService = discordIntegrationService;
+        this.orderRepository = orderRepository;
         this.provider = provider;
         this.telegramEnabled = telegramEnabled;
         this.discordEnabled = discordEnabled;
@@ -53,6 +58,20 @@ public class NotificationRouterService implements INotificationService {
             "order_created",
             () -> telegramIntegrationService.sendMessage(TelegramMessageCreatorService.createOrderMessage(order), threadPingId),
             () -> discordIntegrationService.sendToOrderChannel(DiscordMessageCreatorService.createOrderMessage(order))
+        );
+    }
+
+    @Override
+    public void sendOrderUpdated(Order order) {
+        Order previous = null;
+        if (order != null) {
+            previous = orderRepository.findById(order.getId()).orElse(null);
+        }
+        String message = OrderUpdateMessageBuilder.build(previous, order);
+        dispatch(
+            "order_updated",
+            () -> telegramIntegrationService.sendInfoMessage(message, threadPingId),
+            () -> discordIntegrationService.sendToOrderChannel(message)
         );
     }
 

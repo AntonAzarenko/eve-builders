@@ -30,6 +30,7 @@ import java.util.Optional;
 
 public class ExistingOrdersView extends View implements LocaleChangeObserver {
 
+    private static final String OPEN_CREATE_ORDER_DIALOG = "openCreateOrderDialog";
     private final ICreateOrderController controller;
     private Grid<Order> grid;
     private ListDataProvider<Order> dataProvider;
@@ -40,7 +41,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
 
     public ExistingOrdersView(ICreateOrderController controller) {
         this.controller = controller;
-        super.getStyle().set("padding-left", "10px");
+        //super.getStyle().set("padding-left", "10px");
         initContent();
     }
 
@@ -118,6 +119,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
 
     private void moveOrderToParameters(Order order) {
         VaadinSession.getCurrent().setAttribute("originalOrder", order);
+        VaadinSession.getCurrent().setAttribute(OPEN_CREATE_ORDER_DIALOG, true);
         UI.getCurrent().navigate(CreateOrderView.class);
         UI.getCurrent().refreshCurrentRoute(true);
     }

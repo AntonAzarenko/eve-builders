@@ -34,6 +34,8 @@ build/
 ui/src/main/frontend/themes/ui/texture/
 ui/src/main/frontend/generated/
 ui/src/main/bundles/
+docs/**
+dosc
 env/**
 env
 deploy-to-pi.bat

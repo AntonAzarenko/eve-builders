@@ -123,6 +123,9 @@ public class OrderService implements IOrderService {
     @Transactional
     public Order updateOrder(Order orderDto) {
         normalizeReceiverFields(orderDto);
+        orderDto.setUpdatedBy(SecurityUtils.getUserName());
+        orderDto.setUpdatedDate(LocalDate.now());
+        notificationService.sendOrderUpdated(orderDto);
         return orderRepository.save(orderDto);
     }
 
