@@ -141,6 +141,19 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public void updateDestination(String destinationId, String value) {
+        destinationRepository.findById(destinationId).ifPresent(destination -> {
+            destination.setDestination(value);
+            destinationRepository.save(destination);
+        });
+    }
+
+    @Override
+    public void removeDestination(String destinationId) {
+        destinationRepository.deleteById(destinationId);
+    }
+
+    @Override
     public void addNewReceiver(String value) {
         Receiver receiver = new Receiver();
         receiver.setReceiver(value);

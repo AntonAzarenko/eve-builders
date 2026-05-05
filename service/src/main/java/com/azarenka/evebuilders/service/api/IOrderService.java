@@ -31,6 +31,10 @@ public interface IOrderService {
 
     void addNewDestination(String value);
 
+    void updateDestination(String destinationId, String value);
+
+    void removeDestination(String destinationId);
+
     void addNewReceiver(String value);
 
     List<Order> getOriginalOrderList();

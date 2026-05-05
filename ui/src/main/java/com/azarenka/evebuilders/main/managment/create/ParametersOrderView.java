@@ -11,6 +11,7 @@ import com.azarenka.evebuilders.domain.db.OrderType;
 import com.azarenka.evebuilders.domain.db.PriorityOption;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
 import com.azarenka.evebuilders.domain.enums.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
@@ -103,6 +104,8 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
             binder.readBean(originalOrder);
         } else if (Objects.nonNull(VaadinSession.getCurrent().getAttribute("requestOrder"))) {
             createOrderBasedOnRequest();
+        } else {
+            applyDefaultValues();
         }
     }
 
@@ -650,8 +653,36 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
         itemsComboBox.clear();
         imageContainer.removeAll();
         order = new Order();
+        applyDefaultValues();
         VaadinSession.getCurrent().setAttribute("originalOrder", null);
         VaadinSession.getCurrent().setAttribute("requestOrder", null);
+    }
+
+    private void applyDefaultValues() {
+        OrderPresetDefaultsDto defaults = controller.getOrderPresetDefaultsForCurrentUser();
+        if (defaults.getOrderType() != null) {
+            orderScopeField.setValue(defaults.getOrderType());
+        }
+        if (defaults.getReceiverType() != null) {
+            receiverTypeField.setValue(defaults.getReceiverType());
+        }
+        if (StringUtils.isNotBlank(defaults.getReceiverRefId()) && StringUtils.isNotBlank(defaults.getReceiverName())) {
+            ReceiverOption option = new ReceiverOption(defaults.getReceiverRefId(), defaults.getReceiverName());
+            boolean exists = receiverValueField.getListDataView().getItems()
+                .anyMatch(value -> value.id().equals(option.id()) && value.label().equals(option.label()));
+            if (exists) {
+                receiverValueField.setValue(option);
+            }
+        }
+        if (defaults.getPriority() != null) {
+            priorityField.setValue(defaults.getPriority());
+        }
+        if (defaults.getBlueprint() != null) {
+            bluePrintField.setValue(defaults.getBlueprint());
+        }
+        if (defaults.getOrderRights() != null) {
+            rightsholderField.setValue(defaults.getOrderRights());
+        }
     }
 
     private Image createImage(InvType invType) {

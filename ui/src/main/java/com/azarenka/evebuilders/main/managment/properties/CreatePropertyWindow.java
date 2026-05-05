@@ -27,7 +27,7 @@ public class CreatePropertyWindow extends CommonDialogComponent implements Local
     public CreatePropertyWindow(String header, String label,
                                 ComponentEventListener<ClickEvent<Button>> clickListener) {
         super("create=property-window", false);
-        super.setWidth("300px");
+        super.setWidth("450px");
         super.setHeaderTitle(header);
         this.label = label;
         this.clickListener = clickListener;

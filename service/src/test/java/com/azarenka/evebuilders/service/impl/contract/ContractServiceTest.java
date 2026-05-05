@@ -5,6 +5,7 @@ import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.Contract;
 import com.azarenka.evebuilders.domain.dto.ContractItem;
+import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveContractsIntegrationService;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ContractServiceTest {
@@ -49,6 +51,7 @@ class ContractServiceTest {
         user = new User();
         user.setUsername("testUser");
         user.setCharacterId("123456");
+        ReflectionTestUtils.setField(contractService, "legacyCorporationId", 98771596L);
     }
 
     @Test
@@ -68,9 +71,9 @@ class ContractServiceTest {
 
     @Test
     void testGetContractReportNoContractsFoundReturnsErrorReport() {
-        contractService.setCorporationId(98771596L);
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
         when(userService.getUserToken()).thenReturn("token");
+        when(orderService.getByOrderNumber("ORD-001")).thenReturn(new Order());
         when(contractsClient.getCorporationContracts("token", 98771596L)).thenReturn(Collections.emptyList());
 
         List<ContractValidationReport> reports = contractService.getContractReport(distributedOrder);
@@ -84,16 +87,17 @@ class ContractServiceTest {
 
         verify(userService).getByUsername("testUser");
         verify(userService).getUserToken();
+        verify(orderService).getByOrderNumber("ORD-001");
         verify(contractsClient).getCorporationContracts("token", 98771596L);
         verifyNoMoreInteractions(userService, contractsClient, contractValidationService, orderService);
     }
 
     @Test
     void testGetContractReportContractsExistValidationCalled() {
-        contractService.setCorporationId(98771596L);
         Contract contract = new Contract();
         contract.setContractId(999L);
         contract.setIssuerId(123456L);
+        contract.setAssigneeId(98771596L);
         contract.setTitle("ORD-001");
         contract.setStatus("outstanding");
         Order order = new Order();
@@ -131,24 +135,22 @@ class ContractServiceTest {
     void testIsContractExistsContractFoundReturnsTrue() {
         Contract contract = new Contract();
         contract.setIssuerId(123456L);
+        contract.setAssigneeId(123456L);
         contract.setTitle("ORD-001");
         contract.setStatus("outstanding");
+        Order order = new Order();
+        order.setReceiverType(ReceiverTargetType.USER);
+        order.setReceiverRefId("123456");
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
         when(userService.getUserToken()).thenReturn("token");
+        when(orderService.getByOrderNumber("ORD-001")).thenReturn(order);
         when(contractsClient.getCharacterContracts("token", 123456L)).thenReturn(List.of(contract));
         boolean result = contractService.isContractExists(distributedOrder);
         assertTrue(result);
         verify(userService).getByUsername("testUser");
         verify(userService).getUserToken();
+        verify(orderService).getByOrderNumber("ORD-001");
         verify(contractsClient).getCharacterContracts("token", 123456L);
         verifyNoMoreInteractions(userService, contractsClient, contractValidationService, orderService);
-    }
-
-    @Test
-    void testIsContractExistsContractNotMatchingReturnsFalse() {
-        Contract contract = new Contract();
-        contract.setIssuerId(123456L);
-        contract.setTitle("OTHER");
-        contract.setStatus("outstanding");
     }
 }
