@@ -84,12 +84,35 @@ public class ContractService implements IContractService {
         var userToken = userService.getUserToken();
         Optional<User> optionalUser = userService.getByUsername(distributedOrder.getUserName());
         if (optionalUser.isPresent()) {
-            var originalOrder = orderService.getByOrderNumber(distributedOrder.getOrderNumber());
-            var routing = resolveReceiverRouting(originalOrder);
-            var contracts = findContracts(optionalUser.get(), userToken, distributedOrder.getOrderNumber(), routing);
-            return !contracts.isEmpty();
+            List<Contract> characterContracts =
+                contractsClient.getCharacterContracts(userToken, Long.parseLong(optionalUser.get().getCharacterId()));
+            return !filterUserContract(characterContracts, Long.parseLong(optionalUser.get().getCharacterId()),
+                distributedOrder.getOrderNumber()).isEmpty();
         }
         return false;
+    }
+
+    private List<Contract> filterUserContract
+        (List<Contract> contracts, long issuerId, String noteContains) {
+        LOGGER.info("Start filterContract: totalContracts={}, issuerId={}, noteContains={}",
+            contracts.size(), issuerId, noteContains);
+        List<Contract> byIssuer = contracts.stream()
+            .filter(c -> c.getIssuerId() == issuerId)
+            .toList();
+        LOGGER.info("After issuerId filter: count={}", byIssuer.size());
+        List<Contract> base = byIssuer.isEmpty() ? contracts : byIssuer;
+        if (byIssuer.isEmpty()) {
+            LOGGER.warn("No contracts found by issuerId={}, fallback to all corporation contracts", issuerId);
+        }
+        List<Contract> byStatus = base.stream()
+            .filter(c -> c.getStatus() != null && c.getStatus().equalsIgnoreCase("outstanding"))
+            .toList();
+        LOGGER.info("After status=outstanding filter: count={}", byStatus.size());
+        List<Contract> byTitle = byStatus.stream()
+            .filter(c -> c.getTitle() != null && c.getTitle().contains(noteContains))
+            .toList();
+        LOGGER.info("After title contains note filter: count={}", byTitle.size());
+        return byTitle;
     }
 
     private List<Contract> filterContract(

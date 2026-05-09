@@ -5,7 +5,6 @@ import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.Contract;
 import com.azarenka.evebuilders.domain.dto.ContractItem;
-import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveContractsIntegrationService;
@@ -138,18 +137,13 @@ class ContractServiceTest {
         contract.setAssigneeId(123456L);
         contract.setTitle("ORD-001");
         contract.setStatus("outstanding");
-        Order order = new Order();
-        order.setReceiverType(ReceiverTargetType.USER);
-        order.setReceiverRefId("123456");
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
         when(userService.getUserToken()).thenReturn("token");
-        when(orderService.getByOrderNumber("ORD-001")).thenReturn(order);
         when(contractsClient.getCharacterContracts("token", 123456L)).thenReturn(List.of(contract));
         boolean result = contractService.isContractExists(distributedOrder);
         assertTrue(result);
         verify(userService).getByUsername("testUser");
         verify(userService).getUserToken();
-        verify(orderService).getByOrderNumber("ORD-001");
         verify(contractsClient).getCharacterContracts("token", 123456L);
         verifyNoMoreInteractions(userService, contractsClient, contractValidationService, orderService);
     }
