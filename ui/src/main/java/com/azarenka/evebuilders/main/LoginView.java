@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.main;
 
+import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -24,7 +25,7 @@ public class LoginView extends AppLayout {
 
     public LoginView(IEveAuthService eveAuthService) {
         this.eveAuthService = eveAuthService;
-        var layout = new VerticalLayout();
+        var layout = VaadinUtils.initCommonVerticalLayout();
         layout.addClassName("fullscreen-image");
         layout.setSizeFull();
         layout.setHeight("100%");
@@ -44,12 +45,12 @@ public class LoginView extends AppLayout {
                 """);
         Image image = new Image("/themes/builders/img/favicon.png", "asd");
         image.setWidth("64px");
-        VerticalLayout div = new VerticalLayout();
+        VerticalLayout div = VaadinUtils.initCommonVerticalLayout();
         div.setWidth("400px");
         div.setHeight("300px");
         Span header = new Span("Hold My Probs");
         header.getStyle().setFontWeight(900);
-        VerticalLayout layout = new VerticalLayout();
+        VerticalLayout layout = VaadinUtils.initCommonVerticalLayout();
         layout.add(header, image, description, authButton);
         layout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);

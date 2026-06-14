@@ -1,8 +1,11 @@
 package com.azarenka.evebuilders.service.impl;
 
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.enums.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.dto.UserStat;
 import com.azarenka.evebuilders.domain.enums.Metric;
+import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IStatisticService;
@@ -14,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -23,10 +27,14 @@ public class StatisticService implements IStatisticService {
 
     @Autowired
     private IDistributedOrderService distributedOrderService;
+    @Autowired
+    private IOrderRepository orderRepository;
 
     @Override
     public List<UserStat> fetchLeaderboard(Metric metric, LocalDate from, LocalDate to, boolean includeInactive) {
         List<DistributedOrder> all = safe(distributedOrderService.getAllOrders());
+        Map<String, String> categoryByOrderNumber = safe(orderRepository.findAll()).stream()
+            .collect(Collectors.toMap(Order::getOrderNumber, Order::getCategory, (a, b) -> a));
 
         Map<String, LocalDate> lastActivity = all.stream()
             .collect(Collectors.groupingBy(
@@ -46,8 +54,9 @@ public class StatisticService implements IStatisticService {
         };
 
         Map<String, Integer> valuesByUser = switch (metric) {
-            case ORDERS_ALL, ORDERS_MONTH -> countOrdersTaken(all, from, to);
-            case SHIPS_MADE -> sumShipsMade(all, from, to);
+            case ORDERS -> countOrdersTaken(all, from, to);
+            case SHIPS_MADE -> sumProducedByCategory(all, categoryByOrderNumber, from, to, Set.of(GroupTypeEnum.SHIPS.name()));
+            case MODULES_MADE -> sumProducedByCategory(all, categoryByOrderNumber, from, to, Set.of(GroupTypeEnum.MODULES.name()));
         };
 
         List<UserStat> rows = valuesByUser.entrySet().stream()
@@ -101,14 +110,24 @@ public class StatisticService implements IStatisticService {
             ));
     }
 
-    private Map<String, Integer> sumShipsMade(List<DistributedOrder> all, LocalDate from, LocalDate to) {
+    private Map<String, Integer> sumProducedByCategory(List<DistributedOrder> all, Map<String, String> categoryByOrderNumber,
+                                                       LocalDate from, LocalDate to, Set<String> categories) {
         return all.stream()
             .filter(d -> isFinalStatus(d.getOrderStatus()))
+            .filter(d -> categories.contains(resolveCategory(d, categoryByOrderNumber)))
             .filter(d -> between(nonNull(d.getFinishedDate()), from, to))
             .collect(Collectors.groupingBy(
                 DistributedOrder::getUserName,
                 Collectors.reducing(0, d -> nonNull(d.getCountReady()), Integer::sum)
             ));
+    }
+
+    private String resolveCategory(DistributedOrder distributedOrder, Map<String, String> categoryByOrderNumber) {
+        String fromOrder = categoryByOrderNumber.get(distributedOrder.getOrderNumber());
+        if (fromOrder != null && !fromOrder.isBlank()) {
+            return fromOrder;
+        }
+        return distributedOrder.getCategory();
     }
 
     private boolean isFinalStatus(OrderStatusEnum s) {

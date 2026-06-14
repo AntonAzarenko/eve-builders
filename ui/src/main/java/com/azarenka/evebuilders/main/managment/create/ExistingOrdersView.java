@@ -1,6 +1,8 @@
 package com.azarenka.evebuilders.main.managment.create;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
+import com.azarenka.evebuilders.common.util.IGridColumnAdder;
+import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
@@ -27,8 +29,11 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
-public class ExistingOrdersView extends View implements LocaleChangeObserver {
+public class ExistingOrdersView extends View implements LocaleChangeObserver, IGridColumnAdder<Order> {
 
     private static final String OPEN_CREATE_ORDER_DIALOG = "openCreateOrderDialog";
     private final ICreateOrderController controller;
@@ -38,6 +43,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
     private Button recycleButton;
     private Button repeatOrderButton;
     private Button editButton;
+    private SearchComponent searchField;
 
     public ExistingOrdersView(ICreateOrderController controller) {
         this.controller = controller;
@@ -52,6 +58,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
         grid.getColumns().get(2).setHeader(getTranslation("table.column.nomination"));
         grid.getColumns().get(3).setHeader(getTranslation("table.column.count"));
         grid.getColumns().get(4).setHeader(getTranslation("table.column.price"));
+        searchField.setPlaceholder(getTranslation("management.search.placeholder"));
     }
 
     private void initContent() {
@@ -100,6 +107,7 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
                 Order order = firstSelectedItem.get();
                 order.setId(null);
                 order.setOrderNumber(null);
+                order.setFinishBy(null);
                 moveOrderToParameters(order);
             }
         });
@@ -114,7 +122,35 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
         repeatOrderButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         editButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        toolbarLayout.add(recycleButton, repeatOrderButton, editButton);
+        searchField = new SearchComponent(getTranslation("management.search.placeholder"),
+            event -> searchByName(searchField.getValue()),
+            event -> clearSearch()
+        );
+        toolbarLayout.setWidthFull();
+        toolbarLayout.add(recycleButton, repeatOrderButton, editButton, searchField);
+    }
+
+    private void searchByName(String value) {
+        if (!value.isEmpty()) {
+            Collection<Order> items = dataProvider.getItems();
+            String lowerCaseValue = value.trim().toLowerCase();
+            List<Order> list = items.stream()
+                .filter(item -> item.getShipName() != null && item.getShipName().toLowerCase().contains(lowerCaseValue))
+                .toList();
+            dataProvider = DataProvider.ofCollection(list);
+            grid.setDataProvider(dataProvider);
+            dataProvider.refreshAll();
+        } else {
+            dataProvider = DataProvider.ofCollection(controller.getOriginalOrders());
+            grid.setDataProvider(dataProvider);
+            dataProvider.refreshAll();
+        }
+        updateStatusButtons();
+    }
+
+    private void clearSearch() {
+        searchField.clearText();
+        searchByName("");
     }
 
     private void moveOrderToParameters(Order order) {
@@ -126,7 +162,9 @@ public class ExistingOrdersView extends View implements LocaleChangeObserver {
 
     private void addColumns() {
         addColumn(Order::getOrderNumber);
-        addColumn(value -> value.getOrderStatus().name());
+        Function<Order, String> statusText =
+            o -> o.getOrderStatus() == null ? "" : o.getOrderStatus().name();
+        addBadgeColumn(value -> badge(value.getOrderStatus()), "200px", grid, statusText);
         addColumn(Order::getShipName);
         addNumberColumn(Order::getCount);
         addAmountColumn(order -> formatIsk(order.getPrice()));
