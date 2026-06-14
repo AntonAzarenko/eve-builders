@@ -67,6 +67,9 @@ public class OrderService implements IOrderService {
         order.setOrderStatus(OrderStatusEnum.NEW);
         order.setOrderNumber(orderNumber);
         order.setCreatedBy(userName);
+        order.setCreatedDate(LocalDate.now());
+        order.setUpdatedBy(null);
+        order.setUpdatedDate(null);
         order.setInProgressCount(0);
         order.setCountReady(0);
         normalizeReceiverFields(order);
