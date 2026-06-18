@@ -1,40 +1,37 @@
 package com.azarenka.evebuilders.common.util;
 
-import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
-
-import java.util.Arrays;
-import java.util.Objects;
+import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlSecurity;
 
 public class BuilderPermission {
 
     public static boolean hasEditFitPermission() {
-        return Objects.requireNonNull(SecurityUtils.getUserRoles())
-                .contains(Role.ROLE_ADMIN) || SecurityUtils.getUserRoles().contains(Role.ROLE_SUPER_ADMIN);
+        return accessControl().can("CONTRACTS_EDIT");
     }
 
     public static boolean hasAdminPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN})
-                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        return accessControl().canAny(
+            "CORPORATION_CONTRACT_VIEW",
+            "CORPORATION_CONTRACT_EDIT"
+        );
     }
 
     public static boolean hasCoordinatorPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_COORDINATOR})
-                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        return accessControl().canAny("CORPORATION_VIEW", "CORPORATION_CONTRACT_VIEW");
     }
 
     public static boolean hasBuilderPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_BUILDER})
-                .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        return accessControl().canAny("DASHBOARD_VIEW", "CONTRACTS_ACCEPT", "CONTRACTS_DISCARD");
     }
 
     public static boolean hasMinerPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_MINER})
-            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        return accessControl().can("DASHBOARD_VIEW");
     }
 
     public static boolean hasCeoPermission() {
-        return Arrays.stream(new Role[]{Role.ROLE_CEO})
-            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
+        return accessControl().canAny("CORPORATION_VIEW", "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
+    }
+
+    private static AccessControlSecurity accessControl() {
+        return SpringContextHolder.getBean(AccessControlSecurity.class);
     }
 }

@@ -1,8 +1,8 @@
 package com.azarenka.evebuilders.component;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
-import com.azarenka.evebuilders.domain.db.Role;
-import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
+import com.azarenka.evebuilders.common.util.SpringContextHolder;
+import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlSecurity;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -13,10 +13,8 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 public class NavigationParentViewWithTabs extends NavigableParentView implements AfterNavigationObserver {
@@ -49,22 +47,26 @@ public class NavigationParentViewWithTabs extends NavigableParentView implements
         tabMap.put(viewClass, tab);
     }
 
-    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
-                                AbstractIcon<?> tabIcon, String className) {
-        boolean hasPermission = Arrays.stream(viewPermission)
-            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
-        if (hasPermission) {
+    public void addTabIfAllowed(String caption, Class<? extends Component> viewClass,
+                                AbstractIcon<?> tabIcon, String className, String... permissionCodes) {
+        if (hasAnyPermission(permissionCodes)) {
             addView(viewClass, caption, tabIcon, className);
         }
     }
 
-    public void addTabIfAllowedWithBadge(String caption, Class<? extends Component> viewClass, Role[] viewPermission,
-                                         AbstractIcon<?> tabIcon, Integer badgeCount, String className) {
-        boolean hasPermission = Arrays.stream(viewPermission)
-            .anyMatch(Objects.requireNonNull(SecurityUtils.getUserRoles())::contains);
-        if (hasPermission) {
+    public void addTabIfAllowedWithBadge(String caption, Class<? extends Component> viewClass,
+                                         AbstractIcon<?> tabIcon, Integer badgeCount, String className,
+                                         String... permissionCodes) {
+        if (hasAnyPermission(permissionCodes)) {
             addView(viewClass, caption, null, tabIcon, badgeCount, className);
         }
+    }
+
+    private boolean hasAnyPermission(String... permissionCodes) {
+        if (permissionCodes == null || permissionCodes.length == 0) {
+            return false;
+        }
+        return SpringContextHolder.getBean(AccessControlSecurity.class).canAny(permissionCodes);
     }
 
     @Override

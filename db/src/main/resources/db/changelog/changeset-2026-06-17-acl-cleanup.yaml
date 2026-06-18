@@ -1,0 +1,112 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-17-02
+      author: codex
+      comment: remove-obsolete-acl-permissions
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DELETE FROM builders.role_permissions rp
+              USING builders.permissions p
+              WHERE rp.permission_id = p.id
+                AND p.code IN (
+                  'USERS_VIEW',
+                  'USERS_CREATE',
+                  'USERS_EDIT',
+                  'USERS_DELETE',
+                  'APP_USERS_VIEW',
+                  'APP_USERS_MANAGE',
+                  'WALLET_VIEW',
+                  'WALLET_MANAGE',
+                  'MEMBERS_VIEW',
+                  'MEMBERS_MANAGE',
+                  'CORPORATION_MEMBERS_VIEW',
+                  'CORPORATION_MEMBERS_MANAGE',
+                  'BUILDS_VIEW',
+                  'BUILDS_CREATE',
+                  'BUILDS_EDIT',
+                  'BUILDS_DELETE',
+                  'ROLES_VIEW',
+                  'ROLES_CREATE',
+                  'ROLES_EDIT',
+                  'ROLES_DELETE',
+                  'ROLES_ASSIGN',
+                  'PERMISSIONS_VIEW',
+                  'PERMISSIONS_ASSIGN',
+                  'CORPORATION_EDIT',
+                  'CONTRACTS_DELETE',
+                  'MINING_OPS_VIEW',
+                  'MINING_OPS_CREATE',
+                  'MINING_OPS_EDIT',
+                  'MINING_OPS_DELETE'
+                );
+
+              DELETE FROM builders.user_permissions up
+              USING builders.permissions p
+              WHERE up.permission_id = p.id
+                AND p.code IN (
+                  'USERS_VIEW',
+                  'USERS_CREATE',
+                  'USERS_EDIT',
+                  'USERS_DELETE',
+                  'APP_USERS_VIEW',
+                  'APP_USERS_MANAGE',
+                  'WALLET_VIEW',
+                  'WALLET_MANAGE',
+                  'MEMBERS_VIEW',
+                  'MEMBERS_MANAGE',
+                  'CORPORATION_MEMBERS_VIEW',
+                  'CORPORATION_MEMBERS_MANAGE',
+                  'BUILDS_VIEW',
+                  'BUILDS_CREATE',
+                  'BUILDS_EDIT',
+                  'BUILDS_DELETE',
+                  'ROLES_VIEW',
+                  'ROLES_CREATE',
+                  'ROLES_EDIT',
+                  'ROLES_DELETE',
+                  'ROLES_ASSIGN',
+                  'PERMISSIONS_VIEW',
+                  'PERMISSIONS_ASSIGN',
+                  'CORPORATION_EDIT',
+                  'CONTRACTS_DELETE',
+                  'MINING_OPS_VIEW',
+                  'MINING_OPS_CREATE',
+                  'MINING_OPS_EDIT',
+                  'MINING_OPS_DELETE'
+                );
+
+              DELETE FROM builders.permissions
+              WHERE code IN (
+                'USERS_VIEW',
+                'USERS_CREATE',
+                'USERS_EDIT',
+                'USERS_DELETE',
+                'APP_USERS_VIEW',
+                'APP_USERS_MANAGE',
+                'WALLET_VIEW',
+                'WALLET_MANAGE',
+                'MEMBERS_VIEW',
+                'MEMBERS_MANAGE',
+                'CORPORATION_MEMBERS_VIEW',
+                'CORPORATION_MEMBERS_MANAGE',
+                'BUILDS_VIEW',
+                'BUILDS_CREATE',
+                'BUILDS_EDIT',
+                'BUILDS_DELETE',
+                'ROLES_VIEW',
+                'ROLES_CREATE',
+                'ROLES_EDIT',
+                'ROLES_DELETE',
+                'ROLES_ASSIGN',
+                'PERMISSIONS_VIEW',
+                'PERMISSIONS_ASSIGN',
+                'CORPORATION_EDIT',
+                'CONTRACTS_DELETE',
+                'MINING_OPS_VIEW',
+                'MINING_OPS_CREATE',
+                'MINING_OPS_EDIT',
+                'MINING_OPS_DELETE'
+              );

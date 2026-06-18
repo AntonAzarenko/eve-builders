@@ -1,20 +1,19 @@
 package com.azarenka.evebuilders.domain.db;
 
-import java.util.List;
+import com.azarenka.evebuilders.domain.acl.UserPermission;
+import com.azarenka.evebuilders.domain.acl.UserRole;
+
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "user_info", schema = "builders")
@@ -31,7 +30,7 @@ public class User {
     private String characterInfo;
     @Column(name = "password")
     private String password;
-    @Enumerated(EnumType.STRING)
+    @Transient
     private Set<Role> roles;
     @Column(name = "main_id")
     private String mainId;
@@ -57,21 +56,33 @@ public class User {
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Permission> permissions;
+    private Set<UserRole> userRoles = new LinkedHashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "roles",
-        schema = "builders",
-        joinColumns = @JoinColumn(name = "user_uid", referencedColumnName = "uid"),
-        inverseJoinColumns = @JoinColumn(name = "role_name", referencedColumnName = "name")
-    )
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<UserPermission> directPermissions = new LinkedHashSet<>();
+
     public Set<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public Set<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
+
+    public Set<UserPermission> getDirectPermissions() {
+        return directPermissions;
+    }
+
+    public void setDirectPermissions(Set<UserPermission> directPermissions) {
+        this.directPermissions = directPermissions;
     }
 
     public String getPassword() {

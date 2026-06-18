@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.domain.dto;
 
+import com.azarenka.evebuilders.domain.acl.UserRole;
 import com.azarenka.evebuilders.domain.db.User;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -7,8 +8,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class EveUserPrincipal implements OAuth2User, UserDetails {
@@ -28,9 +31,19 @@ public class EveUserPrincipal implements OAuth2User, UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream()
-            .map(role -> new SimpleGrantedAuthority(role.toString()))
-            .collect(Collectors.toList());
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+        if (user.getUserRoles() != null && !user.getUserRoles().isEmpty()) {
+            authorities.addAll(user.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .filter(role -> role != null && role.getCode() != null)
+                .map(role -> new SimpleGrantedAuthority(role.getCode()))
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        } else if (user.getRoles() != null) {
+            authorities.addAll(user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
+        }
+        return authorities;
     }
 
     @Override

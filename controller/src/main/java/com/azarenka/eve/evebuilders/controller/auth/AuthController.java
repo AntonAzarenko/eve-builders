@@ -4,7 +4,6 @@ import com.azarenka.eve.evebuilders.controller.config.ui.RefreshCookie;
 import com.azarenka.evebuilders.domain.auth.auth.ui.AccessTokenResponse;
 import com.azarenka.evebuilders.domain.auth.auth.ui.JwtProperties;
 import com.azarenka.evebuilders.domain.auth.auth.ui.LoginRequest;
-import com.azarenka.evebuilders.domain.auth.auth.ui.MeResponse;
 import com.azarenka.evebuilders.service.impl.auth.eve.ui.JwtService;
 
 import org.springframework.http.HttpStatus;
@@ -21,11 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.Map;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,15 +84,6 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void logout(HttpServletResponse response) {
         refreshCookie.clearRefreshCookie(response);
-    }
-
-    @GetMapping("/me")
-    public MeResponse me(Authentication authentication) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails user)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
-        }
-        List<String> roles = user.getAuthorities().stream().map(a -> a.getAuthority()).toList();
-        return new MeResponse(user.getUsername(), roles);
     }
 
     @GetMapping("/ping")

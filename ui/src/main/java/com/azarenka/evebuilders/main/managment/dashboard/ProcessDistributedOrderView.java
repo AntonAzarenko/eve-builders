@@ -23,10 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "process-order", layout = MenuManagerPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.can('CONTRACTS_EDIT')")
 public class ProcessDistributedOrderView extends View implements IGridColumnAdder<DistributedOrder>,
     LocaleChangeObserver {
 

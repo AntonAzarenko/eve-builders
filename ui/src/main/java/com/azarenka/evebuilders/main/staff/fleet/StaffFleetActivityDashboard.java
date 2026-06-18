@@ -13,11 +13,11 @@ import com.vaadin.flow.router.RoutePrefix;
 
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RoutePrefix("fleet")
 @Route("")
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_CEO"})
+@PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 @ParentLayout(MenuStaffPage.class)
 public class StaffFleetActivityDashboard extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 

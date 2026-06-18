@@ -3,7 +3,6 @@ package com.azarenka.evebuilders.main.menu;
 import com.azarenka.evebuilders.common.util.BuilderPermission;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
-import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.MainWidget;
 import com.azarenka.evebuilders.main.staff.StaffDashboard;
 import com.azarenka.evebuilders.main.staff.StaffProperties;
@@ -19,24 +18,25 @@ import com.vaadin.flow.router.RoutePrefix;
 
 import java.util.Map;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RoutePrefix("staff")
 @Route("")
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_CEO"})
+@PreAuthorize("@accessControlSecurity.canAny('CORPORATION_VIEW','CORPORATION_CONTRACT_VIEW','CORPORATION_CONTRACT_EDIT')")
 @PageTitle("Staff")
 @ParentLayout(MainWidget.class)
 public class MenuStaffPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 
     public MenuStaffPage() {
         addTabIfAllowed(getTranslation("tab.manager.dashboard"), StaffDashboard.class,
-            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.CROSSHAIRS.create(),
-            "tab-manager.dashboard");
+            VaadinIcon.CROSSHAIRS.create(), "tab-manager.dashboard",
+            "DASHBOARD_VIEW");
         addTabIfAllowed(getTranslation("tab.manager.properties"), StaffProperties.class,
-            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN}, VaadinIcon.FOLDER.create(), "tab-manager.properties");
+            VaadinIcon.FOLDER.create(), "tab-manager.properties",
+            "CORPORATION_CONTRACT_EDIT");
         addTabIfAllowed(getTranslation("tab.staff.fleet_avtivity"), StaffFleetActivityDashboard.class,
-            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_ADMIN, Role.ROLE_CEO}, VaadinIcon.FEMALE.create(),
-            "tab-staff-fleet_activity");
+            VaadinIcon.FEMALE.create(), "tab-staff-fleet_activity",
+            "DASHBOARD_VIEW");
     }
 
     @Override

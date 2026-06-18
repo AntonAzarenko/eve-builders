@@ -13,12 +13,11 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RoutePrefix("manager")
 @Route("")
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('CONTRACTS_VIEW','CONTRACTS_CREATE','CONTRACTS_EDIT','CONTRACTS_CANCEL','CORPORATION_VIEW','CORPORATION_CONTRACT_VIEW','CORPORATION_CONTRACT_EDIT')")
 @ParentLayout(MainWidget.class)
 public class MenuManagerPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 

@@ -12,11 +12,11 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RoutePrefix("construction")
 @Route("")
-@RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('DASHBOARD_VIEW','CONTRACTS_ACCEPT','CONTRACTS_DISCARD')")
 @ParentLayout(MainWidget.class)
 public class MenuConstructionPage extends NavigationParentViewWithTabs implements LocaleChangeObserver {
 

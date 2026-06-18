@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "fleet-statistic", layout = StaffFleetActivityDashboard.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_CEO"})
+@PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 public class FleetStatistic extends View implements LocaleChangeObserver {
 
     private final IFleetStatisticController controller;

@@ -8,9 +8,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePrefix;
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.can('CONTRACTS_CREATE')")
 @RoutePrefix("create")
 @PageTitle("Create")
 @Route("")

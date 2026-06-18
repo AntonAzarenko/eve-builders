@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "dashbord", layout = MenuStaffPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('CORPORATION_CONTRACT_EDIT','CORPORATION_VIEW')")
 public class StaffDashboard extends View {
 
     private final FlexLayout cards = new FlexLayout();

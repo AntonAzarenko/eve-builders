@@ -113,6 +113,7 @@ eve:
     uri: https://esi.evetech.net/latest/characters/%s
   clientId: ${EVE.CLIENTID}
   clientSecret: ${EVE.CLIENTSECRET}
+  frontendСlientSecret: ${EVE.FRONTEND.CLIENTSECRET}
   corporation:
     info: /v5/corporations/{corporation_id}
     contracts:
@@ -125,6 +126,8 @@ eve:
     send:
       url: /latest/characters/{characterId}/mail
   redirectUri: ${EVE.REDIRECTURI}
+  frontendRedirectUri: ${EVE.FRONTEND_REDIRECTURI}
+  frontendClientId: ${EVE.FRONTENDCLIENTID}
   token:
     uri: https://login.eveonline.com/v2/oauth/token
   user-info:

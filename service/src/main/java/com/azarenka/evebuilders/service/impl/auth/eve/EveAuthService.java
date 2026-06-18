@@ -8,30 +8,41 @@ import com.azarenka.evebuilders.service.converter.VaadinImageConverter;
 import com.azarenka.evebuilders.service.impl.intergarion.EvePortraitService;
 import com.vaadin.flow.component.html.Image;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class EveAuthService implements IEveAuthService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EveAuthService.class);
+
     @Value("${eve.clientId}")
     private String clientId;
+    @Value("${eve.frontendClientId}")
+    private String frontendClientId;
     @Value("${eve.redirectUri}")
     private String redirectUri;
-    @Value("${eve.clientSecret}")
+    @Value("${eve.frontendRedirectUri}")
+    private String frontendRedirectUri;
+    @Value("${eve.frontendСlientSecret}")
     private String clientSecret;
     @Value("${eve.authorize.uri}")
     private String authorizationEndpoint;
@@ -52,8 +63,8 @@ public class EveAuthService implements IEveAuthService {
         return String.format(
             "%s?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s",
             authorizationEndpoint,
-            clientId,
-            URLEncoder.encode(redirectUri, StandardCharsets.UTF_8),
+            frontendClientId,
+            URLEncoder.encode(frontendRedirectUri, StandardCharsets.UTF_8),
             URLEncoder.encode(
                 "publicData " +
                     "esi-assets.read_assets.v1 " +
@@ -64,18 +75,26 @@ public class EveAuthService implements IEveAuthService {
     }
 
     public TokenResponse exchangeCodeForToken(String authorizationCode) {
-        RestTemplate restTemplate = new RestTemplate();
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("code", authorizationCode);
-        params.add("redirect_uri", redirectUri);
+        params.add("redirect_uri", frontendRedirectUri);
+        params.add("client_id", frontendClientId);
+        params.add("client_secret", clientSecret);
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(clientId, clientSecret);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-            tokenEndpoint, HttpMethod.POST, requestEntity, String.class
-        );
-        return JsonConverter.convertJsonToTokenResponse(response.getBody());
+        try {
+            ResponseEntity<String> response =
+                restTemplate.exchange(tokenEndpoint, HttpMethod.POST, requestEntity, String.class);
+            return JsonConverter.convertJsonToTokenResponse(response.getBody());
+        } catch (HttpStatusCodeException ex) {
+            LOGGER.info("EVE token exchange failed: status={}, body={}", ex.getStatusCode(),
+                ex.getResponseBodyAsString());
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override

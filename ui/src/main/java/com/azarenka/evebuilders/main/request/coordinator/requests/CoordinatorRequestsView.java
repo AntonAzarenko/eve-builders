@@ -44,10 +44,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "my-requests", layout = MenuRequestCenterPage.class)
-@RolesAllowed({"ROLE_COORDINATOR"})
+@PreAuthorize("@accessControlSecurity.canAny('CORPORATION_VIEW','CORPORATION_CONTRACT_VIEW','CORPORATION_CONTRACT_EDIT')")
 public class CoordinatorRequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
     IGridColumnAdder<RequestOrder> {
 

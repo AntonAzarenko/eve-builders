@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "requests", layout = MenuRequestCenterPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('CORPORATION_CONTRACT_VIEW','CORPORATION_CONTRACT_EDIT')")
 @PageTitle("Requests")
 public class RequestsView extends View implements LocaleChangeObserver, IOrderStatusToStringConverter,
     IGridColumnAdder<RequestOrder> {

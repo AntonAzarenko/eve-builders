@@ -1,0 +1,577 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-14-01
+      author: codex
+      comment: extend-roles-with-code-and-system-role
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.roles
+              ADD COLUMN IF NOT EXISTS code VARCHAR(64);
+
+              ALTER TABLE builders.roles
+              ADD COLUMN IF NOT EXISTS description TEXT;
+
+              ALTER TABLE builders.roles
+              ADD COLUMN IF NOT EXISTS system_role BOOLEAN NOT NULL DEFAULT false;
+
+              UPDATE builders.roles
+              SET code = CASE
+                    WHEN name = 'ROLE_SUPER_ADMIN' THEN 'SUPER_ADMIN'
+                    WHEN name = 'ROLE_ADMIN' THEN 'ADMIN'
+                    WHEN name = 'ROLE_BUILDER' THEN 'BUILDER'
+                    WHEN name = 'ROLE_MINER' THEN 'MINER'
+                    WHEN name = 'ROLE_COORDINATOR' THEN 'COORDINATOR'
+                    WHEN name = 'ROLE_MANAGER' THEN 'MANAGER'
+                    WHEN name = 'ROLE_CEO' THEN 'CEO'
+                    WHEN name = 'ROLE_VIEWER' THEN 'VIEWER'
+                    WHEN name = 'ROLE_USER' THEN 'USER'
+                    ELSE regexp_replace(name, '^ROLE_', '')
+                END,
+                  name = CASE
+                    WHEN name = 'ROLE_SUPER_ADMIN' THEN 'Super Administrator'
+                    WHEN name = 'ROLE_ADMIN' THEN 'Administrator'
+                    WHEN name = 'ROLE_BUILDER' THEN 'Builder'
+                    WHEN name = 'ROLE_MINER' THEN 'Miner'
+                    WHEN name = 'ROLE_COORDINATOR' THEN 'Coordinator'
+                    WHEN name = 'ROLE_MANAGER' THEN 'Manager'
+                    WHEN name = 'ROLE_CEO' THEN 'CEO'
+                    WHEN name = 'ROLE_VIEWER' THEN 'Viewer'
+                    WHEN name = 'ROLE_USER' THEN 'User'
+                    ELSE COALESCE(name, 'Role')
+                END,
+                  description = CASE
+                    WHEN name = 'ROLE_SUPER_ADMIN' THEN 'Full access bypass role'
+                    WHEN name = 'ROLE_ADMIN' THEN 'Administrative role'
+                    WHEN name = 'ROLE_BUILDER' THEN 'Construction and production role'
+                    WHEN name = 'ROLE_MINER' THEN 'Mining and extraction role'
+                    WHEN name = 'ROLE_COORDINATOR' THEN 'Coordination role'
+                    WHEN name = 'ROLE_MANAGER' THEN 'Management role'
+                    WHEN name = 'ROLE_CEO' THEN 'Executive role'
+                    WHEN name = 'ROLE_VIEWER' THEN 'Read-only legacy role'
+                    WHEN name = 'ROLE_USER' THEN 'Legacy general user role'
+                    ELSE COALESCE(description, 'Migrated system role')
+                END,
+                  system_role = true
+              WHERE code IS NULL;
+
+              INSERT INTO builders.roles (code, name, description, system_role)
+              SELECT seed.code, seed.name, seed.description, seed.system_role
+              FROM (
+                VALUES
+                  ('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true),
+                  ('ADMIN', 'Administrator', 'Administrative role', true),
+                  ('BUILDER', 'Builder', 'Construction and production role', true),
+                  ('MINER', 'Miner', 'Mining and extraction role', true),
+                  ('COORDINATOR', 'Coordinator', 'Coordination role', true),
+                  ('MANAGER', 'Manager', 'Management role', true),
+                  ('CEO', 'CEO', 'Executive role', true),
+                  ('VIEWER', 'Viewer', 'Read-only legacy role', true),
+                  ('USER', 'User', 'Legacy general user role', true)
+              ) AS seed(code, name, description, system_role)
+              WHERE NOT EXISTS (
+                SELECT 1 FROM builders.roles r WHERE r.code = seed.code
+              );
+
+              ALTER TABLE builders.roles
+              ALTER COLUMN code SET NOT NULL;
+
+              ALTER TABLE builders.roles
+              ALTER COLUMN name SET NOT NULL;
+
+              ALTER TABLE builders.roles
+              ADD CONSTRAINT uq_roles_code UNIQUE (code);
+
+  - changeSet:
+      id: 2026-06-14-02
+      author: codex
+      comment: create-permissions-catalog
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: permissions
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: code
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: group_name
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            schemaName: builders
+            tableName: permissions
+            columnNames: code
+            constraintName: uq_permissions_code
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.permissions (code, name, description, group_name)
+              SELECT seed.code, seed.name, seed.description, seed.group_name
+              FROM (
+                VALUES
+                  ('DASHBOARD_VIEW', 'View dashboard', 'Access dashboard overview', 'DASHBOARD'),
+                  ('USERS_VIEW', 'View users', 'See the users list and profiles', 'USERS'),
+                  ('USERS_CREATE', 'Create users', 'Create new users', 'USERS'),
+                  ('USERS_EDIT', 'Edit users', 'Edit existing users', 'USERS'),
+                  ('USERS_DELETE', 'Delete users', 'Delete users', 'USERS'),
+                  ('ROLES_VIEW', 'View roles', 'See available roles', 'ROLES'),
+                  ('ROLES_CREATE', 'Create roles', 'Create new roles', 'ROLES'),
+                  ('ROLES_EDIT', 'Edit roles', 'Edit existing roles', 'ROLES'),
+                  ('ROLES_DELETE', 'Delete roles', 'Delete roles', 'ROLES'),
+                  ('ROLES_ASSIGN', 'Assign roles', 'Assign roles to users', 'ROLES'),
+                  ('PERMISSIONS_VIEW', 'View permissions', 'See permission catalog', 'PERMISSIONS'),
+                  ('PERMISSIONS_ASSIGN', 'Assign permissions', 'Assign permissions to roles or users', 'PERMISSIONS'),
+                  ('CORPORATION_VIEW', 'View corporation', 'Read corporation data', 'CORPORATION'),
+                  ('CORPORATION_EDIT', 'Edit corporation', 'Edit corporation data', 'CORPORATION'),
+                  ('MEMBERS_VIEW', 'View members', 'Read member data', 'MEMBERS'),
+                  ('MEMBERS_MANAGE', 'Manage members', 'Manage member data', 'MEMBERS'),
+                  ('CONTRACTS_VIEW', 'View contracts', 'Read contract data', 'CONTRACTS'),
+                  ('CONTRACTS_CREATE', 'Create contracts', 'Create contracts', 'CONTRACTS'),
+                  ('CONTRACTS_EDIT', 'Edit contracts', 'Edit contracts', 'CONTRACTS'),
+                  ('CONTRACTS_DELETE', 'Delete contracts', 'Delete contracts', 'CONTRACTS'),
+                  ('MINING_OPS_VIEW', 'View mining ops', 'Read mining operations', 'MINING_OPS'),
+                  ('MINING_OPS_CREATE', 'Create mining ops', 'Create mining operations', 'MINING_OPS'),
+                  ('MINING_OPS_EDIT', 'Edit mining ops', 'Edit mining operations', 'MINING_OPS'),
+                  ('MINING_OPS_DELETE', 'Delete mining ops', 'Delete mining operations', 'MINING_OPS'),
+                  ('BUILDS_VIEW', 'View builds', 'Read builds and production plans', 'BUILDS'),
+                  ('BUILDS_CREATE', 'Create builds', 'Create builds and production plans', 'BUILDS'),
+                  ('BUILDS_EDIT', 'Edit builds', 'Edit builds and production plans', 'BUILDS'),
+                  ('BUILDS_DELETE', 'Delete builds', 'Delete builds and production plans', 'BUILDS'),
+                  ('WALLET_VIEW', 'View wallet', 'Read wallet balances', 'WALLET'),
+                  ('WALLET_MANAGE', 'Manage wallet', 'Manage wallet operations', 'WALLET')
+              ) AS seed(code, name, description, group_name)
+              WHERE NOT EXISTS (
+                SELECT 1 FROM builders.permissions p WHERE p.code = seed.code
+              );
+
+  - changeSet:
+      id: 2026-06-14-03
+      author: codex
+      comment: create-user-roles-and-backfill-from-legacy-user-info-roles
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            schemaName: builders
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            referencedTableSchemaName: builders
+            referencedTableName: user_info
+            referencedColumnNames: uid
+            constraintName: fk_user_roles_user
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            referencedTableSchemaName: builders
+            referencedTableName: roles
+            referencedColumnNames: id
+            constraintName: fk_user_roles_role
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - createIndex:
+            schemaName: builders
+            tableName: user_roles
+            indexName: idx_user_roles_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            schemaName: builders
+            tableName: user_roles
+            indexName: idx_user_roles_role_id
+            columns:
+              - column:
+                  name: role_id
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.user_roles (user_id, role_id)
+              SELECT DISTINCT ui.uid, r.id
+              FROM builders.user_info ui
+              CROSS JOIN LATERAL unnest(COALESCE(ui.roles, ARRAY[]::text[])) AS legacy(role_code)
+              JOIN builders.roles r
+                ON r.code = CASE
+                      WHEN legacy.role_code LIKE 'ROLE_%' THEN replace(legacy.role_code, 'ROLE_', '')
+                      ELSE upper(legacy.role_code)
+                    END
+              WHERE NOT EXISTS (
+                SELECT 1
+                FROM builders.user_roles ur
+                WHERE ur.user_id = ui.uid
+                  AND ur.role_id = r.id
+              );
+
+  - changeSet:
+      id: 2026-06-14-04
+      author: codex
+      comment: create-role-permissions-and-seed-mappings
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: role_permissions
+            columns:
+              - column:
+                  name: role_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            schemaName: builders
+            tableName: role_permissions
+            columnNames: role_id, permission_id
+            constraintName: pk_role_permissions
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: role_permissions
+            baseColumnNames: role_id
+            referencedTableSchemaName: builders
+            referencedTableName: roles
+            referencedColumnNames: id
+            constraintName: fk_role_permissions_role
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: role_permissions
+            baseColumnNames: permission_id
+            referencedTableSchemaName: builders
+            referencedTableName: permissions
+            referencedColumnNames: id
+            constraintName: fk_role_permissions_permission
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - createIndex:
+            schemaName: builders
+            tableName: role_permissions
+            indexName: idx_role_permissions_role_id
+            columns:
+              - column:
+                  name: role_id
+        - createIndex:
+            schemaName: builders
+            tableName: role_permissions
+            indexName: idx_role_permissions_permission_id
+            columns:
+              - column:
+                  name: permission_id
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              WITH role_perm(role_code, perm_code) AS (
+                VALUES
+                  ('ADMIN', 'DASHBOARD_VIEW'),
+                  ('ADMIN', 'USERS_VIEW'),
+                  ('ADMIN', 'USERS_CREATE'),
+                  ('ADMIN', 'USERS_EDIT'),
+                  ('ADMIN', 'USERS_DELETE'),
+                  ('ADMIN', 'ROLES_VIEW'),
+                  ('ADMIN', 'ROLES_CREATE'),
+                  ('ADMIN', 'ROLES_EDIT'),
+                  ('ADMIN', 'ROLES_DELETE'),
+                  ('ADMIN', 'ROLES_ASSIGN'),
+                  ('ADMIN', 'PERMISSIONS_VIEW'),
+                  ('ADMIN', 'PERMISSIONS_ASSIGN'),
+                  ('ADMIN', 'CORPORATION_VIEW'),
+                  ('ADMIN', 'CORPORATION_EDIT'),
+                  ('ADMIN', 'MEMBERS_VIEW'),
+                  ('ADMIN', 'MEMBERS_MANAGE'),
+                  ('ADMIN', 'CONTRACTS_VIEW'),
+                  ('ADMIN', 'CONTRACTS_CREATE'),
+                  ('ADMIN', 'CONTRACTS_EDIT'),
+                  ('ADMIN', 'CONTRACTS_DELETE'),
+                  ('ADMIN', 'MINING_OPS_VIEW'),
+                  ('ADMIN', 'MINING_OPS_CREATE'),
+                  ('ADMIN', 'MINING_OPS_EDIT'),
+                  ('ADMIN', 'MINING_OPS_DELETE'),
+                  ('ADMIN', 'BUILDS_VIEW'),
+                  ('ADMIN', 'BUILDS_CREATE'),
+                  ('ADMIN', 'BUILDS_EDIT'),
+                  ('ADMIN', 'BUILDS_DELETE'),
+                  ('ADMIN', 'WALLET_VIEW'),
+                  ('ADMIN', 'WALLET_MANAGE'),
+
+                  ('BUILDER', 'DASHBOARD_VIEW'),
+                  ('BUILDER', 'CORPORATION_VIEW'),
+                  ('BUILDER', 'CORPORATION_EDIT'),
+                  ('BUILDER', 'MEMBERS_VIEW'),
+                  ('BUILDER', 'MEMBERS_MANAGE'),
+                  ('BUILDER', 'CONTRACTS_VIEW'),
+                  ('BUILDER', 'CONTRACTS_CREATE'),
+                  ('BUILDER', 'CONTRACTS_EDIT'),
+                  ('BUILDER', 'BUILDS_VIEW'),
+                  ('BUILDER', 'BUILDS_CREATE'),
+                  ('BUILDER', 'BUILDS_EDIT'),
+                  ('BUILDER', 'BUILDS_DELETE'),
+                  ('BUILDER', 'WALLET_VIEW'),
+
+                  ('MINER', 'DASHBOARD_VIEW'),
+                  ('MINER', 'MINING_OPS_VIEW'),
+                  ('MINER', 'MINING_OPS_CREATE'),
+                  ('MINER', 'MINING_OPS_EDIT'),
+                  ('MINER', 'MINING_OPS_DELETE'),
+                  ('MINER', 'WALLET_VIEW'),
+
+                  ('COORDINATOR', 'DASHBOARD_VIEW'),
+                  ('COORDINATOR', 'CORPORATION_VIEW'),
+                  ('COORDINATOR', 'MEMBERS_VIEW'),
+                  ('COORDINATOR', 'CONTRACTS_VIEW'),
+
+                  ('MANAGER', 'DASHBOARD_VIEW'),
+                  ('MANAGER', 'USERS_VIEW'),
+                  ('MANAGER', 'ROLES_VIEW'),
+                  ('MANAGER', 'PERMISSIONS_VIEW'),
+                  ('MANAGER', 'CORPORATION_VIEW'),
+                  ('MANAGER', 'CORPORATION_EDIT'),
+                  ('MANAGER', 'MEMBERS_VIEW'),
+                  ('MANAGER', 'MEMBERS_MANAGE'),
+                  ('MANAGER', 'CONTRACTS_VIEW'),
+                  ('MANAGER', 'CONTRACTS_CREATE'),
+                  ('MANAGER', 'CONTRACTS_EDIT'),
+                  ('MANAGER', 'CONTRACTS_DELETE'),
+                  ('MANAGER', 'BUILDS_VIEW'),
+                  ('MANAGER', 'BUILDS_CREATE'),
+                  ('MANAGER', 'BUILDS_EDIT'),
+                  ('MANAGER', 'BUILDS_DELETE'),
+                  ('MANAGER', 'WALLET_VIEW'),
+                  ('MANAGER', 'WALLET_MANAGE'),
+
+                  ('CEO', 'DASHBOARD_VIEW'),
+                  ('CEO', 'USERS_VIEW'),
+                  ('CEO', 'USERS_CREATE'),
+                  ('CEO', 'USERS_EDIT'),
+                  ('CEO', 'USERS_DELETE'),
+                  ('CEO', 'ROLES_VIEW'),
+                  ('CEO', 'ROLES_CREATE'),
+                  ('CEO', 'ROLES_EDIT'),
+                  ('CEO', 'ROLES_DELETE'),
+                  ('CEO', 'ROLES_ASSIGN'),
+                  ('CEO', 'PERMISSIONS_VIEW'),
+                  ('CEO', 'PERMISSIONS_ASSIGN'),
+                  ('CEO', 'CORPORATION_VIEW'),
+                  ('CEO', 'CORPORATION_EDIT'),
+                  ('CEO', 'MEMBERS_VIEW'),
+                  ('CEO', 'MEMBERS_MANAGE'),
+                  ('CEO', 'CONTRACTS_VIEW'),
+                  ('CEO', 'CONTRACTS_CREATE'),
+                  ('CEO', 'CONTRACTS_EDIT'),
+                  ('CEO', 'CONTRACTS_DELETE'),
+                  ('CEO', 'MINING_OPS_VIEW'),
+                  ('CEO', 'MINING_OPS_CREATE'),
+                  ('CEO', 'MINING_OPS_EDIT'),
+                  ('CEO', 'MINING_OPS_DELETE'),
+                  ('CEO', 'BUILDS_VIEW'),
+                  ('CEO', 'BUILDS_CREATE'),
+                  ('CEO', 'BUILDS_EDIT'),
+                  ('CEO', 'BUILDS_DELETE'),
+                  ('CEO', 'WALLET_VIEW'),
+                  ('CEO', 'WALLET_MANAGE'),
+
+                  ('VIEWER', 'DASHBOARD_VIEW'),
+                  ('VIEWER', 'CORPORATION_VIEW'),
+                  ('VIEWER', 'MEMBERS_VIEW'),
+                  ('VIEWER', 'CONTRACTS_VIEW'),
+                  ('VIEWER', 'MINING_OPS_VIEW'),
+                  ('VIEWER', 'BUILDS_VIEW'),
+                  ('VIEWER', 'WALLET_VIEW'),
+
+                  ('USER', 'DASHBOARD_VIEW'),
+                  ('USER', 'CORPORATION_VIEW'),
+                  ('USER', 'MEMBERS_VIEW'),
+                  ('USER', 'CONTRACTS_VIEW')
+              )
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT r.id, p.id
+              FROM role_perm rp
+              JOIN builders.roles r ON r.code = rp.role_code
+              JOIN builders.permissions p ON p.code = rp.perm_code
+              WHERE NOT EXISTS (
+                SELECT 1
+                FROM builders.role_permissions existing
+                WHERE existing.role_id = r.id
+                  AND existing.permission_id = p.id
+              );
+
+  - changeSet:
+      id: 2026-06-14-05
+      author: codex
+      comment: create-user-permissions-direct-grants
+      changes:
+        - createTable:
+            schemaName: builders
+            tableName: user_permissions
+            columns:
+              - column:
+                  name: user_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            schemaName: builders
+            tableName: user_permissions
+            columnNames: user_id, permission_id
+            constraintName: pk_user_permissions
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: user_permissions
+            baseColumnNames: user_id
+            referencedTableSchemaName: builders
+            referencedTableName: user_info
+            referencedColumnNames: uid
+            constraintName: fk_user_permissions_user
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: builders
+            baseTableName: user_permissions
+            baseColumnNames: permission_id
+            referencedTableSchemaName: builders
+            referencedTableName: permissions
+            referencedColumnNames: id
+            constraintName: fk_user_permissions_permission
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - createIndex:
+            schemaName: builders
+            tableName: user_permissions
+            indexName: idx_user_permissions_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            schemaName: builders
+            tableName: user_permissions
+            indexName: idx_user_permissions_permission_id
+            columns:
+              - column:
+                  name: permission_id
+
+  - changeSet:
+      id: 2026-06-14-06
+      author: codex
+      comment: seed-default-roles-and-default-role-permissions
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.roles (code, name, description, system_role)
+              VALUES
+                ('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true),
+                ('ADMIN', 'Administrator', 'Administrative role', true),
+                ('CEO', 'CEO', 'Executive role', false),
+                ('MANAGER', 'Manager', 'Management role', false),
+                ('WORKER', 'Worker', 'General operational role', false),
+                ('MINER', 'Miner', 'Mining and extraction role', false),
+                ('BUILDER', 'Builder', 'Construction and production role', false)
+              ON CONFLICT (code) DO UPDATE
+              SET name = EXCLUDED.name,
+                  description = EXCLUDED.description,
+                  system_role = EXCLUDED.system_role;
+
+              UPDATE builders.roles
+              SET system_role = CASE
+                    WHEN code IN ('SUPER_ADMIN', 'ADMIN') THEN true
+                    ELSE false
+                END
+              WHERE code IN ('SUPER_ADMIN', 'ADMIN', 'CEO', 'MANAGER', 'WORKER', 'MINER', 'BUILDER');
+
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT r.id, p.id
+              FROM builders.roles r
+              CROSS JOIN builders.permissions p
+              WHERE r.code = 'ADMIN'
+              ON CONFLICT DO NOTHING;
+
+              WITH role_perm(role_code, perm_code) AS (
+                VALUES
+                  ('CEO', 'DASHBOARD_VIEW'),
+                  ('CEO', 'CORPORATION_VIEW'),
+                  ('CEO', 'CORPORATION_EDIT'),
+                  ('CEO', 'MEMBERS_VIEW'),
+                  ('CEO', 'MEMBERS_MANAGE'),
+                  ('CEO', 'CONTRACTS_VIEW'),
+                  ('CEO', 'WALLET_VIEW'),
+
+                  ('MANAGER', 'DASHBOARD_VIEW'),
+                  ('MANAGER', 'MEMBERS_VIEW'),
+                  ('MANAGER', 'MEMBERS_MANAGE'),
+                  ('MANAGER', 'CONTRACTS_VIEW'),
+                  ('MANAGER', 'CONTRACTS_CREATE'),
+                  ('MANAGER', 'CONTRACTS_EDIT'),
+                  ('MANAGER', 'MINING_OPS_VIEW'),
+                  ('MANAGER', 'MINING_OPS_CREATE'),
+                  ('MANAGER', 'BUILDS_VIEW'),
+
+                  ('WORKER', 'DASHBOARD_VIEW'),
+                  ('WORKER', 'CONTRACTS_VIEW'),
+                  ('WORKER', 'MINING_OPS_VIEW'),
+                  ('WORKER', 'BUILDS_VIEW'),
+
+                  ('MINER', 'DASHBOARD_VIEW'),
+                  ('MINER', 'MINING_OPS_VIEW'),
+                  ('MINER', 'MINING_OPS_CREATE'),
+
+                  ('BUILDER', 'DASHBOARD_VIEW'),
+                  ('BUILDER', 'BUILDS_VIEW'),
+                  ('BUILDER', 'BUILDS_CREATE'),
+                  ('BUILDER', 'BUILDS_EDIT')
+              )
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT r.id, p.id
+              FROM role_perm rp
+              JOIN builders.roles r ON r.code = rp.role_code
+              JOIN builders.permissions p ON p.code = rp.perm_code
+              ON CONFLICT DO NOTHING;

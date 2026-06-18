@@ -52,7 +52,8 @@ public class DataBasePostgresConfig {
             .dataSource(dataSource)
             .packages(
                 "com.azarenka.evebuilders.domain.db",
-                "com.azarenka.evebuilders.domain.casino"
+                "com.azarenka.evebuilders.domain.casino",
+                "com/azarenka/evebuilders/domain/acl"
             )
             .persistenceUnit("postgres")
             .build();

@@ -32,10 +32,10 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "default", layout = MenuStatisticPage.class)
-@RolesAllowed({"ROLE_SUPER_ADMIN", "ROLE_BUILDER", "ROLE_MINER", "ROLE_ADMIN", "ROLE_COORDINATOR"})
+@PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 @PageTitle("Statistic")
 public class MenuStatisticView extends View implements LocaleChangeObserver {
 

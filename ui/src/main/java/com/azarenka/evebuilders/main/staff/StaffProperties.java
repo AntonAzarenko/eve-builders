@@ -2,11 +2,11 @@ package com.azarenka.evebuilders.main.staff;
 
 import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.main.managment.api.IStaffController;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
-import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
+import com.azarenka.evebuilders.common.util.SpringContextHolder;
+import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlSecurity;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -22,13 +22,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Route(value = "properties", layout = MenuStaffPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
 public class StaffProperties extends View {
 
     private final IStaffController controller;
@@ -64,7 +64,8 @@ public class StaffProperties extends View {
         userListLayout.removeAll();
         List<UserDto> users = controller.getAllUsers();
         String filter = searchField.getValue() != null ? searchField.getValue().toLowerCase() : "";
-        boolean isEditPermitted = SecurityUtils.getUserRoles().contains(Role.ROLE_SUPER_ADMIN);
+        boolean isEditPermitted = SpringContextHolder.getBean(AccessControlSecurity.class)
+            .can("CORPORATION_CONTRACT_EDIT");
         users.stream()
                 .filter(u -> u.getUsername().toLowerCase().contains(filter) ||
                         u.getCharacterId().toLowerCase().contains(filter))
@@ -81,7 +82,7 @@ public class StaffProperties extends View {
 
         HorizontalLayout rolesLayout = new HorizontalLayout();
         rolesLayout.setSpacing(true);
-        for (Role role : user.getRoles()) {
+        for (com.azarenka.evebuilders.domain.db.Role role : user.getRoles()) {
             Span badge = new Span(role.name());
             badge.getElement().getThemeList().add("badge");
             rolesLayout.add(badge);

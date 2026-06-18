@@ -8,13 +8,14 @@ import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
-import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.managment.create.CreateOrderView;
 import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.azarenka.evebuilders.main.orders.api.IOrderViewController;
+import com.azarenka.evebuilders.common.util.SpringContextHolder;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
+import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlSecurity;
 import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -51,11 +52,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "main", layout = MenuOrdersPage.class)
 @PageTitle("Orders")
-@RolesAllowed({"ROLE_BUILDER", "ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('CONTRACTS_VIEW','CONTRACTS_EDIT','CONTRACTS_ACCEPT','CONTRACTS_CANCEL','CONTRACTS_DISCARD','CORPORATION_VIEW','CORPORATION_CONTRACT_VIEW','CORPORATION_CONTRACT_EDIT')")
 public class OrdersView extends View
     implements LocaleChangeObserver, IOrderStatusToStringConverter, IGridColumnAdder<ShipOrderDto> {
 
@@ -320,8 +321,8 @@ public class OrdersView extends View
     }
 
     private boolean isEditPermitted() {
-        return Objects.requireNonNull(SecurityUtils.getUserRoles())
-            .stream().anyMatch(role -> (role == Role.ROLE_ADMIN) || role == Role.ROLE_SUPER_ADMIN);
+        return SpringContextHolder.getBean(AccessControlSecurity.class)
+            .canAny("CONTRACTS_EDIT", "CORPORATION_CONTRACT_EDIT");
     }
 
     private boolean isInfoPermitted() {

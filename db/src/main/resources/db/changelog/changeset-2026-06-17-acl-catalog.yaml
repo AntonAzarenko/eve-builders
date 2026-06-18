@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-17-01
+      author: codex
+      comment: seed-canonical-acl-catalog
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.roles (code, name, description, system_role)
+              VALUES
+                ('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true),
+                ('CEO', 'CEO', 'Executive role', true),
+                ('MANAGER', 'Manager', 'Management role', true),
+                ('MINER', 'Miner', 'Mining and extraction role', true),
+                ('BUILDER', 'Builder', 'Construction and production role', true)
+              ON CONFLICT (code) DO UPDATE
+              SET name = EXCLUDED.name,
+                  description = EXCLUDED.description,
+                  system_role = EXCLUDED.system_role;
+
+              INSERT INTO builders.permissions (code, name, description, group_name)
+              VALUES
+                ('DASHBOARD_VIEW', 'View dashboard', 'Access dashboard overview', 'DASHBOARD'),
+                ('CONTRACTS_VIEW', 'View contracts', 'Read contract data', 'CONTRACTS'),
+                ('CONTRACTS_CREATE', 'Create contracts', 'Create contracts', 'CONTRACTS'),
+                ('CONTRACTS_EDIT', 'Edit contracts', 'Edit contracts', 'CONTRACTS'),
+                ('CONTRACTS_ACCEPT', 'Accept contracts', 'Accept incoming contracts', 'CONTRACTS'),
+                ('CONTRACTS_CANCEL', 'Cancel contracts', 'Cancel owned contracts', 'CONTRACTS'),
+                ('CONTRACTS_DISCARD', 'Discard contracts', 'Discard draft contracts', 'CONTRACTS'),
+                ('CORPORATION_VIEW', 'View corporation', 'Read corporation data', 'CORPORATION'),
+                ('CORPORATION_CONTRACT_VIEW', 'View corporation contracts', 'Read corporation contract data', 'CORPORATION_CONTRACTS'),
+                ('CORPORATION_CONTRACT_EDIT', 'Edit corporation contracts', 'Edit corporation contract data', 'CORPORATION_CONTRACTS')
+              ON CONFLICT (code) DO UPDATE
+              SET name = EXCLUDED.name,
+                  description = EXCLUDED.description,
+                  group_name = EXCLUDED.group_name;
+
+              DELETE FROM builders.role_permissions rp
+              USING builders.roles r
+              WHERE rp.role_id = r.id
+                AND r.code IN ('CEO', 'MANAGER', 'MINER', 'BUILDER');
+
+              WITH role_perm(role_code, perm_code) AS (
+                VALUES
+                  ('CEO', 'CORPORATION_VIEW'),
+                  ('CEO', 'CORPORATION_CONTRACT_VIEW'),
+                  ('CEO', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('MANAGER', 'CONTRACTS_VIEW'),
+                  ('MANAGER', 'CONTRACTS_CREATE'),
+                  ('MANAGER', 'CONTRACTS_EDIT'),
+                  ('MANAGER', 'CONTRACTS_CANCEL'),
+
+                  ('MINER', 'DASHBOARD_VIEW'),
+
+                  ('BUILDER', 'DASHBOARD_VIEW'),
+                  ('BUILDER', 'CONTRACTS_ACCEPT'),
+                  ('BUILDER', 'CONTRACTS_DISCARD')
+              )
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT r.id, p.id
+              FROM role_perm rp
+              JOIN builders.roles r ON r.code = rp.role_code
+              JOIN builders.permissions p ON p.code = rp.perm_code
+              ON CONFLICT DO NOTHING;

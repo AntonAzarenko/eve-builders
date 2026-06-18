@@ -1,6 +1,20 @@
 package com.azarenka.evebuilders.domain.auth.auth.ui;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-public record MeResponse(String username, List<String> roles) {
+public record MeResponse(String userId,
+                         String eveCharacterId,
+                         String characterName,
+                         String corporationId,
+                         String corporationName,
+                         Set<String> roles,
+                         Set<String> permissions,
+                         boolean superAdmin) {
+
+    public MeResponse {
+        roles = roles == null ? Set.of() : Collections.unmodifiableSet(new LinkedHashSet<>(roles));
+        permissions = permissions == null ? Set.of() : Collections.unmodifiableSet(new LinkedHashSet<>(permissions));
+    }
 }

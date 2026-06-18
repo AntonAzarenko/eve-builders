@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
 @Configuration
+@EnableMethodSecurity
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig extends VaadinWebSecurity {
 
@@ -48,7 +50,7 @@ public class SecurityConfig extends VaadinWebSecurity {
         this.logoutSuccessHandler = logoutSuccessHandler;
     }
 
-/*
+
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
@@ -57,6 +59,8 @@ public class SecurityConfig extends VaadinWebSecurity {
             .securityMatcher("/api/**")
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((req, res, e) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
@@ -65,6 +69,9 @@ public class SecurityConfig extends VaadinWebSecurity {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     new AntPathRequestMatcher("/api/auth/login"),
+                    new AntPathRequestMatcher("/api/auth/eve/exchange"),
+                    new AntPathRequestMatcher("/api/auth/me"),
+                    new AntPathRequestMatcher("/api/auth/profile"),
                     new AntPathRequestMatcher("/api/ping"),
                     new AntPathRequestMatcher("/api/auth/refresh"),
                     new AntPathRequestMatcher("/api/auth/logout"))
@@ -86,9 +93,9 @@ public class SecurityConfig extends VaadinWebSecurity {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-*/
 
-    @Override
+
+   /* @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
@@ -120,7 +127,7 @@ public class SecurityConfig extends VaadinWebSecurity {
             )
         );
         super.configure(http);
-    }
+    }*/
 
     @Bean
     public AuthenticationFailureHandler customFailureHandler() {

@@ -1,13 +1,7 @@
 package com.azarenka.evebuilders.domain.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
 
-@Entity
-@Table(name = "roles", schema = "builders")
 public enum Role implements GrantedAuthority {
 
     ROLE_VIEWER,
@@ -18,10 +12,6 @@ public enum Role implements GrantedAuthority {
     ROLE_MANAGER,
     ROLE_MINER,
     ROLE_CEO;
-
-    @Id
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
 
     @Override
     public String getAuthority() {

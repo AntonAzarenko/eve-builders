@@ -6,10 +6,10 @@ import com.azarenka.evebuilders.main.managment.page.AddOrderPage;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "default", layout = AddOrderPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.can('CONTRACTS_CREATE')")
 @PermitAll
 public class CreateOrderView extends View {
 

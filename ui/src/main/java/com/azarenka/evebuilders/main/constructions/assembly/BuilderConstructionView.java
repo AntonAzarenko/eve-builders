@@ -9,11 +9,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "build-order", layout = MenuConstructionPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_BUILDER"})
+@PreAuthorize("@accessControlSecurity.canAny('DASHBOARD_VIEW','CONTRACTS_ACCEPT','CONTRACTS_DISCARD')")
 @PageTitle("Build Order")
 public class BuilderConstructionView extends View {
 

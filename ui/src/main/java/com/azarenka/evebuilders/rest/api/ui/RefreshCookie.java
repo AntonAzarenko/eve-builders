@@ -1,4 +1,4 @@
-package com.azarenka.evebuilders.rest.api.casino.ui;
+package com.azarenka.evebuilders.rest.api.ui;
 
 import com.azarenka.evebuilders.domain.auth.auth.ui.JwtProperties;
 

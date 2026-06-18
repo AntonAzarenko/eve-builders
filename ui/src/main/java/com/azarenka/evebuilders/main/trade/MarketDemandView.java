@@ -49,10 +49,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "requests", layout = MenuTradePage.class)
-@RolesAllowed({"ROLE_SUPER_ADMIN", "ROLE_MINER", "ROLE_ADMIN"})
+@PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 @PageTitle("Market Requests")
 public class MarketDemandView extends View implements LocaleChangeObserver {
 

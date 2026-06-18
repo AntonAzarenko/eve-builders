@@ -61,17 +61,13 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         var attributes = oAuth2User.getAttributes();
         String characterName = (String) attributes.get("CharacterName");
-        Optional<User> existingUser = userService.getByUsername(characterName);
-        User user = existingUser.orElseGet(() ->
-            getUserBasedOnTokenResponse(userRequest, attributes, Locale.US));
-        if (!checkAuth(user)) {
-            LOGGER.info("User {} doesn't have permissions", characterName);
-            throw new OAuth2AuthenticationException(
-                new OAuth2Error("invalid_user", "User does not have permissions", "")
-            );
-        }
-        defineRole(user);
-        userService.saveUser(user);
+        String characterId = attributes.get("CharacterID").toString();
+        User user = authenticateByAccessToken(
+            userRequest.getAccessToken().getTokenValue(),
+            characterName,
+            characterId,
+            Locale.US
+        );
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof EveUserPrincipal currentPrincipal) {
             return currentPrincipal;
@@ -80,12 +76,29 @@ public class EveOAuth2UserService extends DefaultOAuth2UserService {
         return new EveUserPrincipal(user, attributes);
     }
 
-    private User getUserBasedOnTokenResponse(OAuth2UserRequest userRequest, Map<String, Object> attributes,
-                                             Locale locale) {
+    public User authenticateByAccessToken(String accessToken) {
+        String characterId = eveCharacterService.getCharacterIdFromToken(accessToken);
+        String characterName = eveCharacterService.getCharacterNameFromToken(accessToken);
+        return authenticateByAccessToken(accessToken, characterName, characterId, Locale.US);
+    }
+
+    public User authenticateByAccessToken(String accessToken, String characterName, String characterId, Locale locale) {
+        Optional<User> existingUser = userService.getByUsername(characterName);
+        User user = existingUser.orElseGet(() ->
+            buildUserFromToken(accessToken, characterName, characterId, locale));
+        if (!checkAuth(user)) {
+            LOGGER.info("User {} doesn't have permissions", characterName);
+            throw new OAuth2AuthenticationException(
+                new OAuth2Error("invalid_user", "User does not have permissions", "")
+            );
+        }
+        defineRole(user);
+        userService.saveUser(user);
+        return user;
+    }
+
+    private User buildUserFromToken(String accessToken, String characterName, String characterId, Locale locale) {
         var user = new User();
-        var accessToken = userRequest.getAccessToken().getTokenValue();
-        var characterId = attributes.get("CharacterID").toString();
-        var characterName = (String) attributes.get("CharacterName");
         var characterInfoJson = eveCharacterService.getCharacterInfo(accessToken, characterId);
         var userId = UUID.randomUUID().toString();
         LOGGER.info("Authenticating user {}. CharacterInfo={} ",characterName, characterInfoJson);

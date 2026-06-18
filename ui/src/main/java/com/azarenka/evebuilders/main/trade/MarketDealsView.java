@@ -41,10 +41,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "orders", layout = MenuTradePage.class)
-@RolesAllowed({"ROLE_SUPER_ADMIN", "ROLE_MINER", "ROLE_ADMIN", "ROLE_BUILDER"})
+@PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 @PageTitle("MARKET Orders")
 public class MarketDealsView extends View {
 

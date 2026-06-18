@@ -4,7 +4,6 @@ import com.azarenka.evebuilders.common.util.BuilderPermission;
 import com.azarenka.evebuilders.component.IconFactory;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
-import com.azarenka.evebuilders.domain.db.Role;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.main.menu.MenuManagerPage;
 import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
@@ -46,25 +45,30 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
         countSubmittedRequests = controller.countRequests();
         countNewOrders = controller.countNewOrders();
         addTabIfAllowedWithBadge(getTranslation("menu.tab.orders"), MenuOrdersPage.class,
-            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER}, VaadinIcon.HOME.create(),
-            countNewOrders, "tab-order-menu");
+            VaadinIcon.HOME.create(), countNewOrders, "tab-order-menu",
+            "CONTRACTS_VIEW", "CONTRACTS_CREATE", "CONTRACTS_EDIT", "CONTRACTS_ACCEPT",
+            "CONTRACTS_CANCEL", "CONTRACTS_DISCARD", "CORPORATION_VIEW",
+            "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
-            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER}, IconFactory.lineAwesome(
-                LineAwesomeIcon.INDUSTRY_SOLID), "tab-construction-menu");
+            IconFactory.lineAwesome(LineAwesomeIcon.INDUSTRY_SOLID), "tab-construction-menu",
+            "DASHBOARD_VIEW", "CONTRACTS_ACCEPT", "CONTRACTS_DISCARD");
         addTabIfAllowed(getTranslation("menu.tab.manger.orders"), MenuManagerPage.class,
-            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.COG.create(), "tab-manager-menu");
+            VaadinIcon.COG.create(), "tab-manager-menu",
+            "CONTRACTS_VIEW", "CONTRACTS_CREATE", "CONTRACTS_EDIT", "CONTRACTS_CANCEL",
+            "CORPORATION_VIEW", "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
         addTabIfAllowed(getTranslation("menu.tab.statistic"), MenuStatisticPage.class,
-            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER, Role.ROLE_MINER, Role.ROLE_ADMIN, Role.ROLE_COORDINATOR},
-            LineAwesomeIcon.CHART_BAR.create(), "tab-statistic-menu");
+            LineAwesomeIcon.CHART_BAR.create(), "tab-statistic-menu",
+            "DASHBOARD_VIEW");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.trade"), MenuTradePage.class,
-            new Role[]{Role.ROLE_SUPER_ADMIN, Role.ROLE_BUILDER, Role.ROLE_MINER, Role.ROLE_ADMIN},
             LineAwesomeIcon.TRADE_FEDERATION.create(), countSubmittedRequests,
-            "tab-trade-menu");
+            "tab-trade-menu", "DASHBOARD_VIEW", "CONTRACTS_VIEW", "CONTRACTS_CREATE", "CONTRACTS_EDIT",
+            "CONTRACTS_ACCEPT", "CONTRACTS_CANCEL", "CONTRACTS_DISCARD");
         addTabIfAllowed(getTranslation("menu.tab.personal"), MenuStaffPage.class,
-            new Role[]{Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN, Role.ROLE_CEO}, VaadinIcon.SPECIALIST.create(), "tab-stuff-menu");
+            VaadinIcon.SPECIALIST.create(), "tab-stuff-menu",
+            "CORPORATION_VIEW", "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
         addTabIfAllowedWithBadge(getTranslation("menu.tab.request"), MenuRequestCenterPage.class,
-            new Role[]{Role.ROLE_COORDINATOR, Role.ROLE_ADMIN, Role.ROLE_SUPER_ADMIN}, VaadinIcon.DASHBOARD.create(),
-            countSubmittedRequests, "tab-request-menu");
+            VaadinIcon.DASHBOARD.create(), countSubmittedRequests, "tab-request-menu",
+            "CORPORATION_VIEW", "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
     }
 
     @Override

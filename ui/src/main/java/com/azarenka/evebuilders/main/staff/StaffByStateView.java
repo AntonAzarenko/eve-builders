@@ -25,10 +25,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "personal", layout = MenuStaffPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN"})
+@PreAuthorize("@accessControlSecurity.canAny('CORPORATION_CONTRACT_EDIT','CORPORATION_VIEW')")
 public class StaffByStateView extends View implements IGridColumnAdder<StaffUserInfo>,
     LocaleChangeObserver {
 

@@ -5,10 +5,10 @@ import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.router.Route;
 
-import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Route(value = "personal", layout = MenuOrdersPage.class)
-@RolesAllowed({"ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_BUILDER"})
+@PreAuthorize("@accessControlSecurity.canAny('DASHBOARD_VIEW','CONTRACTS_ACCEPT','CONTRACTS_DISCARD')")
 public class PersonalConstructionView extends View {
 
     public PersonalConstructionView() {
