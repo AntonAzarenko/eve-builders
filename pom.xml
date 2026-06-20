@@ -19,7 +19,6 @@
         <module>domain</module>
         <module>repository</module>
         <module>service</module>
-        <module>controller</module>
         <module>ui</module>
     </modules>
 

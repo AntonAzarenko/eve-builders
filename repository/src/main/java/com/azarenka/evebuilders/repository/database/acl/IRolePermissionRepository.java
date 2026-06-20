@@ -4,6 +4,9 @@ import com.azarenka.evebuilders.domain.acl.RolePermission;
 import com.azarenka.evebuilders.domain.acl.RolePermissionId;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -23,7 +26,11 @@ public interface IRolePermissionRepository extends JpaRepository<RolePermission,
 
     boolean existsByIdPermissionId(Long permissionId);
 
-    void deleteByIdRoleIdAndIdPermissionId(Long roleId, Long permissionId);
+    @Modifying
+    @Query("delete from RolePermission rp where rp.id.roleId = :roleId and rp.id.permissionId = :permissionId")
+    void deleteByRoleIdAndPermissionId(@Param("roleId") Long roleId, @Param("permissionId") Long permissionId);
 
-    void deleteByIdRoleId(Long roleId);
+    @Modifying
+    @Query("delete from RolePermission rp where rp.id.roleId = :roleId")
+    void deleteAllByRoleId(@Param("roleId") Long roleId);
 }

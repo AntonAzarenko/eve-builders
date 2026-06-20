@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.common.util;
 
+import com.azarenka.evebuilders.domain.db.PermissionCode;
 import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlSecurity;
 
 public class BuilderPermission {
@@ -9,10 +10,7 @@ public class BuilderPermission {
     }
 
     public static boolean hasAdminPermission() {
-        return accessControl().canAny(
-            "CORPORATION_CONTRACT_VIEW",
-            "CORPORATION_CONTRACT_EDIT"
-        );
+        return accessControl().can(PermissionCode.ADMIN_VIEW);
     }
 
     public static boolean hasCoordinatorPermission() {

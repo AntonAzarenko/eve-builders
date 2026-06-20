@@ -9,9 +9,19 @@ public record CurrentUserProfileResponse(String userId,
                                          String characterName,
                                          String corporationId,
                                          String corporationName,
+                                         String allianceName,
+                                         String language,
+                                         String theme,
                                          Set<String> roles,
                                          Set<String> permissions,
-                                         boolean superAdmin) {
+                                         boolean superAdmin,
+                                         int distributedOrders,
+                                         int completedOrders,
+                                         int builtShips,
+                                         int fleetParticipations,
+                                         Integer ordersRank,
+                                         Integer shipsRank,
+                                         Integer fleetRank) {
 
     public CurrentUserProfileResponse {
         roles = roles == null ? Set.of() : Collections.unmodifiableSet(new LinkedHashSet<>(roles));

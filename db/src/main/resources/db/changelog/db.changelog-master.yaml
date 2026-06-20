@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset-2026-06-17-acl-catalog.yaml
   - include:
       file: db/changelog/changeset-2026-06-17-acl-cleanup.yaml
+  - include:
+      file: db/changelog/changeset-2026-06-18-acl-admin.yaml

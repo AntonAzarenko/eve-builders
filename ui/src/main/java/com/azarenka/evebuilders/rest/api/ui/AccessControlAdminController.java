@@ -14,13 +14,13 @@ import com.azarenka.evebuilders.domain.dto.acl.UpdateUserDirectPermissionsReques
 import com.azarenka.evebuilders.domain.dto.acl.UpdateUserRolesRequest;
 import com.azarenka.evebuilders.domain.dto.acl.UserAccessDto;
 import com.azarenka.evebuilders.domain.db.Permission;
+import com.azarenka.evebuilders.domain.db.PermissionCode;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.repository.database.acl.IPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRolePermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRoleRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserPermissionRepository;
-import com.azarenka.evebuilders.repository.database.acl.IUserRoleRepository;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +51,6 @@ public class AccessControlAdminController {
     private final IRoleRepository roleRepository;
     private final IPermissionRepository permissionRepository;
     private final IRolePermissionRepository rolePermissionRepository;
-    private final IUserRoleRepository userRoleRepository;
     private final IUserPermissionRepository userPermissionRepository;
 
     public AccessControlAdminController(IAccessControlService accessControlService,
@@ -59,36 +58,34 @@ public class AccessControlAdminController {
                                         IRoleRepository roleRepository,
                                         IPermissionRepository permissionRepository,
                                         IRolePermissionRepository rolePermissionRepository,
-                                        IUserRoleRepository userRoleRepository,
                                         IUserPermissionRepository userPermissionRepository) {
         this.accessControlService = accessControlService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
-        this.userRoleRepository = userRoleRepository;
         this.userPermissionRepository = userPermissionRepository;
     }
 
     @GetMapping("/roles")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_VIEW + "')")
     public List<RoleDto> getRoles() {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.ROLES_VIEW);
         return roleRepository.findAllByOrderByCodeAsc().stream().map(this::toRoleDto).toList();
     }
 
     @GetMapping("/roles/{code}")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_VIEW + "')")
     public RoleDto getRole(@PathVariable String code) {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.ROLES_VIEW);
         return toRoleDto(findRoleByCodeOrThrow(code));
     }
 
     @PostMapping("/roles")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_CREATE + "')")
     public RoleDto createRole(@Valid @RequestBody CreateRoleRequest request) {
-        authorize("CORPORATION_CONTRACT_EDIT");
+        authorize(PermissionCode.ROLES_CREATE);
         Role role = new Role();
         role.setCode(normalizeCode(request.code()));
         role.setName(request.name());
@@ -99,9 +96,9 @@ public class AccessControlAdminController {
 
     @PutMapping("/roles/{code}")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_EDIT + "')")
     public RoleDto updateRole(@PathVariable String code, @Valid @RequestBody UpdateRoleRequest request) {
-        authorize("CORPORATION_CONTRACT_EDIT");
+        authorize(PermissionCode.ROLES_EDIT);
         Role role = findRoleByCodeOrThrow(code);
         role.setName(request.name());
         role.setDescription(request.description());
@@ -110,32 +107,32 @@ public class AccessControlAdminController {
 
     @DeleteMapping("/roles/{code}")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_DELETE + "')")
     public void deleteRole(@PathVariable String code) {
-        authorize("CORPORATION_CONTRACT_EDIT");
+        authorize(PermissionCode.ROLES_DELETE);
         accessControlService.deleteRole(findRoleByCodeOrThrow(code).getId());
     }
 
     @GetMapping("/permissions")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.PERMISSIONS_VIEW + "')")
     public List<PermissionDto> getPermissions() {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.PERMISSIONS_VIEW);
         return permissionRepository.findAllByOrderByGroupNameAscCodeAsc().stream().map(this::toPermissionDto).toList();
     }
 
     @GetMapping("/users")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.USERS_VIEW + "')")
     public List<AdminUserSummaryDto> getUsers() {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.USERS_VIEW);
         return userRepository.findAllByOrderByUsernameAscUidAsc().stream()
             .map(this::toUserSummaryDto)
             .toList();
     }
 
     @GetMapping("/roles/{code}/permissions")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_VIEW + "')")
     public Set<PermissionDto> getRolePermissions(@PathVariable String code) {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.ROLES_VIEW);
         Role role = findRoleByCodeOrThrow(code);
         return rolePermissionRepository.findByIdRoleId(role.getId()).stream()
             .map(RolePermission::getPermission)
@@ -145,12 +142,12 @@ public class AccessControlAdminController {
 
     @PutMapping("/roles/{code}/permissions")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.ROLES_PERMISSIONS_EDIT + "')")
     public Set<PermissionDto> updateRolePermissions(@PathVariable String code,
-                                                    @Valid @RequestBody UpdateRolePermissionsRequest request) {
-        authorize("CORPORATION_CONTRACT_EDIT");
+        @Valid @RequestBody UpdateRolePermissionsRequest request) {
+        authorize(PermissionCode.ROLES_PERMISSIONS_EDIT);
         Role role = findRoleByCodeOrThrow(code);
-        rolePermissionRepository.deleteByIdRoleId(role.getId());
+        rolePermissionRepository.deleteAllByRoleId(role.getId());
         for (String permissionCode : request.permissionCodes()) {
             Permission permission = findPermissionByCodeOrThrow(permissionCode);
             accessControlService.assignPermissionToRole(role.getId(), permission.getId());
@@ -159,35 +156,30 @@ public class AccessControlAdminController {
     }
 
     @GetMapping("/users/{userId}/access")
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_VIEW')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.USERS_VIEW + "')")
     public UserAccessDto getUserAccess(@PathVariable String userId) {
-        authorize("CORPORATION_CONTRACT_VIEW");
+        authorize(PermissionCode.USERS_VIEW);
         return buildUserAccessDto(findUserByIdOrThrow(userId));
     }
 
     @PutMapping("/users/{userId}/roles")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.USERS_EDIT + "')")
     public UserAccessDto updateUserRoles(@PathVariable String userId,
-                                         @Valid @RequestBody UpdateUserRolesRequest request) {
-        authorize("CORPORATION_CONTRACT_EDIT");
-        findUserByIdOrThrow(userId);
-        userRoleRepository.deleteByIdUserId(userId);
-        for (String roleCode : request.roleCodes()) {
-            Role role = findRoleByCodeOrThrow(roleCode);
-            accessControlService.assignRoleToUser(userId, role.getId());
-        }
+        @Valid @RequestBody UpdateUserRolesRequest request) {
+        authorize(PermissionCode.USERS_EDIT);
+        accessControlService.replaceUserRoles(userId, request.roleCodes());
         return buildUserAccessDto(findUserByIdOrThrow(userId));
     }
 
     @PutMapping("/users/{userId}/direct-permissions")
     @Transactional
-    @PreAuthorize("@accessControlSecurity.can('CORPORATION_CONTRACT_EDIT')")
+    @PreAuthorize("@accessControlSecurity.can('" + PermissionCode.PERMISSIONS_ASSIGN + "')")
     public UserAccessDto updateUserDirectPermissions(@PathVariable String userId,
                                                      @Valid @RequestBody UpdateUserDirectPermissionsRequest request) {
-        authorize("CORPORATION_CONTRACT_EDIT");
+        authorize(PermissionCode.PERMISSIONS_ASSIGN);
         findUserByIdOrThrow(userId);
-        userPermissionRepository.deleteByIdUserId(userId);
+        userPermissionRepository.deleteAllByUserId(userId);
         for (String permissionCode : request.permissionCodes()) {
             Permission permission = findPermissionByCodeOrThrow(permissionCode);
             accessControlService.assignDirectPermissionToUser(userId, permission.getId());

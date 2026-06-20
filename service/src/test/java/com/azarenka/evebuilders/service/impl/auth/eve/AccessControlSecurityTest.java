@@ -1,5 +1,6 @@
 package com.azarenka.evebuilders.service.impl.auth.eve;
 
+import com.azarenka.evebuilders.domain.db.PermissionCode;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
@@ -41,9 +42,9 @@ class AccessControlSecurityTest {
         authenticate("pilot", "user-1");
         when(userRepository.findByUsername("pilot")).thenReturn(Optional.of(user("user-1", "pilot")));
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(false);
-        when(accessControlService.hasPermission("user-1", "CORPORATION_CONTRACT_VIEW")).thenReturn(true);
+        when(accessControlService.hasPermission("user-1", PermissionCode.ADMIN_VIEW)).thenReturn(true);
 
-        assertTrue(accessControlSecurity.can("CORPORATION_CONTRACT_VIEW"));
+        assertTrue(accessControlSecurity.can(PermissionCode.ADMIN_VIEW));
     }
 
     @Test
@@ -51,9 +52,9 @@ class AccessControlSecurityTest {
         authenticate("pilot", "user-1");
         when(userRepository.findByUsername("pilot")).thenReturn(Optional.of(user("user-1", "pilot")));
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(false);
-        when(accessControlService.hasPermission("user-1", "CORPORATION_CONTRACT_EDIT")).thenReturn(true);
+        when(accessControlService.hasPermission("user-1", PermissionCode.USERS_EDIT)).thenReturn(true);
 
-        assertTrue(accessControlSecurity.hasCurrentUserPermission("CORPORATION_CONTRACT_EDIT"));
+        assertTrue(accessControlSecurity.hasCurrentUserPermission(PermissionCode.USERS_EDIT));
     }
 
     @Test
@@ -62,9 +63,9 @@ class AccessControlSecurityTest {
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user("user-1", "admin")));
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(true);
 
-        assertTrue(accessControlSecurity.can("CORPORATION_CONTRACT_EDIT"));
-        assertTrue(accessControlSecurity.hasPermission("user-1", "CONTRACTS_EDIT"));
-        verify(accessControlService, never()).hasPermission("user-1", "CORPORATION_CONTRACT_EDIT");
+        assertTrue(accessControlSecurity.can(PermissionCode.ROLES_DELETE));
+        assertTrue(accessControlSecurity.hasPermission("user-1", PermissionCode.USERS_VIEW));
+        verify(accessControlService, never()).hasPermission("user-1", PermissionCode.ROLES_DELETE);
     }
 
     @Test
@@ -72,14 +73,14 @@ class AccessControlSecurityTest {
         authenticate("pilot", "user-1");
         when(userRepository.findByUsername("pilot")).thenReturn(Optional.of(user("user-1", "pilot")));
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(false);
-        when(accessControlService.hasPermission("user-1", "CORPORATION_CONTRACT_VIEW")).thenReturn(false);
+        when(accessControlService.hasPermission("user-1", PermissionCode.ADMIN_VIEW)).thenReturn(false);
 
-        assertFalse(accessControlSecurity.can("CORPORATION_CONTRACT_VIEW"));
+        assertFalse(accessControlSecurity.can(PermissionCode.ADMIN_VIEW));
     }
 
     @Test
     void unauthenticatedUserIsDenied() {
-        assertFalse(accessControlSecurity.can("CORPORATION_CONTRACT_VIEW"));
+        assertFalse(accessControlSecurity.can(PermissionCode.ADMIN_VIEW));
     }
 
     private void authenticate(String username, String userId) {

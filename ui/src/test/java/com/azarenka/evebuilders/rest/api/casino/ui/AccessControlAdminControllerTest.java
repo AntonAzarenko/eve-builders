@@ -9,13 +9,13 @@ import com.azarenka.evebuilders.domain.acl.UserRole;
 import com.azarenka.evebuilders.domain.acl.UserRoleId;
 import com.azarenka.evebuilders.domain.dto.acl.AdminUserSummaryDto;
 import com.azarenka.evebuilders.domain.db.Permission;
+import com.azarenka.evebuilders.domain.db.PermissionCode;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.repository.database.acl.IPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRolePermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRoleRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserPermissionRepository;
-import com.azarenka.evebuilders.repository.database.acl.IUserRoleRepository;
 import com.azarenka.evebuilders.rest.api.ui.AccessControlAdminController;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
 import org.junit.jupiter.api.AfterEach;
@@ -48,7 +48,6 @@ class AccessControlAdminControllerTest {
     private IRoleRepository roleRepository;
     private IPermissionRepository permissionRepository;
     private IRolePermissionRepository rolePermissionRepository;
-    private IUserRoleRepository userRoleRepository;
     private IUserPermissionRepository userPermissionRepository;
     private MockMvc mockMvc;
 
@@ -59,7 +58,6 @@ class AccessControlAdminControllerTest {
         roleRepository = mock(IRoleRepository.class);
         permissionRepository = mock(IPermissionRepository.class);
         rolePermissionRepository = mock(IRolePermissionRepository.class);
-        userRoleRepository = mock(IUserRoleRepository.class);
         userPermissionRepository = mock(IUserPermissionRepository.class);
 
         mockMvc = MockMvcBuilders.standaloneSetup(new AccessControlAdminController(
@@ -68,7 +66,6 @@ class AccessControlAdminControllerTest {
             roleRepository,
             permissionRepository,
             rolePermissionRepository,
-            userRoleRepository,
             userPermissionRepository
         )).build();
     }
@@ -83,7 +80,7 @@ class AccessControlAdminControllerTest {
         authenticate("pilot", "user-1", false);
 
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(false);
-        when(accessControlService.hasPermission("user-1", "CORPORATION_CONTRACT_VIEW")).thenReturn(false);
+        when(accessControlService.hasPermission("user-1", PermissionCode.ROLES_VIEW)).thenReturn(false);
         when(userRepository.findByUsername("pilot")).thenReturn(Optional.of(user("user-1", "pilot")));
 
         mockMvc.perform(get("/api/admin/roles"))
@@ -98,7 +95,7 @@ class AccessControlAdminControllerTest {
         Permission corporation = permission(1L, "CORPORATION_VIEW", "Corporation", "Corporation");
 
         when(accessControlService.isSuperAdmin("user-1")).thenReturn(false);
-        when(accessControlService.hasPermission("user-1", "CORPORATION_CONTRACT_VIEW")).thenReturn(true);
+        when(accessControlService.hasPermission("user-1", PermissionCode.ROLES_VIEW)).thenReturn(true);
         when(userRepository.findByUsername("pilot")).thenReturn(Optional.of(user("user-1", "pilot")));
         when(roleRepository.findAllByOrderByCodeAsc()).thenReturn(List.of(role));
         when(rolePermissionRepository.findByIdRoleId(10L)).thenReturn(List.of(rolePermission(role, corporation)));
@@ -249,7 +246,7 @@ class AccessControlAdminControllerTest {
                 ]
                 """));
 
-        verify(rolePermissionRepository).deleteByIdRoleId(10L);
+        verify(rolePermissionRepository).deleteAllByRoleId(10L);
         verify(accessControlService).assignPermissionToRole(10L, 1L);
         verify(accessControlService).assignPermissionToRole(10L, 2L);
     }
@@ -290,48 +287,46 @@ class AccessControlAdminControllerTest {
     void updateUserRolesReplacesRoles() throws Exception {
         authenticate("admin", "admin-1", true);
 
-        Role role = role(10L, "MANAGER", "Manager", "Management role", true);
+        Role manager = role(10L, "MANAGER", "Manager", "Management role", true);
+        Role ceo = role(11L, "CEO", "CEO", "Executive role", true);
+        Role coordinator = role(12L, "COORDINATOR", "Coordinator", "Coordination role", true);
         User user = user("user-2", "pilot");
 
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user("admin-1", "admin")));
         when(accessControlService.isSuperAdmin("admin-1")).thenReturn(true);
         when(userRepository.findById("user-2")).thenReturn(Optional.of(user));
-        when(roleRepository.findByCode("MANAGER")).thenReturn(Optional.of(role));
-        when(rolePermissionRepository.findByIdRoleId(10L)).thenReturn(List.of());
-        when(accessControlService.assignRoleToUser("user-2", 10L)).thenAnswer(invocation -> {
-            UserRole userRole = new UserRole();
-            UserRoleId id = new UserRoleId();
-            id.setUserId("user-2");
-            id.setRoleId(10L);
-            userRole.setId(id);
-            userRole.setUser(user);
-            userRole.setRole(role);
-            return userRole;
-        });
-        when(accessControlService.getUserRoles("user-2")).thenReturn(Set.of(role));
+        when(accessControlService.replaceUserRoles("user-2", Set.of("COORDINATOR", "MANAGER", "CEO")))
+            .thenReturn(new LinkedHashSet<>(List.of(coordinator, manager, ceo)));
+        when(accessControlService.getUserRoles("user-2")).thenReturn(new LinkedHashSet<>(List.of(coordinator, manager, ceo)));
         when(accessControlService.getDirectPermissions("user-2")).thenReturn(Set.of());
         when(accessControlService.getFinalPermissionCodes("user-2")).thenReturn(Set.of());
         when(permissionRepository.findAllByOrderByGroupNameAscCodeAsc()).thenReturn(List.of());
+        when(rolePermissionRepository.findByIdRoleId(10L)).thenReturn(List.of());
+        when(rolePermissionRepository.findByIdRoleId(11L)).thenReturn(List.of());
+        when(rolePermissionRepository.findByIdRoleId(12L)).thenReturn(List.of());
 
         mockMvc.perform(put("/api/admin/users/user-2/roles")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"roleCodes":["MANAGER"]}
+                    {"roleCodes":["COORDINATOR","MANAGER","CEO"]}
                     """))
             .andExpect(status().isOk())
             .andExpect(content().json("""
                 {
                   "userId":"user-2",
                   "username":"pilot",
-                  "roles":[{"id":10,"code":"MANAGER","name":"Manager","description":"Management role","systemRole":true,"permissions":[]}],
+                  "roles":[
+                    {"id":12,"code":"COORDINATOR","name":"Coordinator","description":"Coordination role","systemRole":true,"permissions":[]},
+                    {"id":10,"code":"MANAGER","name":"Manager","description":"Management role","systemRole":true,"permissions":[]},
+                    {"id":11,"code":"CEO","name":"CEO","description":"Executive role","systemRole":true,"permissions":[]}
+                  ],
                   "directPermissions":[],
                   "finalPermissions":[],
                   "superAdmin":false
                 }
                 """));
 
-        verify(userRoleRepository).deleteByIdUserId("user-2");
-        verify(accessControlService).assignRoleToUser("user-2", 10L);
+        verify(accessControlService).replaceUserRoles("user-2", Set.of("COORDINATOR", "MANAGER", "CEO"));
     }
 
     @Test
@@ -360,7 +355,7 @@ class AccessControlAdminControllerTest {
                     """))
             .andExpect(status().isOk());
 
-        verify(userPermissionRepository).deleteByIdUserId("user-2");
+        verify(userPermissionRepository).deleteAllByUserId("user-2");
         verify(accessControlService).assignDirectPermissionToUser("user-2", 2L);
     }
 

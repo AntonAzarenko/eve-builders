@@ -10,12 +10,14 @@ import com.azarenka.evebuilders.domain.acl.UserRoleId;
 import com.azarenka.evebuilders.domain.auth.auth.ui.AuthProfile;
 import com.azarenka.evebuilders.domain.db.Permission;
 import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.exeptions.ValidationException;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.repository.database.acl.IPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRolePermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRoleRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserRoleRepository;
+import com.azarenka.evebuilders.repository.database.acl.UserRoleSyncResult;
 import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -66,6 +69,7 @@ class AccessControlServiceTest {
     private Permission contractsEdit;
     private Permission corporationView;
     private Permission corporationContractEdit;
+    private Permission adminView;
 
     @BeforeEach
     void setUp() {
@@ -81,6 +85,7 @@ class AccessControlServiceTest {
         contractsEdit = permission(3L, "CONTRACTS_EDIT", "Contracts edit", "Contracts");
         corporationView = permission(4L, "CORPORATION_VIEW", "Corporation view", "Corporation");
         corporationContractEdit = permission(5L, "CORPORATION_CONTRACT_EDIT", "Corporation contract edit", "Corporation contracts");
+        adminView = permission(6L, "ADMIN_VIEW", "Admin view", "Admin");
     }
 
     @Test
@@ -185,8 +190,8 @@ class AccessControlServiceTest {
         when(roleRepository.findById(superAdminRole.getId())).thenReturn(Optional.of(superAdminRole));
 
         assertThrows(IllegalStateException.class, () -> accessControlService.deleteRole(superAdminRole.getId()));
-        verify(rolePermissionRepository, never()).deleteByIdRoleId(any());
-        verify(userRoleRepository, never()).deleteByIdRoleId(any());
+        verify(rolePermissionRepository, never()).deleteAllByRoleId(any());
+        verify(userRoleRepository, never()).deleteAllByRoleId(any());
         verify(roleRepository, never()).delete(any());
     }
 
@@ -196,8 +201,8 @@ class AccessControlServiceTest {
         when(roleRepository.findById(systemAdminRole.getId())).thenReturn(Optional.of(systemAdminRole));
 
         assertThrows(IllegalStateException.class, () -> accessControlService.deleteRole(systemAdminRole.getId()));
-        verify(rolePermissionRepository, never()).deleteByIdRoleId(any());
-        verify(userRoleRepository, never()).deleteByIdRoleId(any());
+        verify(rolePermissionRepository, never()).deleteAllByRoleId(any());
+        verify(userRoleRepository, never()).deleteAllByRoleId(any());
         verify(roleRepository, never()).delete(any());
     }
 
@@ -238,10 +243,134 @@ class AccessControlServiceTest {
     }
 
     @Test
+    void assignRoleToUserByRoleObjectCreatesRelationWhenMissing() {
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(userRoleRepository.findByIdUserIdAndIdRoleId(user.getUid(), managerRole.getId()))
+            .thenReturn(Optional.empty());
+        when(userRoleRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserRole result = accessControlService.assignRoleToUser(user.getUid(), managerRole);
+
+        UserRoleId expectedId = new UserRoleId();
+        expectedId.setUserId(user.getUid());
+        expectedId.setRoleId(managerRole.getId());
+        assertEquals(expectedId, result.getId());
+        assertEquals(user, result.getUser());
+        assertEquals(managerRole, result.getRole());
+    }
+
+    @Test
+    void assignRoleToUserByCodeCreatesRelationWhenMissing() {
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(roleRepository.findByCode("MANAGER")).thenReturn(Optional.of(managerRole));
+        when(userRoleRepository.findByIdUserIdAndIdRoleId(user.getUid(), managerRole.getId()))
+            .thenReturn(Optional.empty());
+        when(userRoleRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserRole result = accessControlService.assignRoleToUser(user.getUid(), "manager");
+
+        UserRoleId expectedId = new UserRoleId();
+        expectedId.setUserId(user.getUid());
+        expectedId.setRoleId(managerRole.getId());
+        assertEquals(expectedId, result.getId());
+        assertEquals(user, result.getUser());
+        assertEquals(managerRole, result.getRole());
+    }
+
+    @Test
+    void replaceUserRolesSynchronizesAddsAndRemovesWithoutTouchingExistingMappings() {
+        Role ceoRole = role("CEO", true, 12L);
+        Role builderRole = role("BUILDER", true, 13L);
+        LinkedHashSet<String> request = new LinkedHashSet<>();
+        request.add("  ceo  ");
+        request.add("BUILDER");
+        request.add(null);
+        request.add(" ");
+        request.add("BUILDER");
+
+        when(userRepository.existsById(user.getUid())).thenReturn(true);
+        when(userRoleRepository.syncUserRoles(user.getUid(), Set.of("CEO", "BUILDER")))
+            .thenReturn(new UserRoleSyncResult(Set.of(), 1L, 1L));
+        when(roleRepository.findByCode("CEO")).thenReturn(Optional.of(ceoRole));
+        when(roleRepository.findByCode("BUILDER")).thenReturn(Optional.of(builderRole));
+
+        Set<Role> result = accessControlService.replaceUserRoles(user.getUid(), request);
+
+        assertEquals(Set.of(ceoRole, builderRole), result);
+    }
+
+    @Test
+    void replaceUserRolesAddsRolesWhenUserHasNoRoles() {
+        Role minerRole = role("MINER", true, 14L);
+
+        when(userRepository.existsById(user.getUid())).thenReturn(true);
+        when(userRoleRepository.syncUserRoles(user.getUid(), Set.of("MINER")))
+            .thenReturn(new UserRoleSyncResult(Set.of(), 1L, 0L));
+        when(roleRepository.findByCode("MINER")).thenReturn(Optional.of(minerRole));
+
+        Set<Role> result = accessControlService.replaceUserRoles(user.getUid(), Set.of("MINER"));
+
+        assertEquals(Set.of(minerRole), result);
+    }
+
+    @Test
+    void replaceUserRolesRemovesAllRolesWhenRequestIsEmpty() {
+        when(userRepository.existsById(user.getUid())).thenReturn(true);
+        when(userRoleRepository.syncUserRoles(user.getUid(), Set.of()))
+            .thenReturn(new UserRoleSyncResult(Set.of(), 0L, 1L));
+
+        Set<Role> result = accessControlService.replaceUserRoles(user.getUid(), Set.of());
+
+        assertEquals(Set.of(), result);
+        verify(roleRepository, never()).findByCode(any());
+    }
+
+    @Test
+    void replaceUserRolesRejectsUnknownRoleCodesWithoutMutatingMappings() {
+        when(userRepository.existsById(user.getUid())).thenReturn(true);
+        when(userRoleRepository.syncUserRoles(user.getUid(), Set.of("UNKNOWN")))
+            .thenReturn(new UserRoleSyncResult(Set.of("UNKNOWN"), 0L, 0L));
+
+        ValidationException exception = assertThrows(ValidationException.class,
+            () -> accessControlService.replaceUserRoles(user.getUid(), Set.of("UNKNOWN")));
+
+        assertEquals("Unknown role codes: UNKNOWN", exception.getMessage());
+        verify(roleRepository, never()).findByCode(any());
+    }
+
+    @Test
+    void replaceUserRolesIgnoresBlankAndDuplicateValuesDuringNormalization() {
+        Role minerRole = role("MINER", true, 14L);
+        LinkedHashSet<String> request = new LinkedHashSet<>();
+        request.add(" ");
+        request.add(null);
+        request.add("miner");
+        request.add(" MINER ");
+        request.add("MINER");
+
+        when(userRepository.existsById(user.getUid())).thenReturn(true);
+        when(userRoleRepository.syncUserRoles(user.getUid(), Set.of("MINER")))
+            .thenReturn(new UserRoleSyncResult(Set.of(), 1L, 0L));
+        when(roleRepository.findByCode("MINER")).thenReturn(Optional.of(minerRole));
+
+        Set<Role> result = accessControlService.replaceUserRoles(user.getUid(), request);
+
+        assertEquals(Set.of(minerRole), result);
+    }
+
+    @Test
     void deletePermissionRejectsProtectedPermission() {
         when(permissionRepository.findById(dashboardView.getId())).thenReturn(Optional.of(dashboardView));
 
         assertThrows(IllegalStateException.class, () -> accessControlService.deletePermission(dashboardView.getId()));
+        verify(permissionRepository, never()).delete(any());
+    }
+
+    @Test
+    void deletePermissionRejectsAdminPermission() {
+        when(permissionRepository.findById(adminView.getId())).thenReturn(Optional.of(adminView));
+
+        assertThrows(IllegalStateException.class, () -> accessControlService.deletePermission(adminView.getId()));
         verify(permissionRepository, never()).delete(any());
     }
 

@@ -13,6 +13,7 @@ import com.azarenka.evebuilders.repository.database.acl.IRolePermissionRepositor
 import com.azarenka.evebuilders.repository.database.acl.IRoleRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserRoleRepository;
+import com.azarenka.evebuilders.repository.database.acl.UserRoleSyncResult;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
 import com.azarenka.evebuilders.service.config.AccessControlCacheConfig;
 import com.azarenka.evebuilders.service.impl.AccessControlService;
@@ -156,6 +157,35 @@ class AccessControlCacheTest {
         userRoles.set(List.of(userRole));
 
         Set<String> afterMutation = accessControlService.getFinalPermissionCodes("user-2");
+
+        assertEquals(Set.of("DASHBOARD_VIEW"), afterMutation);
+    }
+
+    @Test
+    void finalPermissionsAreCachedAndInvalidatedAfterReplaceUserRoles() {
+        User user = user("user-3", "pilot-3");
+        Role ceoRole = role(2L, "CEO");
+        Permission dashboard = permission(10L, "DASHBOARD_VIEW");
+
+        UserRole userRole = userRole(user, ceoRole);
+        RolePermission dashboardGrant = rolePermission(ceoRole, dashboard);
+        AtomicReference<List<UserRole>> userRoles = new AtomicReference<>(List.of());
+        AtomicReference<List<RolePermission>> rolePermissions = new AtomicReference<>(List.of(dashboardGrant));
+
+        when(userRepository.findById("user-3")).thenReturn(Optional.of(user));
+        when(userRepository.existsById("user-3")).thenReturn(true);
+        when(userRoleRepository.findByIdUserIdOrderByIdRoleIdAsc("user-3")).thenAnswer(invocation -> userRoles.get());
+        when(rolePermissionRepository.findByIdRoleIdIn(List.of(2L))).thenAnswer(invocation -> rolePermissions.get());
+        when(roleRepository.findByCode("CEO")).thenReturn(Optional.of(ceoRole));
+        when(userRoleRepository.syncUserRoles("user-3", Set.of("CEO")))
+            .thenReturn(new UserRoleSyncResult(Set.of(), 1L, 0L));
+
+        assertEquals(Set.of(), accessControlService.getFinalPermissionCodes("user-3"));
+
+        accessControlService.replaceUserRoles("user-3", Set.of("CEO"));
+        userRoles.set(List.of(userRole));
+
+        Set<String> afterMutation = accessControlService.getFinalPermissionCodes("user-3");
 
         assertEquals(Set.of("DASHBOARD_VIEW"), afterMutation);
     }

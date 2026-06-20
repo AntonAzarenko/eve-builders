@@ -16,6 +16,8 @@ app:
     refresh-cookie-name: "refresh_token"
 
 spring:
+  application:
+    name: eve-builders
   datasource:
     postgresql:
       url: ${SPRING.DATASOURCE.POSTGRESQL.URL}
@@ -88,6 +90,13 @@ spring:
             token-uri: ${eve.token.uri}
             user-info-uri: ${eve.user-info.uri}
             user-name-attribute: CharacterName
+
+springdoc:
+  api-docs:
+    path: /api/v3/api-docs
+  swagger-ui:
+    path: /api/swagger-ui/index.html
+  packages-to-scan: com.azarenka.evebuilders.rest
 
 server:
   servlet:

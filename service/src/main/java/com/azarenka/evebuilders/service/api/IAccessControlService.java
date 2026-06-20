@@ -46,7 +46,13 @@ public interface IAccessControlService {
 
     void removePermissionFromRole(Long roleId, Long permissionId);
 
+    UserRole assignRoleToUser(String userId, Role role);
+
+    UserRole assignRoleToUser(String userId, String roleCode);
+
     UserRole assignRoleToUser(String userId, Long roleId);
+
+    Set<Role> replaceUserRoles(String userId, Set<String> roleCodes);
 
     void removeRoleFromUser(String userId, Long roleId);
 

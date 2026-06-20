@@ -9,13 +9,16 @@ import com.azarenka.evebuilders.domain.acl.UserRole;
 import com.azarenka.evebuilders.domain.acl.UserRoleId;
 import com.azarenka.evebuilders.domain.auth.auth.ui.AuthProfile;
 import com.azarenka.evebuilders.domain.db.Permission;
+import com.azarenka.evebuilders.domain.db.PermissionCode;
 import com.azarenka.evebuilders.domain.db.User;
+import com.azarenka.evebuilders.domain.exeptions.ValidationException;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.repository.database.acl.IPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRolePermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IRoleRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserPermissionRepository;
 import com.azarenka.evebuilders.repository.database.acl.IUserRoleRepository;
+import com.azarenka.evebuilders.repository.database.acl.UserRoleSyncResult;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
 import com.azarenka.evebuilders.service.config.AccessControlCacheConfig;
 import com.azarenka.evebuilders.service.impl.auth.eve.AccessControlQueryService;
@@ -25,6 +28,7 @@ import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +36,17 @@ import java.util.stream.Collectors;
 public class AccessControlService implements IAccessControlService {
 
     private static final Set<String> PROTECTED_PERMISSION_CODES = Set.of(
+        PermissionCode.ADMIN_VIEW,
         "DASHBOARD_VIEW",
+        PermissionCode.USERS_VIEW,
+        PermissionCode.USERS_EDIT,
+        PermissionCode.ROLES_VIEW,
+        PermissionCode.ROLES_CREATE,
+        PermissionCode.ROLES_EDIT,
+        PermissionCode.ROLES_DELETE,
+        PermissionCode.ROLES_PERMISSIONS_EDIT,
+        PermissionCode.PERMISSIONS_VIEW,
+        PermissionCode.PERMISSIONS_ASSIGN,
         "CONTRACTS_VIEW",
         "CONTRACTS_CREATE",
         "CONTRACTS_EDIT",
@@ -228,8 +242,8 @@ public class AccessControlService implements IAccessControlService {
         if (role.isSystemRole()) {
             throw new IllegalStateException("System role cannot be deleted: " + role.getCode());
         }
-        rolePermissionRepository.deleteByIdRoleId(roleId);
-        userRoleRepository.deleteByIdRoleId(roleId);
+        rolePermissionRepository.deleteAllByRoleId(roleId);
+        userRoleRepository.deleteAllByRoleId(roleId);
         roleRepository.delete(role);
     }
 
@@ -266,7 +280,7 @@ public class AccessControlService implements IAccessControlService {
         AccessControlCacheConfig.SUPER_ADMIN_CACHE
     }, allEntries = true)
     public void removePermissionFromRole(Long roleId, Long permissionId) {
-        rolePermissionRepository.deleteByIdRoleIdAndIdPermissionId(roleId, permissionId);
+        rolePermissionRepository.deleteByRoleIdAndPermissionId(roleId, permissionId);
     }
 
     @Override
@@ -280,12 +294,9 @@ public class AccessControlService implements IAccessControlService {
         AccessControlCacheConfig.AUTH_PROFILE_CACHE,
         AccessControlCacheConfig.SUPER_ADMIN_CACHE
     }, allEntries = true)
-    public UserRole assignRoleToUser(String userId, Long roleId) {
+    public UserRole assignRoleToUser(String userId, Role role) {
         User user = getUserOrThrow(userId);
-        Role role = roleRepository.findById(roleId)
-            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleId));
-
-        return userRoleRepository.findByIdUserIdAndIdRoleId(userId, roleId)
+        return userRoleRepository.findByIdUserIdAndIdRoleId(userId, role.getId())
             .orElseGet(() -> userRoleRepository.save(buildUserRole(user, role)));
     }
 
@@ -300,8 +311,77 @@ public class AccessControlService implements IAccessControlService {
         AccessControlCacheConfig.AUTH_PROFILE_CACHE,
         AccessControlCacheConfig.SUPER_ADMIN_CACHE
     }, allEntries = true)
+    public UserRole assignRoleToUser(String userId, String roleCode) {
+        User user = getUserOrThrow(userId);
+        Role role = roleRepository.findByCode(normalizeCode(roleCode))
+            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleCode));
+
+        return userRoleRepository.findByIdUserIdAndIdRoleId(userId, role.getId())
+            .orElseGet(() -> userRoleRepository.save(buildUserRole(user, role)));
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        AccessControlCacheConfig.USER_ROLES_CACHE,
+        AccessControlCacheConfig.ROLE_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.DIRECT_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSION_CODES_CACHE,
+        AccessControlCacheConfig.AUTH_PROFILE_CACHE,
+        AccessControlCacheConfig.SUPER_ADMIN_CACHE
+    }, allEntries = true)
+    public UserRole assignRoleToUser(String userId, Long roleId) {
+        Role role = roleRepository.findById(roleId)
+            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleId));
+        User user = getUserOrThrow(userId);
+        return userRoleRepository.findByIdUserIdAndIdRoleId(userId, role.getId())
+            .orElseGet(() -> userRoleRepository.save(buildUserRole(user, role)));
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        AccessControlCacheConfig.USER_ROLES_CACHE,
+        AccessControlCacheConfig.ROLE_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.DIRECT_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSION_CODES_CACHE,
+        AccessControlCacheConfig.AUTH_PROFILE_CACHE,
+        AccessControlCacheConfig.SUPER_ADMIN_CACHE
+    }, allEntries = true)
+    public Set<Role> replaceUserRoles(String userId, Set<String> roleCodes) {
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("User not found: " + userId);
+        }
+        Set<String> normalizedRoleCodes = normalizeRoleCodes(roleCodes);
+        UserRoleSyncResult syncResult = userRoleRepository.syncUserRoles(userId, normalizedRoleCodes);
+        if (!syncResult.missingRoles().isEmpty()) {
+            throw new ValidationException("Unknown role codes: " + String.join(", ", syncResult.missingRoles()));
+        }
+
+        LinkedHashSet<Role> assignedRoles = new LinkedHashSet<>();
+        for (String roleCode : normalizedRoleCodes) {
+            Role role = roleRepository.findByCode(roleCode)
+                .orElseThrow(() -> new IllegalStateException("Role disappeared during sync: " + roleCode));
+            assignedRoles.add(role);
+        }
+        return assignedRoles;
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = {
+        AccessControlCacheConfig.USER_ROLES_CACHE,
+        AccessControlCacheConfig.ROLE_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.DIRECT_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSIONS_CACHE,
+        AccessControlCacheConfig.FINAL_PERMISSION_CODES_CACHE,
+        AccessControlCacheConfig.AUTH_PROFILE_CACHE,
+        AccessControlCacheConfig.SUPER_ADMIN_CACHE
+    }, allEntries = true)
     public void removeRoleFromUser(String userId, Long roleId) {
-        userRoleRepository.deleteByIdUserIdAndIdRoleId(userId, roleId);
+        userRoleRepository.deleteByUserIdAndRoleId(userId, roleId);
     }
 
     @Override
@@ -336,7 +416,7 @@ public class AccessControlService implements IAccessControlService {
         AccessControlCacheConfig.SUPER_ADMIN_CACHE
     }, allEntries = true)
     public void removeDirectPermissionFromUser(String userId, Long permissionId) {
-        userPermissionRepository.deleteByIdUserIdAndIdPermissionId(userId, permissionId);
+        userPermissionRepository.deleteByUserIdAndPermissionId(userId, permissionId);
     }
 
     @Override
@@ -370,6 +450,16 @@ public class AccessControlService implements IAccessControlService {
         if ("SUPER_ADMIN".equals(role.getCode())) {
             role.setSystemRole(true);
         }
+    }
+
+    private Set<String> normalizeRoleCodes(Set<String> roleCodes) {
+        if (roleCodes == null || roleCodes.isEmpty()) {
+            return Set.of();
+        }
+        return roleCodes.stream()
+            .map(this::normalizeCode)
+            .filter(code -> code != null && !code.isBlank())
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private RolePermission buildRolePermission(Role role, Permission permission) {

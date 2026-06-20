@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-18-01
+      author: codex
+      comment: seed-admin-permissions-and-grant-to-admin-role
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.permissions (code, name, description, group_name)
+              VALUES
+                ('ADMIN_VIEW', 'View admin shell', 'Access the admin shell and admin navigation', 'ADMIN'),
+                ('USERS_VIEW', 'View users', 'See the users list and user access details', 'USERS'),
+                ('USERS_EDIT', 'Edit users', 'Assign roles and edit user access', 'USERS'),
+                ('ROLES_VIEW', 'View roles', 'See available roles and role permissions', 'ROLES'),
+                ('ROLES_CREATE', 'Create roles', 'Create new roles', 'ROLES'),
+                ('ROLES_EDIT', 'Edit roles', 'Edit existing roles', 'ROLES'),
+                ('ROLES_DELETE', 'Delete roles', 'Delete roles', 'ROLES'),
+                ('ROLES_PERMISSIONS_EDIT', 'Edit role permissions', 'Assign permissions to roles', 'ROLES'),
+                ('PERMISSIONS_VIEW', 'View permissions', 'See the permission catalog', 'PERMISSIONS'),
+                ('PERMISSIONS_ASSIGN', 'Assign permissions', 'Assign permissions to users', 'PERMISSIONS')
+              ON CONFLICT (code) DO UPDATE
+              SET name = EXCLUDED.name,
+                  description = EXCLUDED.description,
+                  group_name = EXCLUDED.group_name;
+
+              WITH admin_role AS (
+                SELECT id
+                FROM builders.roles
+                WHERE code = 'ADMIN'
+              ),
+              admin_perm AS (
+                SELECT id, code
+                FROM builders.permissions
+                WHERE code IN (
+                  'ADMIN_VIEW',
+                  'USERS_VIEW',
+                  'USERS_EDIT',
+                  'ROLES_VIEW',
+                  'ROLES_CREATE',
+                  'ROLES_EDIT',
+                  'ROLES_DELETE',
+                  'ROLES_PERMISSIONS_EDIT',
+                  'PERMISSIONS_VIEW',
+                  'PERMISSIONS_ASSIGN'
+                )
+              )
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT admin_role.id, admin_perm.id
+              FROM admin_role
+              CROSS JOIN admin_perm
+              ON CONFLICT DO NOTHING;

@@ -7,6 +7,7 @@ import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.menu.MenuConstructionPage;
 import com.azarenka.evebuilders.main.menu.MenuManagerPage;
 import com.azarenka.evebuilders.main.menu.MenuOrdersPage;
+import com.azarenka.evebuilders.main.menu.MenuProfilePage;
 import com.azarenka.evebuilders.main.menu.MenuRequestCenterPage;
 import com.azarenka.evebuilders.main.menu.MenuStaffPage;
 import com.azarenka.evebuilders.main.menu.MenuStatisticPage;
@@ -49,6 +50,8 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
             "CONTRACTS_VIEW", "CONTRACTS_CREATE", "CONTRACTS_EDIT", "CONTRACTS_ACCEPT",
             "CONTRACTS_CANCEL", "CONTRACTS_DISCARD", "CORPORATION_VIEW",
             "CORPORATION_CONTRACT_VIEW", "CORPORATION_CONTRACT_EDIT");
+        addView(MenuProfilePage.class, getTranslation("menu.tab.profile"),
+            VaadinIcon.USER.create(), "tab-profile-menu");
         addTabIfAllowed(getTranslation("menu.tab.construction"), MenuConstructionPage.class,
             IconFactory.lineAwesome(LineAwesomeIcon.INDUSTRY_SOLID), "tab-construction-menu",
             "DASHBOARD_VIEW", "CONTRACTS_ACCEPT", "CONTRACTS_DISCARD");
@@ -89,6 +92,7 @@ public class MainWidget extends NavigationParentViewWithTabs implements LocaleCh
     public void localeChange(LocaleChangeEvent event) {
         countSubmittedRequests = controller.countRequests();
         Map<Class<?>, NavigationTab> tabMap = getTabMap();
+        tabMap.get(MenuProfilePage.class).updateLabel(getTranslation("menu.tab.profile"), VaadinIcon.USER.create());
         if (BuilderPermission.hasBuilderPermission() || BuilderPermission.hasAdminPermission()) {
             tabMap.get(MenuOrdersPage.class)
                 .updateLabel(getTranslation("menu.tab.orders"), VaadinIcon.HOME.create(), countNewOrders);
