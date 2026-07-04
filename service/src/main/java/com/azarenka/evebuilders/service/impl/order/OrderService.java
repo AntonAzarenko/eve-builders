@@ -6,6 +6,7 @@ import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.repository.database.OrderSpecification;
@@ -13,14 +14,12 @@ import com.azarenka.evebuilders.repository.database.properties.IDestinationRepos
 import com.azarenka.evebuilders.repository.database.properties.IReceiverRepository;
 import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IOrderService;
-import com.azarenka.evebuilders.service.api.integration.ITelegramIntegrationService;
+import com.azarenka.evebuilders.service.api.integration.INotificationService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
-import com.azarenka.evebuilders.service.util.TelegramMessageCreatorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,9 +44,7 @@ public class OrderService implements IOrderService {
     @Autowired
     private IAuditService auditService;
     @Autowired
-    private ITelegramIntegrationService telegramIntegrationService;
-    @Value("${app.telegram_thread_ping_id}")
-    private String threadPingId;
+    private INotificationService notificationService;
 
     @Override
     public List<Destination> getAllDestination() {
@@ -70,9 +67,13 @@ public class OrderService implements IOrderService {
         order.setOrderStatus(OrderStatusEnum.NEW);
         order.setOrderNumber(orderNumber);
         order.setCreatedBy(userName);
+        order.setCreatedDate(LocalDate.now());
+        order.setUpdatedBy(null);
+        order.setUpdatedDate(null);
         order.setInProgressCount(0);
         order.setCountReady(0);
-        telegramIntegrationService.sendMessage(TelegramMessageCreatorService.createOrderMessage(order), threadPingId);
+        normalizeReceiverFields(order);
+        notificationService.sendOrderCreated(order);
         var savedOrder = orderRepository.save(order);
         LOGGER.info("Creating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderNumber,
             order.getShipName(), userName);
@@ -124,6 +125,10 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public Order updateOrder(Order orderDto) {
+        normalizeReceiverFields(orderDto);
+        orderDto.setUpdatedBy(SecurityUtils.getUserName());
+        orderDto.setUpdatedDate(LocalDate.now());
+        notificationService.sendOrderUpdated(orderDto);
         return orderRepository.save(orderDto);
     }
 
@@ -139,6 +144,19 @@ public class OrderService implements IOrderService {
         destination.setDestination(value);
         destination.setDestId(UUID.randomUUID().toString());
         destinationRepository.save(destination);
+    }
+
+    @Override
+    public void updateDestination(String destinationId, String value) {
+        destinationRepository.findById(destinationId).ifPresent(destination -> {
+            destination.setDestination(value);
+            destinationRepository.save(destination);
+        });
+    }
+
+    @Override
+    public void removeDestination(String destinationId) {
+        destinationRepository.deleteById(destinationId);
     }
 
     @Override
@@ -158,7 +176,7 @@ public class OrderService implements IOrderService {
     @Transactional
     public void removeOrder(String orderNumber) {
         orderRepository.deleteByOrderNumber(orderNumber);
-        telegramIntegrationService.sendInfoMessage(String.format("Заказ %s был удален", orderNumber), threadPingId);
+        notificationService.sendOrderRemoved(orderNumber);
     }
 
     @Override
@@ -171,5 +189,20 @@ public class OrderService implements IOrderService {
         int seqNum = orderRepository.findTodayOrdersCount(date);
         var number = date.toString().replace("-", "");
         return String.format(ORDER_NUMBER_FORMAT, number, seqNum + 1);
+    }
+
+    private void normalizeReceiverFields(Order order) {
+        if (order.getReceiverType() == null) {
+            order.setReceiverType(ReceiverTargetType.CORPORATION);
+        }
+        if (order.getReceiverRefId() == null || order.getReceiverRefId().isBlank()) {
+            order.setReceiverRefId("0");
+        }
+        if (order.getReceiverName() == null) {
+            order.setReceiverName(order.getReceiver() == null ? "" : order.getReceiver());
+        }
+        if (order.getReceiver() == null) {
+            order.setReceiver(order.getReceiverName());
+        }
     }
 }

@@ -1,9 +1,5 @@
 package com.azarenka.evebuilders.main.statistic;
 
-import static com.azarenka.evebuilders.domain.enums.Metric.ORDERS_ALL;
-import static com.azarenka.evebuilders.domain.enums.Metric.ORDERS_MONTH;
-import static com.azarenka.evebuilders.domain.enums.Metric.SHIPS_MADE;
-
 import com.azarenka.evebuilders.component.View;
 import com.azarenka.evebuilders.domain.dto.UserStat;
 import com.azarenka.evebuilders.domain.enums.Metric;
@@ -13,6 +9,8 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
@@ -38,18 +36,20 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @PreAuthorize("@accessControlSecurity.can('DASHBOARD_VIEW')")
 @PageTitle("Statistic")
 public class MenuStatisticView extends View implements LocaleChangeObserver {
+    private enum PeriodMode {
+        ALL_TIME, DATE_RANGE
+    }
 
     private final IStatisticController controller;
 
-    private Metric currentMetric = ORDERS_ALL;
+    private Metric currentMetric = Metric.ORDERS_ALL;
+    private PeriodMode currentPeriodMode = PeriodMode.ALL_TIME;
     private boolean includeInactive = false;
-    private LocalDate periodFrom;
-    private LocalDate periodTo;
-
-    private final Button ordersAllButton = new Button(getTranslation("button.by_orders"));
-    private final Button ordersMonthButton = new Button(getTranslation("button.monthly"));
-    private final Button shipsMadeButton = new Button(getTranslation("button.ships_count"));
     private final Checkbox includeInactiveButton = new Checkbox(getTranslation("label.statistic.include_inactive"));
+    private final ComboBox<PeriodMode> periodModeComboBox = new ComboBox<>();
+    private final DatePicker fromDatePicker = new DatePicker();
+    private final DatePicker toDatePicker = new DatePicker();
+    private final ComboBox<Metric> metricComboBox = new ComboBox<>();
 
     private final Div podiumContainer = new Div();
     private final Grid<UserStat> grid = new Grid<>(UserStat.class, false);
@@ -60,7 +60,10 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
     public MenuStatisticView(IStatisticController controller) {
         this.controller = controller;
         setSizeFull();
-        super.getStyle().set("padding", "5px 5px 30px 5px");
+        setPadding(false);
+        setSpacing(false);
+        setMargin(false);
+        super.getStyle().set("padding", "2px 5px 30px 5px");
         var horizontalLayout = new HorizontalLayout(buildPodium());
         horizontalLayout.setJustifyContentMode(JustifyContentMode.CENTER);
         horizontalLayout.setWidthFull();
@@ -71,29 +74,59 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
 
     private HorizontalLayout buildHeader() {
         title = new H1(getTranslation("label.statistic.header"));
+        title.getStyle().set("margin", "0");
+        title.getStyle().set("padding", "0");
+        title.getStyle().set("line-height", "1");
         var help = new Button(new Icon(VaadinIcon.QUESTION_CIRCLE));
         help.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         help.setTooltipText(getTranslation("message.button_tooltip.statistic_calculation_info"));
         var spacer = new Span(" ");
         var header = new HorizontalLayout(spacer, title, help);
         header.setWidthFull();
+        header.setPadding(false);
+        header.setSpacing(false);
+        header.getStyle().set("margin-top", "0");
+        header.getStyle().set("padding-top", "0");
+        header.getStyle().set("min-height", "0");
+        header.getStyle().set("height", "auto");
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
         header.setAlignItems(Alignment.CENTER);
         return header;
     }
 
     private HorizontalLayout buildToolbar() {
-        styleAsToggle(ordersAllButton, true);
-        styleAsToggle(ordersMonthButton, false);
-        styleAsToggle(shipsMadeButton, false);
-        ordersAllButton.addClickListener(e -> selectMetric(Metric.ORDERS_ALL));
-        ordersMonthButton.addClickListener(e -> selectMetric(Metric.ORDERS_MONTH));
-        shipsMadeButton.addClickListener(e -> selectMetric(Metric.SHIPS_MADE));
+        periodModeComboBox.setItems(PeriodMode.values());
+        periodModeComboBox.setAllowCustomValue(false);
+        periodModeComboBox.setItemLabelGenerator(mode -> getTranslation(periodModeLabel(mode)));
+        periodModeComboBox.addValueChangeListener(e -> {
+            if (e.getValue() == null) {
+                return;
+            }
+            currentPeriodMode = e.getValue();
+            applyPeriodMode();
+            reloadIfValid();
+        });
+
+        metricComboBox.setItems(Metric.values());
+        metricComboBox.setAllowCustomValue(false);
+        metricComboBox.setItemLabelGenerator(metric -> getTranslation(metricLabel(metric)));
+        metricComboBox.addValueChangeListener(e -> {
+            if (e.getValue() == null) {
+                return;
+            }
+            currentMetric = e.getValue();
+            reloadIfValid();
+        });
+
+        fromDatePicker.addValueChangeListener(e -> reloadIfValid());
+        toDatePicker.addValueChangeListener(e -> reloadIfValid());
         includeInactiveButton.addValueChangeListener(e -> {
             includeInactive = Boolean.TRUE.equals(e.getValue());
-            reload();
+            reloadIfValid();
         });
-        var left = new HorizontalLayout(ordersAllButton, ordersMonthButton, shipsMadeButton);
+
+        var left = new HorizontalLayout(periodModeComboBox, fromDatePicker, toDatePicker, metricComboBox);
+        left.setAlignItems(Alignment.END);
         var right = new HorizontalLayout(includeInactiveButton);
         var spacer = new Div();
         HorizontalLayout bar = new HorizontalLayout(left, spacer, right);
@@ -132,52 +165,65 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
     }
 
     private void initState() {
-        var now = LocalDate.now();
-        if (currentMetric == ORDERS_MONTH) {
-            YearMonth ym = YearMonth.from(now);
-            periodFrom = ym.atDay(1);
-            periodTo = ym.atEndOfMonth();
-        } else {
-            periodFrom = LocalDate.MIN.plusYears(100);
-            periodTo = LocalDate.MAX.minusYears(100);
-        }
+        metricComboBox.setValue(currentMetric);
+        currentPeriodMode = PeriodMode.ALL_TIME;
+        periodModeComboBox.setValue(currentPeriodMode);
+        applyPeriodMode();
         includeInactive = false;
         includeInactiveButton.setValue(false);
     }
 
-    private void selectMetric(Metric metric) {
-        if (Objects.equals(metric, currentMetric)) {
+    private void applyPeriodMode() {
+        boolean rangeEnabled = currentPeriodMode == PeriodMode.DATE_RANGE;
+        fromDatePicker.setEnabled(rangeEnabled);
+        toDatePicker.setEnabled(rangeEnabled);
+        if (!rangeEnabled) {
+            fromDatePicker.clear();
+            toDatePicker.clear();
             return;
         }
-        currentMetric = metric;
-        if (metric == ORDERS_MONTH) {
+        if (Objects.isNull(fromDatePicker.getValue()) || Objects.isNull(toDatePicker.getValue())) {
             YearMonth ym = YearMonth.from(LocalDate.now());
-            periodFrom = ym.atDay(1);
-            periodTo = ym.atEndOfMonth();
-        } else {
-            periodFrom = LocalDate.MIN.plusYears(100);
-            periodTo = LocalDate.MAX.minusYears(100);
+            fromDatePicker.setValue(ym.atDay(1));
+            toDatePicker.setValue(ym.atEndOfMonth());
         }
-        styleAsToggle(ordersAllButton, metric == ORDERS_ALL);
-        styleAsToggle(ordersMonthButton, metric == ORDERS_MONTH);
-        styleAsToggle(shipsMadeButton, metric == SHIPS_MADE);
+    }
 
+    private void reloadIfValid() {
+        if (currentPeriodMode != PeriodMode.DATE_RANGE) {
+            clearDateInvalid();
+            reload();
+            return;
+        }
+        LocalDate from = fromDatePicker.getValue();
+        LocalDate to = toDatePicker.getValue();
+        if (from == null || to == null) {
+            clearDateInvalid();
+            return;
+        }
+        if (from.isAfter(to)) {
+            setDateInvalid(true);
+            return;
+        }
+        clearDateInvalid();
         reload();
     }
 
-    private void styleAsToggle(Button b, boolean active) {
-        b.removeThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_TERTIARY);
-        if (active) {
-            b.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        } else {
-            b.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        }
-    }
-
     private void reload() {
+        LocalDate periodFrom = currentPeriodMode == PeriodMode.DATE_RANGE ? fromDatePicker.getValue() : null;
+        LocalDate periodTo = currentPeriodMode == PeriodMode.DATE_RANGE ? toDatePicker.getValue() : null;
         List<UserStat> stats = controller.fetchLeaderboard(currentMetric, periodFrom, periodTo, includeInactive);
         renderPodium(stats);
         grid.setItems(stats);
+    }
+
+    private void setDateInvalid(boolean invalid) {
+        fromDatePicker.setInvalid(invalid);
+        toDatePicker.setInvalid(invalid);
+    }
+
+    private void clearDateInvalid() {
+        setDateInvalid(false);
     }
 
     private void renderPodium(List<UserStat> stats) {
@@ -189,9 +235,9 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
         row.setAlignItems(Alignment.END);
         row.setSpacing(true);
 
-        var u1 = stats.size() > 0 ? stats.get(0) : null; // 1-е
-        var u2 = stats.size() > 1 ? stats.get(1) : null; // 2-е
-        var u3 = stats.size() > 2 ? stats.get(2) : null; // 3-е
+        var u1 = stats.size() > 0 ? stats.get(0) : null;
+        var u2 = stats.size() > 1 ? stats.get(1) : null;
+        var u3 = stats.size() > 2 ? stats.get(2) : null;
 
         var card2 = createPodiumCard(u2, 2, 180);
         var card1 = createPodiumCard(u1, 1, 200);
@@ -261,17 +307,26 @@ public class MenuStatisticView extends View implements LocaleChangeObserver {
         grid.getColumns().get(3).setHeader(getTranslation("table.column.metric"));
 
         includeInactiveButton.setLabel(getTranslation("label.statistic.include_inactive"));
-
-        ordersAllButton.setText(getTranslation("button.by_orders"));
-        ordersMonthButton.setText(getTranslation("button.monthly"));
-        shipsMadeButton.setText(getTranslation("button.ships_count"));
+        periodModeComboBox.setLabel(getTranslation("label.statistic.filter.period"));
+        periodModeComboBox.getDataProvider().refreshAll();
+        fromDatePicker.setLabel(getTranslation("label.statistic.filter.date_from"));
+        toDatePicker.setLabel(getTranslation("label.statistic.filter.date_to"));
+        metricComboBox.setLabel(getTranslation("label.statistic.filter.metric"));
+        metricComboBox.getDataProvider().refreshAll();
     }
 
     private static String metricLabel(Metric m) {
         return switch (m) {
             case ORDERS_ALL -> "label.statistic.metric.orders";
-            case ORDERS_MONTH -> "label.statistic.metric.month";
             case SHIPS_MADE -> "label.statistic.metric.ships";
+            case ORDERS_MONTH -> "label.statistic.metric.modules";
+        };
+    }
+
+    private static String periodModeLabel(PeriodMode mode) {
+        return switch (mode) {
+            case ALL_TIME -> "label.statistic.period.all_time";
+            case DATE_RANGE -> "label.statistic.period.date_range";
         };
     }
 }

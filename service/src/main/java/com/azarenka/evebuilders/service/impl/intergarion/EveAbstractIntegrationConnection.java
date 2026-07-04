@@ -27,7 +27,7 @@ public abstract class EveAbstractIntegrationConnection {
             .exchangeStrategies(ExchangeStrategies.builder()
                 .codecs(configurer -> configurer
                     .defaultCodecs()
-                    .maxInMemorySize(10 * 1024 * 1024)) // 10 MB, можешь уменьшить/увеличить
+                    .maxInMemorySize(10 * 1024 * 1024))
                 .build())
             .build();
     }

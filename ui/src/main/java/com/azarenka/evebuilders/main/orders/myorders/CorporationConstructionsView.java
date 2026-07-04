@@ -5,10 +5,10 @@ import com.azarenka.evebuilders.common.util.VaadinUtils;
 import com.azarenka.evebuilders.component.OrderFilterPopupComponent;
 import com.azarenka.evebuilders.component.SearchComponent;
 import com.azarenka.evebuilders.component.View;
-import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.main.commonview.FitView;
 import com.azarenka.evebuilders.main.commonview.NotificationWindow;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
@@ -339,7 +339,9 @@ public class CorporationConstructionsView extends View implements LocaleChangeOb
         var items = dataProvider.getItems();
         if (!items.isEmpty()) {
             var distributedOrder = new ArrayList<>(items).get(0);
-            grid.select(distributedOrder);
+            if (Objects.nonNull(distributedOrder)) {
+                grid.select(distributedOrder);
+            }
         } else {
             metadataDistributedOrderView.refresh(null, null, null);
         }

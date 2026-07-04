@@ -1,6 +1,7 @@
 package com.azarenka.evebuilders.domain.dto;
 
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 
@@ -17,6 +18,9 @@ public class ShipOrderDto {
     private String orderType;
     private String destination;
     private String receiver;
+    private ReceiverTargetType receiverType;
+    private String receiverRefId;
+    private String receiverName;
     private String priority;
     private boolean bluePrint;
     private OrderStatusEnum orderStatus;
@@ -40,7 +44,10 @@ public class ShipOrderDto {
         this.price = order.getPrice();
         this.orderType = order.getOrderType();
         this.destination = order.getDestination();
-        this.receiver = order.getReceiver();
+        this.receiver = order.getReceiverName() == null ? order.getReceiver() : order.getReceiverName();
+        this.receiverType = order.getReceiverType();
+        this.receiverRefId = order.getReceiverRefId();
+        this.receiverName = order.getReceiverName();
         this.priority = order.getPriority();
         this.bluePrint = order.isBluePrint();
         this.orderStatus = order.getOrderStatus();
@@ -151,6 +158,30 @@ public class ShipOrderDto {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    public ReceiverTargetType getReceiverType() {
+        return receiverType;
+    }
+
+    public void setReceiverType(ReceiverTargetType receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    public String getReceiverRefId() {
+        return receiverRefId;
+    }
+
+    public void setReceiverRefId(String receiverRefId) {
+        this.receiverRefId = receiverRefId;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
     }
 
     public String getPriority() {

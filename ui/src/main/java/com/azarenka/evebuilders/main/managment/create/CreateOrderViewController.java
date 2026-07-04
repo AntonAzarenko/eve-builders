@@ -1,6 +1,8 @@
 package com.azarenka.evebuilders.main.managment.create;
 
 import com.azarenka.evebuilders.domain.db.*;
+import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
+import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
@@ -29,6 +31,12 @@ public class CreateOrderViewController implements ICreateOrderController {
     private IRequestOrderService requestOrderService;
     @Autowired
     private IEveMailService mailService;
+    @Autowired
+    private ICorporationService corporationService;
+    @Autowired
+    private IUserService userService;
+    @Autowired
+    private IOrderPresetDefaultsService orderPresetDefaultsService;
 
     @Override
     public List<Fit> gitAllFits() {
@@ -89,6 +97,21 @@ public class CreateOrderViewController implements ICreateOrderController {
     @Override
     public List<Receiver> getAllReceivers() {
         return orderService.getAllReceivers();
+    }
+
+    @Override
+    public List<ManagedCorporation> getAllManagedCorporations() {
+        return corporationService.getAllCorporations();
+    }
+
+    @Override
+    public List<UserDto> getAllReceiverUsers() {
+        return userService.getUsersDto();
+    }
+
+    @Override
+    public OrderPresetDefaultsDto getOrderPresetDefaultsForCurrentUser() {
+        return orderPresetDefaultsService.getDefaultsForCurrentUser();
     }
 
     @Override

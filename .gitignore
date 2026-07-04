@@ -4,6 +4,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+sql
+sql/**
 
 ### STS ###
 .apt_generated
@@ -32,6 +34,8 @@ build/
 ui/src/main/frontend/themes/ui/texture/
 ui/src/main/frontend/generated/
 ui/src/main/bundles/
+docs/**
+dosc
 env/**
 env
 deploy-to-pi.bat

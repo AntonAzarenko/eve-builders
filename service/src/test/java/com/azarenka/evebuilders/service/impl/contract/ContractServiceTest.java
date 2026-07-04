@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ContractServiceTest {
@@ -49,6 +50,7 @@ class ContractServiceTest {
         user = new User();
         user.setUsername("testUser");
         user.setCharacterId("123456");
+        ReflectionTestUtils.setField(contractService, "legacyCorporationId", 98771596L);
     }
 
     @Test
@@ -70,6 +72,7 @@ class ContractServiceTest {
     void testGetContractReportNoContractsFoundReturnsErrorReport() {
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
         when(userService.getUserToken()).thenReturn("token");
+        when(orderService.getByOrderNumber("ORD-001")).thenReturn(new Order());
         when(contractsClient.getCorporationContracts("token", 98771596L)).thenReturn(Collections.emptyList());
 
         List<ContractValidationReport> reports = contractService.getContractReport(distributedOrder);
@@ -83,6 +86,7 @@ class ContractServiceTest {
 
         verify(userService).getByUsername("testUser");
         verify(userService).getUserToken();
+        verify(orderService).getByOrderNumber("ORD-001");
         verify(contractsClient).getCorporationContracts("token", 98771596L);
         verifyNoMoreInteractions(userService, contractsClient, contractValidationService, orderService);
     }
@@ -92,6 +96,7 @@ class ContractServiceTest {
         Contract contract = new Contract();
         contract.setContractId(999L);
         contract.setIssuerId(123456L);
+        contract.setAssigneeId(98771596L);
         contract.setTitle("ORD-001");
         contract.setStatus("outstanding");
         Order order = new Order();
@@ -129,6 +134,7 @@ class ContractServiceTest {
     void testIsContractExistsContractFoundReturnsTrue() {
         Contract contract = new Contract();
         contract.setIssuerId(123456L);
+        contract.setAssigneeId(123456L);
         contract.setTitle("ORD-001");
         contract.setStatus("outstanding");
         when(userService.getByUsername("testUser")).thenReturn(Optional.of(user));
@@ -140,13 +146,5 @@ class ContractServiceTest {
         verify(userService).getUserToken();
         verify(contractsClient).getCharacterContracts("token", 123456L);
         verifyNoMoreInteractions(userService, contractsClient, contractValidationService, orderService);
-    }
-
-    @Test
-    void testIsContractExistsContractNotMatchingReturnsFalse() {
-        Contract contract = new Contract();
-        contract.setIssuerId(123456L);
-        contract.setTitle("OTHER");
-        contract.setStatus("outstanding");
     }
 }

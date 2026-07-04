@@ -47,6 +47,8 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         this.eveAuthService = eveAuthService;
         this.userService = userService;
         super.setWidthFull();
+        setHeight("45px");
+        setMinHeight("45px");
         getStyle().set("padding", "0 10px 0 10px");
         initContent();
     }
@@ -132,8 +134,8 @@ public class Header extends HorizontalLayout implements LocaleChangeObserver, Ro
         title.getStyle().set("font-size", "25px");
         title.getStyle().set("font-weight", "bold");
         title.getStyle().set("font-family", "math");
-        logo.setWidth("64px");
-        logo.setHeight("64px");
+        logo.setWidth("40px");
+        logo.setHeight("40px");
         add(logo, title);
     }
 

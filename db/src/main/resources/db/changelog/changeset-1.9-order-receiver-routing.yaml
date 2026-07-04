@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-03-02-order-receiver-routing
+      author: codex
+      changes:
+        - addColumn:
+            schemaName: builders
+            tableName: orders
+            columns:
+              - column:
+                  name: receiver_type
+                  type: VARCHAR(32)
+              - column:
+                  name: receiver_ref_id
+                  type: VARCHAR(64)
+              - column:
+                  name: receiver_name
+                  type: VARCHAR(255)
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              UPDATE builders.orders
+              SET
+                receiver_type = COALESCE(receiver_type, 'CORPORATION'),
+                receiver_ref_id = COALESCE(receiver_ref_id, '0'),
+                receiver_name = COALESCE(receiver_name, receiver, '')
+              WHERE receiver_type IS NULL
+                 OR receiver_ref_id IS NULL
+                 OR receiver_name IS NULL;
+        - addNotNullConstraint:
+            schemaName: builders
+            tableName: orders
+            columnName: receiver_type
+            columnDataType: VARCHAR(32)
+        - addNotNullConstraint:
+            schemaName: builders
+            tableName: orders
+            columnName: receiver_ref_id
+            columnDataType: VARCHAR(64)
+        - addNotNullConstraint:
+            schemaName: builders
+            tableName: orders
+            columnName: receiver_name
+            columnDataType: VARCHAR(255)

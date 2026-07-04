@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,15 +29,20 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
     private String corpContractsItemsUrl;
     @Value("${eve.character.contracts.url}")
     private String characterContractsItemsUrl;
+    @Value("${eve.character.contracts.items.url}")
+    private String characterContractsDetailsItemsUrl;
 
     public EveContractsIntegrationService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     public List<Contract> getCorporationContracts(String accessToken, long corporationId) {
-        var json = webClient.get()
+        List<Contract> result = new ArrayList<>();
+
+        PageResponse firstPageResponse = webClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path(corpContractsUrl)
+                .queryParam("page", 1)
                 .build(Map.of("corporation_id", corporationId)))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
             .accept(MediaType.APPLICATION_JSON)
@@ -44,15 +50,62 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
             .onStatus(
                 HttpStatusCode::isError,
                 response -> {
-                    LOGGER.error("Error response while getting corporation contracts CorporationId=[{}], status={}",
+                    LOGGER.error("Error response while getting corporation contracts CorporationId=[{}], page=1, status={}",
                         corporationId, response.statusCode());
                     return response.createException();
                 }
             )
-            .bodyToMono(String.class)
+            .toEntity(String.class)
+            .map(entity -> {
+                String xPages = entity.getHeaders().getFirst("X-Pages");
+                int totalPages = xPages != null ? Integer.parseInt(xPages) : 1;
+                return new PageResponse(totalPages, entity.getBody());
+            })
             .block();
+
+        if (firstPageResponse == null || firstPageResponse.body() == null) {
+            LOGGER.warn("No response body for corporationId=[{}]", corporationId);
+            return List.of();
+        }
+
+        result.addAll(readContracts(firstPageResponse.body()));
+        int totalPages = firstPageResponse.totalPages();
+
+        LOGGER.info("Loaded first page for corporationId=[{}], totalPages={}", corporationId, totalPages);
+
+        for (int page = 2; page <= totalPages; page++) {
+            int finalPage = page;
+            String json = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path(corpContractsUrl)
+                    .queryParam("page", finalPage)
+                    .build(Map.of("corporation_id", corporationId)))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .onStatus(
+                    HttpStatusCode::isError,
+                    response -> {
+                        LOGGER.error("Error response while getting corporation contracts CorporationId=[{}], page={}, status={}",
+                            corporationId, finalPage, response.statusCode());
+                        return response.createException();
+                    }
+                )
+                .bodyToMono(String.class)
+                .block();
+
+            if (json != null) {
+                result.addAll(readContracts(json));
+            }
+        }
+
+        LOGGER.info("Loaded corporation contracts for corporationId=[{}], totalContracts={}", corporationId, result.size());
+        return result;
+    }
+
+    private List<Contract> readContracts(String json) {
         try {
-            return objectMapper.readValue(json, new TypeReference<>() {
+            return objectMapper.readValue(json, new TypeReference<List<Contract>>() {
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse corporation contracts", e);
@@ -112,5 +165,37 @@ public class EveContractsIntegrationService extends EveAbstractIntegrationConnec
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse contract items", e);
         }
+    }
+
+    public List<ContractItem> getCharacterContractItems(String accessToken, long characterId, long contractId) {
+        var json = webClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(characterContractsDetailsItemsUrl)
+                .build(Map.of(
+                    "character_id", characterId,
+                    "contract_id", contractId)))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                HttpStatusCode::isError,
+                response -> {
+                    LOGGER.error(
+                        "Error response while getting character contract items CharacterId=[{}], ContractId=[{}] status={}",
+                        characterId, contractId, response.statusCode());
+                    return response.createException();
+                }
+            )
+            .bodyToMono(String.class)
+            .block();
+        try {
+            return objectMapper.readValue(json, new TypeReference<>() {
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse character contract items", e);
+        }
+    }
+
+    private record PageResponse(int totalPages, String body) {
     }
 }

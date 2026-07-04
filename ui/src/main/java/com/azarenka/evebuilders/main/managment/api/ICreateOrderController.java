@@ -1,6 +1,9 @@
 package com.azarenka.evebuilders.main.managment.api;
 
 import com.azarenka.evebuilders.domain.db.*;
+import com.azarenka.evebuilders.domain.db.ManagedCorporation;
+import com.azarenka.evebuilders.domain.dto.UserDto;
+import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
@@ -33,6 +36,12 @@ public interface ICreateOrderController {
     List<Destination> getAllDestination();
 
     List<Receiver> getAllReceivers();
+
+    List<ManagedCorporation> getAllManagedCorporations();
+
+    List<UserDto> getAllReceiverUsers();
+
+    OrderPresetDefaultsDto getOrderPresetDefaultsForCurrentUser();
 
     void addNewDestination(String value);
 

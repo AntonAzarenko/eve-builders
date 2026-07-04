@@ -3,7 +3,9 @@ package com.azarenka.evebuilders.main.menu;
 import com.azarenka.evebuilders.component.NavigationParentViewWithTabs;
 import com.azarenka.evebuilders.component.NavigationTab;
 import com.azarenka.evebuilders.main.MainWidget;
+import com.azarenka.evebuilders.main.managment.corporation.CorporationRegistryView;
 import com.azarenka.evebuilders.main.managment.dashboard.DashboardView;
+import com.azarenka.evebuilders.main.managment.orders.OrdersManagmentView;
 import com.azarenka.evebuilders.main.managment.page.AddOrderPage;
 import com.azarenka.evebuilders.main.managment.properties.PropertiesView;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -25,6 +27,8 @@ public class MenuManagerPage extends NavigationParentViewWithTabs implements Loc
         addView(DashboardView.class, getTranslation("tab.manager.dashboard"), VaadinIcon.CROSSHAIRS.create(), "tab-dashboard");
         addView(AddOrderPage.class, getTranslation("tab.manager.add_order"), VaadinIcon.DOCTOR_BRIEFCASE.create(), "tab-orders");
         addView(PropertiesView.class, getTranslation("tab.manager.properties"), VaadinIcon.FOLDER.create(), "tab-properties");
+        addView(OrdersManagmentView.class, getTranslation("tab.manager.management"), VaadinIcon.TOOLS.create(), "tab-managment");
+        //addView(CorporationRegistryView.class, "Corporations Registry", VaadinIcon.BUILDING.create(), "tab-corporation-registry");
     }
 
     @Override
@@ -36,5 +40,8 @@ public class MenuManagerPage extends NavigationParentViewWithTabs implements Loc
                 VaadinIcon.DOCTOR_BRIEFCASE.create());
         ((NavigationTab) tabs.getTabAt(2)).updateLabel(getTranslation("tab.manager.properties"),
                 VaadinIcon.FOLDER.create());
+        ((NavigationTab) tabs.getTabAt(3)).updateLabel(getTranslation("tab.manager.management"),
+                VaadinIcon.TOOLS.create());
+        //((NavigationTab) tabs.getTabAt(4)).updateLabel("Corporations Registry", VaadinIcon.BUILDING.create());
     }
 }

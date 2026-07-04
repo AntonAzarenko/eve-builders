@@ -1,9 +1,12 @@
 package com.azarenka.evebuilders.service.impl;
 
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.dto.UserStat;
+import com.azarenka.evebuilders.domain.enums.GroupTypeEnum;
 import com.azarenka.evebuilders.domain.enums.Metric;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
+import com.azarenka.evebuilders.repository.database.IOrderRepository;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IStatisticService;
 
@@ -14,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
