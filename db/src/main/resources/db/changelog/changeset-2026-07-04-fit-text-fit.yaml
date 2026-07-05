@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-07-04-fit-text-fit
+      author: codex
+      comment: migrate fit.text_fit from large object oid to plain varchar
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 1
+            sql: |
+              SELECT COUNT(*)
+              FROM information_schema.columns
+              WHERE table_schema = 'builders'
+                AND table_name = 'fit'
+                AND column_name = 'text_fit'
+                AND data_type = 'oid';
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              CREATE TEMP TABLE tmp_fit_text_fit_lobs AS
+              SELECT DISTINCT text_fit AS lo_oid
+              FROM builders.fit
+              WHERE text_fit IS NOT NULL;
+
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.fit
+              ALTER COLUMN text_fit TYPE VARCHAR
+              USING convert_from(lo_get(text_fit), current_setting('server_encoding'));
+
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DO $$
+              DECLARE
+                lo_id oid;
+              BEGIN
+                FOR lo_id IN
+                  SELECT lo_oid
+                  FROM pg_temp.tmp_fit_text_fit_lobs
+                LOOP
+                  PERFORM lo_unlink(lo_id);
+                END LOOP;
+              END
+              $$;
+      rollback:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              ALTER TABLE builders.fit
+              ALTER COLUMN text_fit TYPE oid
+              USING lo_from_bytea(0, convert_to(text_fit, current_setting('server_encoding')));

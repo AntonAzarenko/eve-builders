@@ -503,7 +503,7 @@ public class ParametersOrderView extends View implements LocaleChangeObserver {
                 && categoryComboBox.getValue() == GroupTypeEnum.SHIPS
                 ? requiredValidator : new StubValidator())
             .bind(this::getFit,
-                (order, value) -> order.setFit(Objects.nonNull(value) ? value.getId() : StringUtils.EMPTY));
+                (order, value) -> order.setFitId(Objects.nonNull(value) ? value.getId() : StringUtils.EMPTY));
         loadButton = new Button(VaadinIcon.FILE_ADD.create(), event -> {
             getUI().ifPresent(ui -> ui.getPage().executeJs(
                 "navigator.clipboard.readText().then(text => {" +

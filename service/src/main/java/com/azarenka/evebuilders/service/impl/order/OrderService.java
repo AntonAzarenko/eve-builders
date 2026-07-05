@@ -75,9 +75,9 @@ public class OrderService implements IOrderService {
         normalizeReceiverFields(order);
         notificationService.sendOrderCreated(order);
         var savedOrder = orderRepository.save(order);
+        auditService.writeOrderAudit(AuditOrderStatusEnum.CREATED, orderNumber, order.getRequestId(), userName);
         LOGGER.info("Creating order. Finished. OrderNumber={}, ItemName={}, UserName={}", orderNumber,
             order.getShipName(), userName);
-        auditService.writeOrderAudit(AuditOrderStatusEnum.CREATED, orderNumber, order.getRequestId(), userName);
         return savedOrder;
     }
 

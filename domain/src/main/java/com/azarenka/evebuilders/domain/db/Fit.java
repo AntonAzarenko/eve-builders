@@ -7,7 +7,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @Table(name = "fit", schema = "builders")
@@ -22,8 +21,7 @@ public class Fit {
     private Integer typeId;
     @Column(name = "group_id")
     private Integer groupId;
-    @Column(name = "text_fit", columnDefinition = "TEXT", nullable = false)
-    @Lob
+    @Column(name = "text_fit", columnDefinition = "VARCHAR", nullable = false)
     private String textFit;
 
     @Column(name = "created_by", nullable = false)

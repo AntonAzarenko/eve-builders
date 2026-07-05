@@ -2,17 +2,23 @@ package com.azarenka.evebuilders.rest.api.ui;
 
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
+import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
+import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IEveMailService;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
+import com.azarenka.evebuilders.service.api.IOrderPresetDefaultsService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
+import com.azarenka.evebuilders.service.api.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -40,6 +46,9 @@ class CreateOrderRestControllerTest {
     private IOrderService orderService;
     private IRequestOrderService requestOrderService;
     private IEveMailService mailService;
+    private ICorporationService corporationService;
+    private IUserService userService;
+    private IOrderPresetDefaultsService orderPresetDefaultsService;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -49,6 +58,9 @@ class CreateOrderRestControllerTest {
         orderService = mock(IOrderService.class);
         requestOrderService = mock(IRequestOrderService.class);
         mailService = mock(IEveMailService.class);
+        corporationService = mock(ICorporationService.class);
+        userService = mock(IUserService.class);
+        orderPresetDefaultsService = mock(IOrderPresetDefaultsService.class);
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(new CreateOrderRestController(
@@ -56,7 +68,10 @@ class CreateOrderRestControllerTest {
                 fitLoaderService,
                 orderService,
                 requestOrderService,
-                mailService
+                mailService,
+                corporationService,
+                userService,
+                orderPresetDefaultsService
             ))
             .build();
     }
@@ -191,6 +206,44 @@ class CreateOrderRestControllerTest {
     }
 
     @Test
+    void getAllManagedCorporationsReturnsCorporations() throws Exception {
+        ManagedCorporation corporation = managedCorporation("corp-1", 123456789L, "Managed Corp");
+        when(corporationService.getAllCorporations()).thenReturn(List.of(corporation));
+
+        mockMvc.perform(get("/api/create-order/managed-corporations"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value("corp-1"))
+            .andExpect(jsonPath("$[0].eveCorporationId").value(123456789))
+            .andExpect(jsonPath("$[0].corporationName").value("Managed Corp"));
+    }
+
+    @Test
+    void getAllReceiverUsersReturnsUsers() throws Exception {
+        UserDto user = new UserDto("pilot", "123456", java.util.Set.of());
+        when(userService.getUsersDto()).thenReturn(List.of(user));
+
+        mockMvc.perform(get("/api/create-order/receiver-users"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].username").value("pilot"))
+            .andExpect(jsonPath("$[0].characterId").value("123456"));
+    }
+
+    @Test
+    void getOrderPresetDefaultsForCurrentUserReturnsDefaults() throws Exception {
+        OrderPresetDefaultsDto defaults = new OrderPresetDefaultsDto();
+        defaults.setReceiverName("Managed Corp");
+        defaults.setReceiverRefId("123456789");
+        defaults.setReceiverMissing(false);
+        when(orderPresetDefaultsService.getDefaultsForCurrentUser()).thenReturn(defaults);
+
+        mockMvc.perform(get("/api/create-order/preset-defaults"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.receiverName").value("Managed Corp"))
+            .andExpect(jsonPath("$.receiverRefId").value("123456789"))
+            .andExpect(jsonPath("$.receiverMissing").value(false));
+    }
+
+    @Test
     void addNewDestinationDelegatesToService() throws Exception {
         mockMvc.perform(post("/api/create-order/destinations")
                 .contentType(MediaType.TEXT_PLAIN)
@@ -300,6 +353,14 @@ class CreateOrderRestControllerTest {
         receiver.setResId("res-1");
         receiver.setReceiver(value);
         return receiver;
+    }
+
+    private ManagedCorporation managedCorporation(String id, Long eveCorporationId, String corporationName) {
+        ManagedCorporation corporation = new ManagedCorporation();
+        corporation.setId(id);
+        corporation.setEveCorporationId(eveCorporationId);
+        corporation.setCorporationName(corporationName);
+        return corporation;
     }
 
     private RequestOrder requestOrder(String id) {

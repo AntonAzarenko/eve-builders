@@ -238,14 +238,6 @@ public class Order {
         this.bluePrint = bluePrint;
     }
 
-    public String getFit() {
-        return fitId;
-    }
-
-    public void setFit(String fit) {
-        this.fitId = fit;
-    }
-
     public OrderStatusEnum getOrderStatus() {
         return orderStatus;
     }

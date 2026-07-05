@@ -2,17 +2,23 @@ package com.azarenka.evebuilders.rest.api.ui;
 
 import com.azarenka.evebuilders.domain.db.Destination;
 import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.Receiver;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
+import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
+import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IEveMailService;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
+import com.azarenka.evebuilders.service.api.IOrderPresetDefaultsService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
+import com.azarenka.evebuilders.service.api.IUserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -46,17 +52,26 @@ public class CreateOrderRestController {
     private final IOrderService orderService;
     private final IRequestOrderService requestOrderService;
     private final IEveMailService mailService;
+    private final ICorporationService corporationService;
+    private final IUserService userService;
+    private final IOrderPresetDefaultsService orderPresetDefaultsService;
 
     public CreateOrderRestController(IEveMaterialDataService dataService,
                                      IFitLoaderService fitLoaderService,
                                      IOrderService orderService,
                                      IRequestOrderService requestOrderService,
-                                     IEveMailService mailService) {
+                                     IEveMailService mailService,
+                                     ICorporationService corporationService,
+                                     IUserService userService,
+                                     IOrderPresetDefaultsService orderPresetDefaultsService) {
         this.dataService = dataService;
         this.fitLoaderService = fitLoaderService;
         this.orderService = orderService;
         this.requestOrderService = requestOrderService;
         this.mailService = mailService;
+        this.corporationService = corporationService;
+        this.userService = userService;
+        this.orderPresetDefaultsService = orderPresetDefaultsService;
     }
 
     @GetMapping("/fits")
@@ -112,6 +127,21 @@ public class CreateOrderRestController {
     @GetMapping("/receivers")
     public List<Receiver> getAllReceivers() {
         return orderService.getAllReceivers();
+    }
+
+    @GetMapping("/managed-corporations")
+    public List<ManagedCorporation> getAllManagedCorporations() {
+        return corporationService.getAllCorporations();
+    }
+
+    @GetMapping("/receiver-users")
+    public List<UserDto> getAllReceiverUsers() {
+        return userService.getUsersDto();
+    }
+
+    @GetMapping("/preset-defaults")
+    public OrderPresetDefaultsDto getOrderPresetDefaultsForCurrentUser() {
+        return orderPresetDefaultsService.getDefaultsForCurrentUser();
     }
 
     @PostMapping(value = "/destinations", consumes = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE})

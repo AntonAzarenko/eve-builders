@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/changeset-2026-06-17-acl-cleanup.yaml
   - include:
       file: db/changelog/changeset-2026-06-18-acl-admin.yaml
+  - include:
+      file: db/changelog/changeset-2026-07-04-fit-text-fit.yaml
