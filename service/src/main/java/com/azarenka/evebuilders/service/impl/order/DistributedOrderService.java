@@ -2,6 +2,7 @@ package com.azarenka.evebuilders.service.impl.order;
 
 import com.azarenka.evebuilders.domain.db.AuditOrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
+import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
@@ -142,12 +143,14 @@ public class DistributedOrderService implements IDistributedOrderService {
 
     @Override
     public String getDestination(String orderNumber) {
-        return orderService.getOrderById(orderNumber).getDestination();
+        var order = orderService.getByOrderNumber(orderNumber);
+        return Objects.nonNull(order) ? orderService.getByOrderNumber(orderNumber).getDestination() : "";
     }
 
     @Override
     public String getReceiver(String orderNumber) {
-        return orderService.getByOrderNumber(orderNumber).getReceiver();
+        var order = orderService.getByOrderNumber(orderNumber);
+        return Objects.nonNull(order) ? orderService.getByOrderNumber(orderNumber).getReceiver() : "";
     }
 
     @Override

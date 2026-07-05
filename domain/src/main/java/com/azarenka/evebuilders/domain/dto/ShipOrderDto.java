@@ -36,6 +36,9 @@ public class ShipOrderDto {
     private Integer countReady;
     private LocalDate finishBy;
 
+    public ShipOrderDto() {
+    }
+
     public ShipOrderDto(Order order) {
         this.id = order.getId();
         this.orderNumber = order.getOrderNumber();
