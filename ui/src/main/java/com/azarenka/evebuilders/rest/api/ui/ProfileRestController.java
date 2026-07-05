@@ -1,8 +1,10 @@
 package com.azarenka.evebuilders.rest.api.ui;
 
+import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.auth.auth.ui.CurrentUserProfileResponse;
 import com.azarenka.evebuilders.domain.auth.auth.ui.ProfileLanguageRequest;
 import com.azarenka.evebuilders.domain.auth.auth.ui.ProfileThemeRequest;
+import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.IProfileService;
 
 import org.springframework.http.HttpStatus;
@@ -21,9 +23,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class ProfileRestController {
 
     private final IProfileService profileService;
+    private final IOrderFilterService orderFilterService;
 
-    public ProfileRestController(IProfileService profileService) {
+    public ProfileRestController(IProfileService profileService, IOrderFilterService orderFilterService) {
         this.profileService = profileService;
+        this.orderFilterService = orderFilterService;
     }
 
     @GetMapping
@@ -47,5 +51,19 @@ public class ProfileRestController {
         }
         profileService.updateTheme(request.theme());
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/filter")
+    public ResponseEntity<Void> saveFilter(@RequestBody OrderFilter orderFilter) {
+        if (orderFilter == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderFilter is required");
+        }
+        orderFilterService.saveFilter(orderFilter);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public OrderFilter getFilter() {
+        return orderFilterService.getOrderFilter();
     }
 }
