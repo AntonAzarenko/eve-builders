@@ -61,7 +61,7 @@ public class DistributedOrderService implements IDistributedOrderService {
         if (shipOrderDto.getCount() - shipOrderDto.getInProgressCount() >= count) {
             Optional<DistributedOrder> orderOptional = distributedOrderRepository
                 .findByOrderNumberAndUserName(orderNumber, userName);
-            if (orderOptional.isPresent()) {
+            if (orderOptional.isPresent() && distributedOrder.getOrderStatus() != OrderStatusEnum.DISCARDED) {
                 distributedOrder = orderOptional.get();
                 distributedOrder.setCount(distributedOrder.getCount() + count);
                 distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
@@ -69,7 +69,8 @@ public class DistributedOrderService implements IDistributedOrderService {
                 distributedOrder = buildDistributedOrder(shipOrderDto, count, userName);
             }
             DistributedOrder save = distributedOrderRepository.save(distributedOrder);
-            shipOrderDto.setInProgressCount(shipOrderDto.getInProgressCount() + count);
+            int finalCount = shipOrderDto.getInProgressCount() + count;
+            shipOrderDto.setInProgressCount(shipOrderDto.getCount() < finalCount ? shipOrderDto.getCount() : finalCount);
             if (shipOrderDto.getOrderStatus() == OrderStatusEnum.NEW) {
                 shipOrderDto.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
             }
@@ -194,14 +195,19 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public void discardOrder(DistributedOrder order) {
-        updateStatus(order, OrderStatusEnum.DISCARDED);
         var originalOrder = orderService.getByOrderNumber(order.getOrderNumber());
         int inProgressCount = originalOrder.getInProgressCount() - order.getCount();
         originalOrder.setInProgressCount(inProgressCount);
-        orderService.updateOrder(originalOrder);
-        if (inProgressCount == 0) {
+        order.setCount(0);
+        updateStatus(order, OrderStatusEnum.DISCARDED);
+        if (inProgressCount <= 0) {
+            originalOrder.setInProgressCount(0);
             originalOrder.setOrderStatus(OrderStatusEnum.NEW);
         }
+        if(originalOrder.getCount() < originalOrder.getInProgressCount()) {
+            originalOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+        }
+        orderService.updateOrder(originalOrder);
         notificationService.sendOrderDiscarded(order, SecurityUtils.getUserName());
         auditService.writeOrderAudit(AuditOrderStatusEnum.DISCARDED, order.getOrderNumber(), "", order.getUserName());
     }

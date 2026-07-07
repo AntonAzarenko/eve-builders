@@ -1,7 +1,6 @@
 package com.azarenka.evebuilders.rest.api.ui;
 
 import com.azarenka.evebuilders.domain.db.Destination;
-import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.Receiver;
@@ -14,7 +13,6 @@ import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IEveMailService;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
-import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IOrderPresetDefaultsService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
@@ -28,12 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -48,7 +46,6 @@ import java.util.Objects;
 public class CreateOrderRestController {
 
     private final IEveMaterialDataService dataService;
-    private final IFitLoaderService fitLoaderService;
     private final IOrderService orderService;
     private final IRequestOrderService requestOrderService;
     private final IEveMailService mailService;
@@ -57,7 +54,6 @@ public class CreateOrderRestController {
     private final IOrderPresetDefaultsService orderPresetDefaultsService;
 
     public CreateOrderRestController(IEveMaterialDataService dataService,
-                                     IFitLoaderService fitLoaderService,
                                      IOrderService orderService,
                                      IRequestOrderService requestOrderService,
                                      IEveMailService mailService,
@@ -65,27 +61,12 @@ public class CreateOrderRestController {
                                      IUserService userService,
                                      IOrderPresetDefaultsService orderPresetDefaultsService) {
         this.dataService = dataService;
-        this.fitLoaderService = fitLoaderService;
         this.orderService = orderService;
         this.requestOrderService = requestOrderService;
         this.mailService = mailService;
         this.corporationService = corporationService;
         this.userService = userService;
         this.orderPresetDefaultsService = orderPresetDefaultsService;
-    }
-
-    @GetMapping("/fits")
-    public List<Fit> gitAllFits() {
-        return fitLoaderService.getAll();
-    }
-
-    @GetMapping("/fits/{id}")
-    public Fit getFitById(@PathVariable String id) {
-        Fit fit = fitLoaderService.getFitById(id);
-        if (fit == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Fit not found: " + id);
-        }
-        return fit;
     }
 
     @GetMapping("/groups/{id}")
@@ -101,11 +82,6 @@ public class CreateOrderRestController {
     @GetMapping("/types/{groupId}")
     public List<InvType> getTypesByGroupId(@PathVariable Integer groupId) {
         return dataService.getTypesByGroupId(groupId);
-    }
-
-    @PostMapping(value = "/fits/upload", consumes = {MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public boolean uploadFit(@RequestBody String text) {
-        return fitLoaderService.upload(text);
     }
 
     @PostMapping("/orders")

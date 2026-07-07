@@ -1,27 +1,19 @@
 package com.azarenka.evebuilders.rest.api.ui;
 
-import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
-import com.azarenka.evebuilders.domain.dto.OrderDistributionRequest;
-import com.azarenka.evebuilders.domain.dto.order.DistributedOrderViewDto;
 import com.azarenka.evebuilders.domain.dto.order.OrderViewDto;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
-import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
-import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,11 +32,9 @@ import java.util.List;
 public class OrderRestController {
 
     private final IOrderService orderService;
-    private final IDistributedOrderService distributedOrderService;
 
-    public OrderRestController(IOrderService orderService, IDistributedOrderService distributedOrderService) {
+    public OrderRestController(IOrderService orderService) {
         this.orderService = orderService;
-        this.distributedOrderService = distributedOrderService;
     }
 
     @GetMapping
@@ -81,38 +71,6 @@ public class OrderRestController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + orderNumber);
         }
         return toViewDto(new ShipOrderDto(order));
-    }
-
-    @GetMapping("/{orderNumber}/distributed-orders")
-    public List<DistributedOrderViewDto> getDistributedOrders(@PathVariable String orderNumber) {
-        Order order = orderService.getByOrderNumber(orderNumber);
-        if (order == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found: " + orderNumber);
-        }
-        return distributedOrderService.getOrdersByOrderNumber(orderNumber).stream()
-            .map(this::toDistributedViewDto)
-            .toList();
-    }
-
-    @PostMapping(value = "/distributed-orders", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public void distributeOrders(@RequestBody OrderDistributionRequest orderRequest) {
-        if (orderRequest == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderRequest is required");
-        }
-        String userName = SecurityUtils.getUserName();
-        if (userName == null || userName.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Current user is required");
-        }
-
-        if (orderRequest.orderNumber() == null || orderRequest.orderNumber().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderNumber is required");
-        }
-        if (orderRequest.count() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count must be positive");
-        }
-
-        distributedOrderService.save(orderRequest.orderNumber(), orderRequest.count(), userName);
     }
 
     private boolean matchesSearch(OrderViewDto order, String value) {
@@ -161,26 +119,6 @@ public class OrderRestController {
             getDistributionStatus(count, inProgressCount),
             daysToFinish,
             progressPercent
-        );
-    }
-
-    private DistributedOrderViewDto toDistributedViewDto(DistributedOrder distributedOrder) {
-        return new DistributedOrderViewDto(
-            distributedOrder.getId(),
-            distributedOrder.getOrderNumber(),
-            distributedOrder.getShipName(),
-            distributedOrder.getUserName(),
-            distributedOrder.getCount(),
-            distributedOrder.getCountReady(),
-            distributedOrder.getFitId(),
-            distributedOrder.getOrderRights(),
-            distributedOrder.getOrderStatus(),
-            distributedOrder.getCreatedDate(),
-            distributedOrder.getAppliedDate(),
-            distributedOrder.getFinishedDate(),
-            distributedOrder.getCategory(),
-            distributedOrder.getPrice(),
-            distributedOrder.isAssembly()
         );
     }
 

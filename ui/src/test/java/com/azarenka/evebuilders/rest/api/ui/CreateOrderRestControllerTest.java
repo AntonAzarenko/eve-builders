@@ -1,7 +1,6 @@
 package com.azarenka.evebuilders.rest.api.ui;
 
 import com.azarenka.evebuilders.domain.db.Destination;
-import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.ManagedCorporation;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.Receiver;
@@ -14,7 +13,6 @@ import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.service.api.ICorporationService;
 import com.azarenka.evebuilders.service.api.IEveMailService;
 import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
-import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IOrderPresetDefaultsService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
@@ -42,7 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CreateOrderRestControllerTest {
 
     private IEveMaterialDataService dataService;
-    private IFitLoaderService fitLoaderService;
     private IOrderService orderService;
     private IRequestOrderService requestOrderService;
     private IEveMailService mailService;
@@ -54,7 +51,6 @@ class CreateOrderRestControllerTest {
     @BeforeEach
     void setUp() {
         dataService = mock(IEveMaterialDataService.class);
-        fitLoaderService = mock(IFitLoaderService.class);
         orderService = mock(IOrderService.class);
         requestOrderService = mock(IRequestOrderService.class);
         mailService = mock(IEveMailService.class);
@@ -65,7 +61,6 @@ class CreateOrderRestControllerTest {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new CreateOrderRestController(
                 dataService,
-                fitLoaderService,
                 orderService,
                 requestOrderService,
                 mailService,
@@ -74,30 +69,6 @@ class CreateOrderRestControllerTest {
                 orderPresetDefaultsService
             ))
             .build();
-    }
-
-    @Test
-    void gitAllFitsReturnsFits() throws Exception {
-        Fit fit = fit("fit-1", "Rifter fit", "text-fit");
-        when(fitLoaderService.getAll()).thenReturn(List.of(fit));
-
-        mockMvc.perform(get("/api/create-order/fits"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value("fit-1"))
-            .andExpect(jsonPath("$[0].name").value("Rifter fit"))
-            .andExpect(jsonPath("$[0].textFit").value("text-fit"));
-    }
-
-    @Test
-    void getFitByIdReturnsFit() throws Exception {
-        Fit fit = fit("fit-1", "Rifter fit", "text-fit");
-        when(fitLoaderService.getFitById("fit-1")).thenReturn(fit);
-
-        mockMvc.perform(get("/api/create-order/fits/fit-1"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value("fit-1"))
-            .andExpect(jsonPath("$.name").value("Rifter fit"))
-            .andExpect(jsonPath("$.textFit").value("text-fit"));
     }
 
     @Test
@@ -136,19 +107,6 @@ class CreateOrderRestControllerTest {
             .andExpect(jsonPath("$[0].typeID").value(34))
             .andExpect(jsonPath("$[0].typeName").value("Rifter"))
             .andExpect(jsonPath("$[0].groupID").value(25));
-    }
-
-    @Test
-    void uploadFitReturnsResult() throws Exception {
-        when(fitLoaderService.upload("fit text")).thenReturn(true);
-
-        mockMvc.perform(post("/api/create-order/fits/upload")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content("fit text"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").value(true));
-
-        verify(fitLoaderService).upload("fit text");
     }
 
     @Test
@@ -316,14 +274,6 @@ class CreateOrderRestControllerTest {
             .andExpect(status().isOk());
 
         verify(mailService).sendMailToCoordinator(order);
-    }
-
-    private Fit fit(String id, String name, String textFit) {
-        Fit fit = new Fit();
-        fit.setId(id);
-        fit.setName(name);
-        fit.setTextFit(textFit);
-        return fit;
     }
 
     private InvType invType(Integer typeId, String typeName, Integer groupId) {
