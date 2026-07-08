@@ -9,7 +9,6 @@ import com.azarenka.evebuilders.domain.dto.order.DistributedOrderViewDto;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
-import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -42,26 +42,39 @@ public class DistributedOrderRestController {
     private final IOrderService orderService;
     private final IDistributedOrderService distributedOrderService;
     private final IFitLoaderService fitLoaderService;
-    private final IOrderFilterService orderFilterService;
 
     public DistributedOrderRestController(IOrderService orderService,
                                           IDistributedOrderService distributedOrderService,
-                                          IFitLoaderService fitLoaderService,
-                                          IOrderFilterService orderFilterService) {
+                                          IFitLoaderService fitLoaderService) {
         this.orderService = orderService;
         this.distributedOrderService = distributedOrderService;
         this.fitLoaderService = fitLoaderService;
-        this.orderFilterService = orderFilterService;
     }
 
     @GetMapping
-    public List<DistributedOrderViewDto> getOrders() {
-        OrderFilter filter = orderFilterService.getOrderFilter();
-        if (filter == null) {
-            filter = new OrderFilter();
-        }
-        return distributedOrderService.getAllByUserName(filter).stream()
+    public List<DistributedOrderViewDto> getOrders(@RequestParam(required = false) List<OrderStatusEnum> statuses,
+                                                   @RequestParam(required = false) List<String> orderTypes,
+                                                   @RequestParam(required = false) Integer minFreeCount,
+                                                   @RequestParam(required = false) Boolean distributed,
+                                                   @RequestParam(required = false) String search) {
+        OrderFilter filter = new OrderFilter();
+        filter.setStatuses(statuses);
+        filter.setOrderTypes(orderTypes);
+        filter.setMinFreeCount(minFreeCount);
+        filter.setDistributed(distributed);
+
+        List<DistributedOrderViewDto> orders = distributedOrderService.getAllByUserName(filter).stream()
             .map(this::toDistributedViewDto)
+            .sorted(Comparator.comparing(DistributedOrderViewDto::createdDate, Comparator.nullsLast(Comparator.reverseOrder())))
+            .toList();
+
+        if (search == null || search.isBlank()) {
+            return orders;
+        }
+
+        String lowerCaseValue = search.trim().toLowerCase();
+        return orders.stream()
+            .filter(order -> matchesSearch(order, lowerCaseValue))
             .toList();
     }
 
@@ -165,5 +178,16 @@ public class DistributedOrderRestController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Distributed order not found: " + orderId);
         }
         return distributedOrder;
+    }
+
+    private boolean matchesSearch(DistributedOrderViewDto order, String value) {
+        return contains(order.orderNumber(), value)
+            || contains(order.shipName(), value)
+            || contains(order.userName(), value)
+            || contains(order.orderStatus() == null ? null : order.orderStatus().name(), value);
+    }
+
+    private boolean contains(String source, String value) {
+        return source != null && source.toLowerCase().contains(value);
     }
 }

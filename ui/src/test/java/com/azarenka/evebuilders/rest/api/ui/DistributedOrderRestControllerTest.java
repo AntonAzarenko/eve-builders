@@ -9,7 +9,6 @@ import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.sqllite.OrderRights;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
-import com.azarenka.evebuilders.service.api.IOrderFilterService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,8 +27,8 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,7 +39,6 @@ class DistributedOrderRestControllerTest {
     private IOrderService orderService;
     private IDistributedOrderService distributedOrderService;
     private IFitLoaderService fitLoaderService;
-    private IOrderFilterService orderFilterService;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -48,12 +46,10 @@ class DistributedOrderRestControllerTest {
         orderService = mock(IOrderService.class);
         distributedOrderService = mock(IDistributedOrderService.class);
         fitLoaderService = mock(IFitLoaderService.class);
-        orderFilterService = mock(IOrderFilterService.class);
         mockMvc = MockMvcBuilders.standaloneSetup(new DistributedOrderRestController(
                 orderService,
                 distributedOrderService,
-                fitLoaderService,
-                orderFilterService))
+                fitLoaderService))
             .build();
     }
 
@@ -129,8 +125,10 @@ class DistributedOrderRestControllerTest {
     @Test
     void getOrdersReturnsCurrentUsersDistributedOrders() throws Exception {
         OrderFilter filter = new OrderFilter();
-        filter.setUserId("pilot");
-        when(orderFilterService.getOrderFilter()).thenReturn(filter);
+        filter.setStatuses(List.of(OrderStatusEnum.IN_PROGRESS));
+        filter.setOrderTypes(List.of("MARKET"));
+        filter.setMinFreeCount(2);
+        filter.setDistributed(true);
 
         DistributedOrder distributedOrder = distributedOrder(
             "dist-1",
@@ -142,13 +140,54 @@ class DistributedOrderRestControllerTest {
         );
         when(distributedOrderService.getAllByUserName(filter)).thenReturn(List.of(distributedOrder));
 
-        mockMvc.perform(get("/api/distributed-orders"))
+        mockMvc.perform(get("/api/distributed-orders")
+                .param("statuses", "IN_PROGRESS")
+                .param("orderTypes", "MARKET")
+                .param("minFreeCount", "2")
+                .param("distributed", "true"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].orderNumber").value("N2026061802"))
             .andExpect(jsonPath("$[0].shipName").value("Megathron"))
             .andExpect(jsonPath("$[0].userName").value("pilot"))
             .andExpect(jsonPath("$[0].count").value(4))
             .andExpect(jsonPath("$[0].countReady").value(1));
+
+        verify(distributedOrderService).getAllByUserName(filter);
+    }
+
+    @Test
+    void getOrdersFiltersBySearchAndSortsByCreatedDate() throws Exception {
+        LocalDate today = LocalDate.now();
+        DistributedOrder older = distributedOrder(
+            "dist-1",
+            "N2026061701",
+            "Rifter",
+            "pilot",
+            4,
+            1
+        );
+        older.setCreatedDate(today.minusDays(5));
+        older.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+
+        DistributedOrder newer = distributedOrder(
+            "dist-2",
+            "N2026061802",
+            "Megathron",
+            "pilot",
+            4,
+            1
+        );
+        newer.setCreatedDate(today.minusDays(3));
+        newer.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
+
+        OrderFilter filter = new OrderFilter();
+        when(distributedOrderService.getAllByUserName(filter)).thenReturn(List.of(older, newer));
+
+        mockMvc.perform(get("/api/distributed-orders").param("search", "N20260618"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].orderNumber").value("N2026061802"))
+            .andExpect(jsonPath("$[0].shipName").value("Megathron"))
+            .andExpect(jsonPath("$[1]").doesNotExist());
     }
 
     @Test
