@@ -22,36 +22,42 @@ public enum GroupTypeEnum {
             return "management.add_components";
         }
     },
+
     ADVANCED_COMPONENTS(22) {
         @Override
         public String toString() {
             return "management.add_advanced_components";
         }
     },
+
     SUPER_COMPONENTS(17) {
         @Override
         public String toString() {
             return "management.add_super_components";
         }
     },
+
     DRONES(18) {
         @Override
         public String toString() {
             return "management.add_drones";
         }
     },
+
     FIGHTERS(87) {
         @Override
         public String toString() {
             return "management.add_fighters";
         }
     },
+
     STRUCTURES(65) {
         @Override
         public String toString() {
             return "management.add_structures";
         }
     },
+
     STRUCTURE_MODULES(66) {
         @Override
         public String toString() {
