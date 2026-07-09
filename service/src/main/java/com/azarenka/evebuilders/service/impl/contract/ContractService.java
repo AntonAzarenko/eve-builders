@@ -9,6 +9,7 @@ import com.azarenka.evebuilders.domain.enums.ReceiverTargetType;
 import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
+import com.azarenka.evebuilders.service.api.IUserTokenService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
 import com.azarenka.evebuilders.service.impl.intergarion.EveContractsIntegrationService;
 
@@ -36,6 +37,8 @@ public class ContractService implements IContractService {
     private IOrderService orderService;
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IUserTokenService userTokenService;
 
     // Legacy fallback for orders created before receiver routing fields were introduced.
     @Value("${app.eve.corporation.id}")
@@ -81,15 +84,23 @@ public class ContractService implements IContractService {
 
     @Override
     public boolean isContractExists(DistributedOrder distributedOrder) {
-        var userToken = userService.getUserToken();
         Optional<User> optionalUser = userService.getByUsername(distributedOrder.getUserName());
-        if (optionalUser.isPresent()) {
-            List<Contract> characterContracts =
-                contractsClient.getCharacterContracts(userToken, Long.parseLong(optionalUser.get().getCharacterId()));
-            return !filterUserContract(characterContracts, Long.parseLong(optionalUser.get().getCharacterId()),
-                distributedOrder.getOrderNumber()).isEmpty();
+        if (optionalUser.isEmpty()) {
+            return false;
         }
-        return false;
+        var userToken = resolveUserToken(optionalUser.get());
+        if (userToken == null || userToken.isBlank()) {
+            return false;
+        }
+        try {
+            long characterId = Long.parseLong(optionalUser.get().getCharacterId());
+            List<Contract> characterContracts =
+                contractsClient.getCharacterContracts(userToken, characterId);
+            return !filterUserContract(characterContracts, characterId, distributedOrder.getOrderNumber()).isEmpty();
+        } catch (NumberFormatException e) {
+            LOGGER.warn("Invalid characterId for user {} while checking contracts", optionalUser.get().getUsername(), e);
+            return false;
+        }
     }
 
     private List<Contract> filterUserContract
@@ -195,6 +206,18 @@ public class ContractService implements IContractService {
         }
         LOGGER.warn("Legacy receiver routing fallback is used. Order={}", order == null ? "null" : order.getOrderNumber());
         return new ReceiverRouting(ReceiverTargetType.CORPORATION, legacyCorporationId);
+    }
+
+    private String resolveUserToken(User user) {
+        if (user == null || user.getUid() == null || user.getUid().isBlank()) {
+            return null;
+        }
+        try {
+            return userTokenService.getUserToken(user.getUid());
+        } catch (Exception e) {
+            LOGGER.warn("Failed to resolve access token for user {}", user.getUsername(), e);
+            return null;
+        }
     }
 
     private record ReceiverRouting(ReceiverTargetType targetType, long targetId) {

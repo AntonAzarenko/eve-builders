@@ -1,11 +1,15 @@
 package com.azarenka.evebuilders.rest.api.ui;
 
+import com.azarenka.evebuilders.domain.acl.Role;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderAudit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
+import com.azarenka.evebuilders.repository.database.IDistributedOrderRepository;
+import com.azarenka.evebuilders.repository.database.IUserRepository;
+import com.azarenka.evebuilders.service.api.IAccessControlService;
 import com.azarenka.evebuilders.service.api.IAuditService;
 import com.azarenka.evebuilders.service.api.IContractService;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
@@ -13,6 +17,7 @@ import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -41,15 +47,24 @@ public class OrdersManagementRestController {
 
     private final IOrderService orderService;
     private final IDistributedOrderService distributedOrderService;
+    private final IDistributedOrderRepository distributedOrderRepository;
+    private final IUserRepository userRepository;
+    private final IAccessControlService accessControlService;
     private final IContractService contractService;
     private final IAuditService auditService;
 
     public OrdersManagementRestController(IOrderService orderService,
                                           IDistributedOrderService distributedOrderService,
+                                          IDistributedOrderRepository distributedOrderRepository,
+                                          IUserRepository userRepository,
+                                          IAccessControlService accessControlService,
                                           IContractService contractService,
                                           IAuditService auditService) {
         this.orderService = orderService;
         this.distributedOrderService = distributedOrderService;
+        this.distributedOrderRepository = distributedOrderRepository;
+        this.userRepository = userRepository;
+        this.accessControlService = accessControlService;
         this.contractService = contractService;
         this.auditService = auditService;
     }
@@ -132,6 +147,42 @@ public class OrdersManagementRestController {
     @Transactional
     public void discardDistributedOrder(@RequestBody DistributedOrder distributedOrder) {
         distributedOrderService.discardOrder(distributedOrder);
+    }
+
+    @PutMapping("/distributed/{orderNumber}/user")
+    @Transactional
+    public void updateDistributedOrderUser(@PathVariable String orderNumber,
+                                           @RequestParam String userName) {
+        if (orderNumber == null || orderNumber.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "orderNumber is required");
+        }
+        if (userName == null || userName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userName is required");
+        }
+
+        List<DistributedOrder> distributedOrders = distributedOrderRepository.findAllByOrderNumber(orderNumber);
+        if (distributedOrders.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Distributed order not found: " + orderNumber);
+        }
+        if (distributedOrders.stream().anyMatch(order -> order.getOrderStatus() == OrderStatusEnum.COMPLETED)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Distributed order cannot be reassigned because it is already completed: " + orderNumber);
+        }
+
+        var user = userRepository.findByUsername(userName)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userName));
+        boolean builderRolePresent = accessControlService.getUserRoles(user.getUid()).stream()
+            .map(Role::getCode)
+            .anyMatch(code -> code != null && code.equalsIgnoreCase("BUILDER"));
+        if (!builderRolePresent) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "User does not have BUILDER role: " + userName);
+        }
+
+        for (DistributedOrder distributedOrder : distributedOrders) {
+            distributedOrder.setUserName(userName);
+        }
+        distributedOrderRepository.saveAll(distributedOrders);
     }
 
     @GetMapping("/{orderNumber}/audits")

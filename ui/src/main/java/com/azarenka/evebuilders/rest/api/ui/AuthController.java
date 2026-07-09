@@ -9,10 +9,13 @@ import com.azarenka.evebuilders.domain.auth.auth.ui.MeResponse;
 import com.azarenka.evebuilders.domain.db.User;
 import com.azarenka.evebuilders.domain.dto.EveUserPrincipal;
 import com.azarenka.evebuilders.domain.db.TokenResponse;
+import com.azarenka.evebuilders.domain.db.UserToken;
 import com.azarenka.evebuilders.repository.database.IUserRepository;
 import com.azarenka.evebuilders.service.api.IAccessControlService;
+import com.azarenka.evebuilders.service.api.IUserTokenService;
 import com.azarenka.evebuilders.service.impl.auth.eve.EveOAuth2UserService;
 import com.azarenka.evebuilders.service.impl.auth.eve.EveAuthService;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 import com.azarenka.evebuilders.service.impl.auth.eve.ui.JwtService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;
 
@@ -54,6 +57,8 @@ public class AuthController {
     private final IUserRepository userRepository;
     private final IAccessControlService accessControlService;
     private final EveCharacterService eveCharacterService;
+    private final IUserTokenService userTokenService;
+    private final TokenRefreshService tokenRefreshService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UserDetailsService userDetailsService,
@@ -64,7 +69,9 @@ public class AuthController {
                           EveOAuth2UserService eveOAuth2UserService,
                           IUserRepository userRepository,
                           IAccessControlService accessControlService,
-                          EveCharacterService eveCharacterService) {
+                          EveCharacterService eveCharacterService,
+                          IUserTokenService userTokenService,
+                          TokenRefreshService tokenRefreshService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
@@ -75,6 +82,8 @@ public class AuthController {
         this.userRepository = userRepository;
         this.accessControlService = accessControlService;
         this.eveCharacterService = eveCharacterService;
+        this.userTokenService = userTokenService;
+        this.tokenRefreshService = tokenRefreshService;
     }
 
     @PostMapping("/auth/login")
@@ -98,6 +107,7 @@ public class AuthController {
         try {
             TokenResponse tokenResponse = eveAuthService.exchangeCodeForToken(req.code());
             User user = eveOAuth2UserService.authenticateByAccessToken(tokenResponse.getAccessToken());
+            persistUserToken(user, tokenResponse);
             UserDetails principal = new EveUserPrincipal(user, Map.of());
 
             String access = jwtService.generateAccessToken(principal);
@@ -120,6 +130,9 @@ public class AuthController {
         }
         String username = jwtService.extractUsername(refreshJwt);
         UserDetails user = userDetailsService.loadUserByUsername(username);
+        userRepository.findByUsername(username).ifPresent(currentUser ->
+            tokenRefreshService.refreshTokenIfNeeded(currentUser.getUid()).block()
+        );
         String newRefresh = jwtService.generateRefreshToken(user);
         refreshCookie.setRefreshCookie(response, newRefresh);
 
@@ -189,5 +202,22 @@ public class AuthController {
         String username = jwtService.extractUsername(refreshJwt);
         return userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated"));
+    }
+
+    private void persistUserToken(User user, TokenResponse tokenResponse) {
+        if (user == null || user.getUid() == null || tokenResponse == null) {
+            return;
+        }
+
+        UserToken token = userTokenService.getByUserId(user.getUid()).orElseGet(UserToken::new);
+        token.setUserId(user.getUid());
+        token.setAccessToken(tokenResponse.getAccessToken());
+        if (tokenResponse.getRefreshToken() != null && !tokenResponse.getRefreshToken().isBlank()) {
+            token.setRefreshToken(tokenResponse.getRefreshToken());
+        }
+        token.setExpiresAt(Instant.now().plusSeconds(tokenResponse.getExpiresIn())
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDateTime());
+        userTokenService.save(token);
     }
 }
