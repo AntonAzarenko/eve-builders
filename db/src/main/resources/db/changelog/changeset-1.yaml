@@ -2,40 +2,178 @@ databaseChangeLog:
   - changeSet:
       id: 1
       author: aazarenka
+      comment: seed-current-roles-for-clean-builders-bootstrap
       changes:
         - sql:
             splitStatements: false
+            stripComments: true
             sql: |
-              DO $$
-              BEGIN
-                IF NOT EXISTS (
-                  SELECT FROM pg_database WHERE datname = 'builders'
-                ) THEN
-                  CREATE DATABASE builders;
-                END IF;
-              END
-              $$;
+              INSERT INTO builders.roles (code, name, description, system_role)
+              SELECT seed.code, seed.name, seed.description, seed.system_role
+              FROM (
+                VALUES
+                  ('ADMIN', 'Administrator', 'Administrative role', true),
+                  ('BUILDER', 'Builder', 'Construction and production role', true),
+                  ('CEO', 'CEO', 'Executive role', true),
+                  ('COORDINATOR', 'Coordinator', 'Coordination role', false),
+                  ('MANAGER', 'Manager', 'Management role', true),
+                  ('MINER', 'Miner', 'Mining and extraction role', true),
+                  ('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true),
+                  ('VIEWER', 'Viewer', 'Read-only role', false)
+              ) AS seed(code, name, description, system_role)
+              WHERE NOT EXISTS (
+                SELECT 1
+                FROM builders.roles r
+                WHERE r.code = seed.code
+              );
+
   - changeSet:
       id: 2
       author: aazarenka
+      comment: seed-current-permissions-for-clean-builders-bootstrap
       changes:
         - sql:
-            sql: CREATE SCHEMA IF NOT EXISTS builders;
+            splitStatements: false
+            stripComments: true
+            sql: |
+              INSERT INTO builders.permissions (code, name, description, group_name)
+              SELECT seed.code, seed.name, seed.description, seed.group_name
+              FROM (
+                VALUES
+                  ('ADMIN_VIEW', 'View admin shell', 'Access the admin shell and admin navigation', 'ADMIN'),
+                  ('DASHBOARD_VIEW', 'View dashboard', 'Access dashboard overview', 'DASHBOARD'),
+                  ('USERS_VIEW', 'View users', 'See the users list and user access details', 'USERS'),
+                  ('USERS_EDIT', 'Edit users', 'Edit existing users', 'USERS'),
+                  ('ROLES_VIEW', 'View roles', 'See available roles and role permissions', 'ROLES'),
+                  ('ROLES_CREATE', 'Create roles', 'Create new roles', 'ROLES'),
+                  ('ROLES_EDIT', 'Edit roles', 'Edit existing roles', 'ROLES'),
+                  ('ROLES_DELETE', 'Delete roles', 'Delete roles', 'ROLES'),
+                  ('ROLES_PERMISSIONS_EDIT', 'Edit role permissions', 'Assign permissions to roles', 'ROLES'),
+                  ('PERMISSIONS_VIEW', 'View permissions', 'See the permission catalog', 'PERMISSIONS'),
+                  ('PERMISSIONS_ASSIGN', 'Assign permissions', 'Assign permissions to users', 'PERMISSIONS'),
+                  ('CORPORATION_VIEW', 'View corporation', 'Read corporation data', 'CORPORATION'),
+                  ('CONTRACTS_VIEW', 'View contracts', 'Read contract data', 'CONTRACTS'),
+                  ('CONTRACTS_CREATE', 'Create contracts', 'Create contracts', 'CONTRACTS'),
+                  ('CONTRACTS_EDIT', 'Edit contracts', 'Edit contracts', 'CONTRACTS'),
+                  ('CONTRACTS_ACCEPT', 'Accept contracts', 'Accept incoming contracts', 'CONTRACTS'),
+                  ('CONTRACTS_CANCEL', 'Cancel contracts', 'Cancel owned contracts', 'CONTRACTS'),
+                  ('CONTRACTS_DISCARD', 'Discard contracts', 'Discard draft contracts', 'CONTRACTS'),
+                  ('CORPORATION_CONTRACT_VIEW', 'View corporation contracts', 'Read corporation contract data', 'CORPORATION_CONTRACTS'),
+                  ('CORPORATION_CONTRACT_EDIT', 'Edit corporation contracts', 'Edit corporation contract data', 'CORPORATION_CONTRACTS')
+              ) AS seed(code, name, description, group_name)
+              WHERE NOT EXISTS (
+                SELECT 1
+                FROM builders.permissions p
+                WHERE p.code = seed.code
+              );
+
   - changeSet:
-      id: create-roles
-      author: you
+      id: 3
+      author: aazarenka
+      comment: seed-default-role-permissions-for-clean-builders-bootstrap
       changes:
-        - createTable:
-            tableName: roles
-            schemaName: builders
-            columns:
-              - column:
-                  name: id
-                  type: BIGSERIAL
-                  constraints:
-                    primaryKey: true
-              - column:
-                  name: name
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              WITH role_perm(role_code, perm_code) AS (
+                VALUES
+                  ('ADMIN', 'ADMIN_VIEW'),
+                  ('ADMIN', 'USERS_VIEW'),
+                  ('ADMIN', 'USERS_EDIT'),
+                  ('ADMIN', 'ROLES_VIEW'),
+                  ('ADMIN', 'ROLES_CREATE'),
+                  ('ADMIN', 'ROLES_EDIT'),
+                  ('ADMIN', 'ROLES_DELETE'),
+                  ('ADMIN', 'ROLES_PERMISSIONS_EDIT'),
+                  ('ADMIN', 'PERMISSIONS_VIEW'),
+                  ('ADMIN', 'PERMISSIONS_ASSIGN'),
+
+                  ('BUILDER', 'DASHBOARD_VIEW'),
+                  ('BUILDER', 'CONTRACTS_VIEW'),
+                  ('BUILDER', 'CONTRACTS_ACCEPT'),
+                  ('BUILDER', 'CONTRACTS_DISCARD'),
+                  ('BUILDER', 'CORPORATION_VIEW'),
+                  ('BUILDER', 'CORPORATION_CONTRACT_VIEW'),
+                  ('BUILDER', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('CEO', 'ADMIN_VIEW'),
+                  ('CEO', 'DASHBOARD_VIEW'),
+                  ('CEO', 'USERS_VIEW'),
+                  ('CEO', 'USERS_EDIT'),
+                  ('CEO', 'ROLES_VIEW'),
+                  ('CEO', 'ROLES_CREATE'),
+                  ('CEO', 'ROLES_EDIT'),
+                  ('CEO', 'ROLES_DELETE'),
+                  ('CEO', 'ROLES_PERMISSIONS_EDIT'),
+                  ('CEO', 'PERMISSIONS_VIEW'),
+                  ('CEO', 'PERMISSIONS_ASSIGN'),
+                  ('CEO', 'CORPORATION_VIEW'),
+                  ('CEO', 'CONTRACTS_VIEW'),
+                  ('CEO', 'CONTRACTS_CREATE'),
+                  ('CEO', 'CONTRACTS_EDIT'),
+                  ('CEO', 'CONTRACTS_ACCEPT'),
+                  ('CEO', 'CONTRACTS_CANCEL'),
+                  ('CEO', 'CONTRACTS_DISCARD'),
+                  ('CEO', 'CORPORATION_CONTRACT_VIEW'),
+                  ('CEO', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('COORDINATOR', 'DASHBOARD_VIEW'),
+                  ('COORDINATOR', 'CORPORATION_VIEW'),
+                  ('COORDINATOR', 'CONTRACTS_VIEW'),
+                  ('COORDINATOR', 'CORPORATION_CONTRACT_VIEW'),
+                  ('COORDINATOR', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('MANAGER', 'DASHBOARD_VIEW'),
+                  ('MANAGER', 'USERS_VIEW'),
+                  ('MANAGER', 'ROLES_VIEW'),
+                  ('MANAGER', 'PERMISSIONS_VIEW'),
+                  ('MANAGER', 'CORPORATION_VIEW'),
+                  ('MANAGER', 'CONTRACTS_VIEW'),
+                  ('MANAGER', 'CONTRACTS_CREATE'),
+                  ('MANAGER', 'CONTRACTS_EDIT'),
+                  ('MANAGER', 'CONTRACTS_CANCEL'),
+                  ('MANAGER', 'CORPORATION_CONTRACT_VIEW'),
+                  ('MANAGER', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('MINER', 'DASHBOARD_VIEW'),
+
+                  ('SUPER_ADMIN', 'ADMIN_VIEW'),
+                  ('SUPER_ADMIN', 'DASHBOARD_VIEW'),
+                  ('SUPER_ADMIN', 'USERS_VIEW'),
+                  ('SUPER_ADMIN', 'USERS_EDIT'),
+                  ('SUPER_ADMIN', 'ROLES_VIEW'),
+                  ('SUPER_ADMIN', 'ROLES_CREATE'),
+                  ('SUPER_ADMIN', 'ROLES_EDIT'),
+                  ('SUPER_ADMIN', 'ROLES_DELETE'),
+                  ('SUPER_ADMIN', 'ROLES_PERMISSIONS_EDIT'),
+                  ('SUPER_ADMIN', 'PERMISSIONS_VIEW'),
+                  ('SUPER_ADMIN', 'PERMISSIONS_ASSIGN'),
+                  ('SUPER_ADMIN', 'CORPORATION_VIEW'),
+                  ('SUPER_ADMIN', 'CONTRACTS_VIEW'),
+                  ('SUPER_ADMIN', 'CONTRACTS_CREATE'),
+                  ('SUPER_ADMIN', 'CONTRACTS_EDIT'),
+                  ('SUPER_ADMIN', 'CONTRACTS_ACCEPT'),
+                  ('SUPER_ADMIN', 'CONTRACTS_CANCEL'),
+                  ('SUPER_ADMIN', 'CONTRACTS_DISCARD'),
+                  ('SUPER_ADMIN', 'CORPORATION_CONTRACT_VIEW'),
+                  ('SUPER_ADMIN', 'CORPORATION_CONTRACT_EDIT'),
+
+                  ('VIEWER', 'DASHBOARD_VIEW'),
+                  ('VIEWER', 'CORPORATION_VIEW'),
+                  ('VIEWER', 'CONTRACTS_VIEW'),
+                  ('VIEWER', 'CORPORATION_CONTRACT_VIEW')
+              )
+              INSERT INTO builders.role_permissions (role_id, permission_id)
+              SELECT r.id, p.id
+              FROM role_perm rp
+              JOIN builders.roles r
+                ON r.code = rp.role_code
+              JOIN builders.permissions p
+                ON p.code = rp.perm_code
+              WHERE NOT EXISTS (
+                SELECT 1
+                FROM builders.role_permissions existing
+                WHERE existing.role_id = r.id
+                  AND existing.permission_id = p.id
+              );

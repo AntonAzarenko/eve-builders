@@ -1,26 +1,24 @@
 package com.azarenka.evebuilders.main.orders.myorders;
 
-import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.DistributedOrder;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.main.constructions.api.ICorporationConstructionController;
 import com.azarenka.evebuilders.service.api.IDistributedOrderService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderFilterService;
-import com.azarenka.evebuilders.service.util.ImageService;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class CorporationConstructionController implements ICorporationConstructionController {
 
     @Autowired
     private IFitLoaderService fitLoaderService;
-    @Autowired
-    private ImageService imageService;
     @Autowired
     private IDistributedOrderService distributedOrderService;
     @Autowired
@@ -34,11 +32,6 @@ public class CorporationConstructionController implements ICorporationConstructi
     @Override
     public Fit getFitById(String id) {
         return fitLoaderService.getFitById(id);
-    }
-
-    @Override
-    public ImageService getImageProviderService() {
-        return imageService;
     }
 
     @Override
@@ -57,7 +50,7 @@ public class CorporationConstructionController implements ICorporationConstructi
 
     @Override
     public boolean sendOrderForApproval(DistributedOrder distributedOrder) {
-       return distributedOrderService.sendOrderForApproval(distributedOrder, OrderStatusEnum.WAITING_FOR_APPROVAL);
+        return distributedOrderService.sendOrderForApproval(distributedOrder, OrderStatusEnum.WAITING_FOR_APPROVAL);
     }
 
     @Override

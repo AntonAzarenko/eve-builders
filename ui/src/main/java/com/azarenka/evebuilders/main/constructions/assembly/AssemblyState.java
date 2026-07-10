@@ -346,8 +346,12 @@ public class AssemblyState {
 
 
     private int applyAllBonusesToTotal(ProductionNode parent, int total) {
-        if (total <= 0) return 0;
-        if (total == 1) return 1;
+        if (total <= 0) {
+            return 0;
+        }
+        if (total == 1) {
+            return 1;
+        }
         BigDecimal factor = BigDecimal.ONE;
         BigDecimal facility = (parent.getMaterialType() != null && compositeTypes.contains(parent.getMaterialType()))
             ? BigDecimal.valueOf(getTataraMaterialModifier())
@@ -361,8 +365,12 @@ public class AssemblyState {
         BigDecimal v = BigDecimal.valueOf(total).multiply(factor);
         v = v.setScale(2, RoundingMode.HALF_UP);
         v = v.setScale(0, RoundingMode.CEILING);
-        if (v.compareTo(BigDecimal.ZERO) <= 0) return 0;
-        if (v.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) return Integer.MAX_VALUE;
+        if (v.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0;
+        }
+        if (v.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
+            return Integer.MAX_VALUE;
+        }
         return v.intValue();
     }
 
@@ -436,7 +444,7 @@ public class AssemblyState {
             int batchesRoot = countMap.getOrDefault(r, 1);
             batchesRoot = (int) Math.max(Math.ceil((double) batchesRoot / (double) r.getProducedQuantity()), 1);
             prevBatches.put(r.getTypeName(), batchesRoot);
-            int qty =  (batchesRoot * r.getFinalQuantity());
+            int qty = (batchesRoot * r.getFinalQuantity());
             result.computeIfAbsent(0, k -> new HashMap<>())
                 .merge(r.getTypeName(), qty, Integer::sum);
         }

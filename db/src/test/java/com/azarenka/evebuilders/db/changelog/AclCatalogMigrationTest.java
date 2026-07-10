@@ -12,76 +12,56 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AclCatalogMigrationTest {
 
     @Test
-    void masterIncludesCanonicalAclCatalogAfterLegacyAclMigration() throws IOException {
+    void masterIncludesOnlyBootstrapSchemaAndSeedChangelogs() throws IOException {
         String master = readResource("db/changelog/db.changelog-master.yaml");
 
-        int legacyIndex = master.indexOf("changeset-2026-06-14-acl.yaml");
-        int canonicalIndex = master.indexOf("changeset-2026-06-17-acl-catalog.yaml");
-        int cleanupIndex = master.indexOf("changeset-2026-06-17-acl-cleanup.yaml");
-
-        assertTrue(legacyIndex >= 0, "legacy ACL migration must remain included");
-        assertTrue(canonicalIndex > legacyIndex, "canonical ACL migration must be included after the legacy ACL migration");
-        assertTrue(cleanupIndex > canonicalIndex, "cleanup ACL migration must be included after the canonical ACL migration");
+        assertTrue(master.contains("changeset-0-baseline-builders-schema.yaml"));
+        assertTrue(master.contains("changeset-1.yaml"));
+        assertFalse(master.contains("add_roles.yaml"));
+        assertFalse(master.contains("changeset-1.5.yaml"));
+        assertFalse(master.contains("changeset-1.7.yaml"));
+        assertFalse(master.contains("changeset-2026-06-14-acl.yaml"));
+        assertFalse(master.contains("changeset-2026-06-17-acl-catalog.yaml"));
+        assertFalse(master.contains("changeset-2026-06-17-acl-cleanup.yaml"));
+        assertFalse(master.contains("changeset-2026-06-18-acl-admin.yaml"));
+        assertFalse(master.contains("changeset-2026-07-04-fit-text-fit.yaml"));
     }
 
     @Test
-    void canonicalAclCatalogSeedsRequestedRolesPermissionsAndMappings() throws IOException {
-        String migration = readResource("db/changelog/changeset-2026-06-17-acl-catalog.yaml");
+    void seedChangelogContainsCurrentRolesPermissionsAndMappings() throws IOException {
+        String seed = readResource("db/changelog/changeset-1.yaml");
 
-        assertTrue(migration.contains("('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true)"));
-        assertTrue(migration.contains("('CEO', 'CEO', 'Executive role', true)"));
-        assertTrue(migration.contains("('MANAGER', 'Manager', 'Management role', true)"));
-        assertTrue(migration.contains("('MINER', 'Miner', 'Mining and extraction role', true)"));
-        assertTrue(migration.contains("('BUILDER', 'Builder', 'Construction and production role', true)"));
+        assertTrue(seed.contains("('ADMIN', 'Administrator', 'Administrative role', true)"));
+        assertTrue(seed.contains("('BUILDER', 'Builder', 'Construction and production role', true)"));
+        assertTrue(seed.contains("('CEO', 'CEO', 'Executive role', true)"));
+        assertTrue(seed.contains("('COORDINATOR', 'Coordinator', 'Coordination role', false)"));
+        assertTrue(seed.contains("('MANAGER', 'Manager', 'Management role', true)"));
+        assertTrue(seed.contains("('MINER', 'Miner', 'Mining and extraction role', true)"));
+        assertTrue(seed.contains("('SUPER_ADMIN', 'Super Administrator', 'Full access bypass role', true)"));
+        assertTrue(seed.contains("('VIEWER', 'Viewer', 'Read-only role', false)"));
 
-        assertTrue(migration.contains("('DASHBOARD_VIEW', 'View dashboard', 'Access dashboard overview', 'DASHBOARD')"));
-        assertTrue(migration.contains("('CONTRACTS_VIEW', 'View contracts', 'Read contract data', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CONTRACTS_CREATE', 'Create contracts', 'Create contracts', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CONTRACTS_EDIT', 'Edit contracts', 'Edit contracts', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CONTRACTS_ACCEPT', 'Accept contracts', 'Accept incoming contracts', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CONTRACTS_CANCEL', 'Cancel contracts', 'Cancel owned contracts', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CONTRACTS_DISCARD', 'Discard contracts', 'Discard draft contracts', 'CONTRACTS')"));
-        assertTrue(migration.contains("('CORPORATION_VIEW', 'View corporation', 'Read corporation data', 'CORPORATION')"));
-        assertTrue(migration.contains("('CORPORATION_CONTRACT_VIEW', 'View corporation contracts', 'Read corporation contract data', 'CORPORATION_CONTRACTS')"));
-        assertTrue(migration.contains("('CORPORATION_CONTRACT_EDIT', 'Edit corporation contracts', 'Edit corporation contract data', 'CORPORATION_CONTRACTS')"));
+        assertTrue(seed.contains("('ADMIN_VIEW', 'View admin shell', 'Access the admin shell and admin navigation', 'ADMIN')"));
+        assertTrue(seed.contains("('ROLES_PERMISSIONS_EDIT', 'Edit role permissions', 'Assign permissions to roles', 'ROLES')"));
+        assertTrue(seed.contains("('CORPORATION_CONTRACT_VIEW', 'View corporation contracts', 'Read corporation contract data', 'CORPORATION_CONTRACTS')"));
+        assertTrue(seed.contains("('CORPORATION_CONTRACT_EDIT', 'Edit corporation contracts', 'Edit corporation contract data', 'CORPORATION_CONTRACTS')"));
+        assertFalse(seed.contains("USERS_CREATE"));
+        assertFalse(seed.contains("USERS_DELETE"));
+        assertFalse(seed.contains("CORPORATION_EDIT"));
+        assertFalse(seed.contains("CONTRACTS_DELETE"));
+        assertFalse(seed.contains("MINING_OPS_"));
+        assertFalse(seed.contains("BUILDS_"));
+        assertFalse(seed.contains("WALLET_"));
+        assertFalse(seed.contains("MEMBERS_"));
 
-        assertTrue(migration.contains("('CEO', 'CORPORATION_VIEW')"));
-        assertTrue(migration.contains("('CEO', 'CORPORATION_CONTRACT_VIEW')"));
-        assertTrue(migration.contains("('CEO', 'CORPORATION_CONTRACT_EDIT')"));
-        assertTrue(migration.contains("('MANAGER', 'CONTRACTS_VIEW')"));
-        assertTrue(migration.contains("('MANAGER', 'CONTRACTS_CREATE')"));
-        assertTrue(migration.contains("('MANAGER', 'CONTRACTS_EDIT')"));
-        assertTrue(migration.contains("('MANAGER', 'CONTRACTS_CANCEL')"));
-        assertTrue(migration.contains("('MINER', 'DASHBOARD_VIEW')"));
-        assertTrue(migration.contains("('BUILDER', 'DASHBOARD_VIEW')"));
-        assertTrue(migration.contains("('BUILDER', 'CONTRACTS_ACCEPT')"));
-        assertTrue(migration.contains("('BUILDER', 'CONTRACTS_DISCARD')"));
-
-        String rolePermSection = migration.substring(migration.indexOf("WITH role_perm"));
-        assertFalse(rolePermSection.contains("('SUPER_ADMIN',"), "SUPER_ADMIN must not receive database permission rows");
-        assertFalse(rolePermSection.contains("ROLE_ADMIN"));
-        assertFalse(rolePermSection.contains("ROLE_VIEWER"));
-        assertFalse(rolePermSection.contains("ROLE_COORDINATOR"));
-        assertFalse(rolePermSection.contains("ROLE_WORKER"));
-    }
-
-    @Test
-    void cleanupMigrationRemovesObsoletePermissionsSafely() throws IOException {
-        String migration = readResource("db/changelog/changeset-2026-06-17-acl-cleanup.yaml");
-
-        assertTrue(migration.contains("DELETE FROM builders.role_permissions rp"));
-        assertTrue(migration.contains("DELETE FROM builders.user_permissions up"));
-        assertTrue(migration.contains("DELETE FROM builders.permissions"));
-        assertTrue(migration.contains("'USERS_VIEW'"));
-        assertTrue(migration.contains("'ROLES_VIEW'"));
-        assertTrue(migration.contains("'BUILDS_VIEW'"));
-        assertTrue(migration.contains("'WALLET_VIEW'"));
-        assertTrue(migration.contains("'CORPORATION_EDIT'"));
-        assertTrue(migration.contains("'CONTRACTS_DELETE'"));
-        assertTrue(migration.contains("'MINING_OPS_VIEW'"));
-        assertTrue(migration.contains("'MINING_OPS_CREATE'"));
-        assertTrue(migration.contains("'MINING_OPS_EDIT'"));
-        assertTrue(migration.contains("'MINING_OPS_DELETE'"));
+        assertTrue(seed.contains("('ADMIN', 'ADMIN_VIEW')"));
+        assertTrue(seed.contains("('ADMIN', 'ROLES_PERMISSIONS_EDIT')"));
+        assertTrue(seed.contains("('BUILDER', 'CONTRACTS_ACCEPT')"));
+        assertTrue(seed.contains("('CEO', 'ROLES_PERMISSIONS_EDIT')"));
+        assertTrue(seed.contains("('COORDINATOR', 'CORPORATION_CONTRACT_EDIT')"));
+        assertTrue(seed.contains("('MANAGER', 'CONTRACTS_CANCEL')"));
+        assertTrue(seed.contains("('MINER', 'DASHBOARD_VIEW')"));
+        assertTrue(seed.contains("('VIEWER', 'CORPORATION_CONTRACT_VIEW')"));
+        assertTrue(seed.contains("('SUPER_ADMIN', 'CONTRACTS_VIEW')"));
     }
 
     private String readResource(String path) throws IOException {

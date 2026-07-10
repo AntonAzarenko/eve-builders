@@ -6,22 +6,14 @@ import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.OrderFilter;
 import com.azarenka.evebuilders.domain.dto.ShipOrderDto;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
-import com.azarenka.evebuilders.service.impl.contract.ContractValidationReport;
-import com.azarenka.evebuilders.service.util.ImageService;
-import com.vaadin.flow.component.textfield.IntegerField;
 
 import java.util.List;
-import java.util.Map;
 
 public interface IOrderViewController {
 
     List<ShipOrderDto> getOrderList(OrderFilter filter);
 
     Fit getFitById(String id);
-
-    ImageService getImageProviderService();
-
-    void saveOrders(Map<ShipOrderDto, IntegerField> orderTexfieldMap);
 
     Order getOriginalOrderByOrderNumber(String orderNumber);
 

@@ -1,7 +1,5 @@
 package com.azarenka.evebuilders.service.api;
 
-import com.vaadin.flow.component.html.Image;
-
 public interface IEveCharacterService {
 
     String getCharacterInfo(String accessToken, String characterId);

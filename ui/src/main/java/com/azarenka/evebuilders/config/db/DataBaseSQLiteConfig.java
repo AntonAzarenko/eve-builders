@@ -17,8 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
+@Profile("!migration")
 @EnableJpaRepositories(
         basePackages = "com.azarenka.evebuilders.repository.litesql",
         entityManagerFactoryRef = "sqliteEntityManager",

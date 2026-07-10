@@ -17,8 +17,10 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import jakarta.persistence.EntityManagerFactory;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
+@Profile("!migration")
 @EnableJpaRepositories(
     basePackages = "com.azarenka.evebuilders.repository.auth",
     entityManagerFactoryRef = "mariaEntityManager",

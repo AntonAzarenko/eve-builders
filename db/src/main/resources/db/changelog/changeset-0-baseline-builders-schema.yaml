@@ -1,0 +1,414 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-07-10-00-baseline-builders-schema
+      author: codex
+      comment: baseline schema generated from current builders PostgreSQL schema
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              CREATE SCHEMA IF NOT EXISTS builders;
+
+              CREATE TABLE builders.assets (
+                id VARCHAR(255) NOT NULL,
+                fetched_at TIMESTAMP NOT NULL,
+                location_id BIGINT NOT NULL,
+                quantity INTEGER NOT NULL,
+                type_id INTEGER NOT NULL,
+                user_name VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_assets PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.casino_box (
+                uid VARCHAR(64) NOT NULL,
+                box_type VARCHAR(255) NOT NULL,
+                character_id INTEGER NOT NULL,
+                claimed BOOLEAN NOT NULL,
+                create_date DATE DEFAULT CURRENT_DATE NOT NULL,
+                reward_id VARCHAR(255) NOT NULL,
+                update_date DATE DEFAULT CURRENT_DATE NOT NULL,
+                CONSTRAINT pk_casino_box PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.casino_lottery_ticket (
+                uid VARCHAR(64) NOT NULL,
+                character_id VARCHAR(255) NOT NULL,
+                createdate DATE,
+                reward VARCHAR(255),
+                CONSTRAINT pk_casino_lottery_ticket PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.casino_reward (
+                uid VARCHAR(64) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                value VARCHAR(255) NOT NULL,
+                box_type VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_casino_reward PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.casino_user (
+                character_id INTEGER NOT NULL,
+                character_name VARCHAR(255) NOT NULL,
+                count_points INTEGER NOT NULL,
+                create_date DATE,
+                update_date DATE,
+                CONSTRAINT pk_casino_user PRIMARY KEY (character_id)
+              );
+
+              CREATE TABLE builders.character_asset_sync (
+                user_name VARCHAR(255) NOT NULL,
+                etag VARCHAR(128),
+                expires_at TIMESTAMP,
+                last_sync_at TIMESTAMP,
+                CONSTRAINT pk_character_asset_sync PRIMARY KEY (user_name)
+              );
+
+              CREATE TABLE builders.deliveries (
+                id VARCHAR(64) NOT NULL,
+                deliveredon DATE,
+                proofref VARCHAR(255),
+                qty BIGINT NOT NULL,
+                status VARCHAR(255) NOT NULL,
+                order_id VARCHAR(64) NOT NULL,
+                CONSTRAINT pk_deliveries PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.destination (
+                dest_id VARCHAR(255) NOT NULL,
+                destination VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_destination PRIMARY KEY (dest_id)
+              );
+
+              CREATE TABLE builders.disctribuited_order_audit (
+                id VARCHAR(255) NOT NULL,
+                created_by VARCHAR(255),
+                created_date DATE,
+                order_number VARCHAR(255),
+                reason VARCHAR(255),
+                status SMALLINT,
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                CONSTRAINT pk_disctribuited_order_audit PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.distributed_order (
+                id VARCHAR(255) NOT NULL,
+                count INTEGER,
+                ready INTEGER DEFAULT 0 NOT NULL,
+                created_date DATE,
+                finished_date DATE,
+                fit_id VARCHAR(255),
+                order_number VARCHAR(255),
+                order_rights VARCHAR(255),
+                status VARCHAR(255),
+                ship_name VARCHAR(255),
+                user_name VARCHAR(255),
+                category VARCHAR(255),
+                price NUMERIC,
+                applied_date DATE,
+                is_assembly BOOLEAN DEFAULT true,
+                CONSTRAINT pk_distributed_order PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.fit (
+                id VARCHAR(255) NOT NULL,
+                group_id INTEGER,
+                name VARCHAR(255),
+                text_fit TEXT NOT NULL,
+                type_id INTEGER,
+                created_by VARCHAR(255) DEFAULT 'SYSTEM'::character varying NOT NULL,
+                created_date DATE DEFAULT '2025-07-13'::date,
+                updated_by VARCHAR(255) DEFAULT 'SYSTEM'::character varying,
+                updated_date DATE DEFAULT '2025-07-13'::date,
+                CONSTRAINT pk_fit PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.history_points_cta (
+                id VARCHAR(64) NOT NULL,
+                character_id INTEGER NOT NULL,
+                character_name VARCHAR(255) NOT NULL,
+                event_date TIMESTAMP NOT NULL,
+                fleet_name VARCHAR(255) NOT NULL,
+                points INTEGER NOT NULL,
+                CONSTRAINT pk_history_points_cta PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.lottery_ticket (
+                uid VARCHAR(64) NOT NULL,
+                character_id VARCHAR(255) NOT NULL,
+                createdate DATE,
+                reward VARCHAR(255),
+                CONSTRAINT pk_lottery_ticket PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.managed_corporation (
+                id VARCHAR(255) NOT NULL,
+                eve_corporation_id BIGINT NOT NULL,
+                corporation_name VARCHAR(255) NOT NULL,
+                corporation_ticker VARCHAR(255),
+                owner_username VARCHAR(255) NOT NULL,
+                created_by VARCHAR(255) NOT NULL,
+                created_date DATE NOT NULL,
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                CONSTRAINT pk_managed_corporation PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.market_item_types (
+                id VARCHAR(255) NOT NULL,
+                is_active BOOLEAN NOT NULL,
+                material_type VARCHAR(255) NOT NULL,
+                type_id VARCHAR(64) NOT NULL,
+                CONSTRAINT pk_market_item_types PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.market_offer (
+                id VARCHAR(64) NOT NULL,
+                createdon DATE,
+                expireson DATE,
+                priceperunit NUMERIC NOT NULL,
+                qtyavailable BIGINT NOT NULL,
+                qtytotal BIGINT NOT NULL,
+                seller_username VARCHAR(255) NOT NULL,
+                status VARCHAR(255) NOT NULL,
+                updatedon DATE,
+                market_item_type_id VARCHAR(255) NOT NULL,
+                location_dest_id VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_market_offer PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.module (
+                id VARCHAR(255) NOT NULL,
+                name VARCHAR(255),
+                moduletype SMALLINT NOT NULL,
+                fit_id VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_module PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.order_audit (
+                id VARCHAR(255) NOT NULL,
+                created_by VARCHAR(255),
+                created_date DATE,
+                order_number VARCHAR(255),
+                reason VARCHAR(255),
+                status VARCHAR(255),
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                CONSTRAINT pk_order_audit PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.order_filter (
+                id VARCHAR(255) NOT NULL,
+                is_distributed BOOLEAN,
+                min_count INTEGER,
+                types VARCHAR[],
+                statuses VARCHAR[],
+                CONSTRAINT pk_order_filter PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.order_preset_defaults (
+                id VARCHAR(255) NOT NULL,
+                owner_username VARCHAR(255) NOT NULL,
+                order_type VARCHAR(255) NOT NULL,
+                receiver_type VARCHAR(255) NOT NULL,
+                receiver_ref_id VARCHAR(255) NOT NULL,
+                receiver_name VARCHAR(255) NOT NULL,
+                priority VARCHAR(255) NOT NULL,
+                blue_print BOOLEAN NOT NULL,
+                order_rights VARCHAR(255) NOT NULL,
+                rightsholder VARCHAR(255) NOT NULL,
+                created_by VARCHAR(255),
+                created_date DATE,
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                CONSTRAINT pk_order_preset_defaults PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.order_preset_defaults_history (
+                id VARCHAR(255) NOT NULL,
+                preset_id VARCHAR(255) NOT NULL,
+                owner_username VARCHAR(255) NOT NULL,
+                order_type VARCHAR(255) NOT NULL,
+                receiver_type VARCHAR(255) NOT NULL,
+                receiver_ref_id VARCHAR(255) NOT NULL,
+                receiver_name VARCHAR(255) NOT NULL,
+                priority VARCHAR(255) NOT NULL,
+                blue_print BOOLEAN NOT NULL,
+                order_rights VARCHAR(255) NOT NULL,
+                rightsholder VARCHAR(255) NOT NULL,
+                changed_by VARCHAR(255) NOT NULL,
+                changed_date DATE NOT NULL,
+                change_reason VARCHAR(255),
+                CONSTRAINT pk_order_preset_defaults_history PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.orders (
+                id VARCHAR(255) NOT NULL,
+                blue_print BOOLEAN,
+                category VARCHAR(255),
+                count INTEGER,
+                ready INTEGER DEFAULT 0 NOT NULL,
+                created_by VARCHAR(255),
+                created_date DATE,
+                destination VARCHAR(255),
+                finish_by DATE,
+                fit_id VARCHAR(255),
+                group_name VARCHAR(255),
+                in_progress_count INTEGER DEFAULT 0 NOT NULL,
+                order_number VARCHAR(255),
+                order_rights VARCHAR(255),
+                status VARCHAR(255),
+                order_type VARCHAR(255),
+                price NUMERIC,
+                priority VARCHAR(255),
+                receiver VARCHAR(255),
+                rightsholder VARCHAR(255),
+                ship_name VARCHAR(255),
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                request_id VARCHAR(255),
+                is_assembly BOOLEAN DEFAULT true,
+                receiver_type VARCHAR(255) NOT NULL,
+                receiver_ref_id VARCHAR(255) NOT NULL,
+                receiver_name VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_orders PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.permissions (
+                id BIGSERIAL NOT NULL,
+                code VARCHAR(128) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                description VARCHAR(255),
+                group_name VARCHAR(128) NOT NULL,
+                CONSTRAINT pk_permissions PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.purchase_requests (
+                id VARCHAR(64) NOT NULL,
+                createdon DATE,
+                deadline DATE,
+                priceperunit NUMERIC NOT NULL,
+                qtyneeded BIGINT NOT NULL,
+                qtyremaining BIGINT NOT NULL,
+                requester_username VARCHAR(64) NOT NULL,
+                status VARCHAR(255) NOT NULL,
+                updatedon DATE,
+                market_item_type_id VARCHAR(255) NOT NULL,
+                location_dest_id VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_purchase_requests PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.receivers (
+                res_id VARCHAR(255) NOT NULL,
+                receiver VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_receivers PRIMARY KEY (res_id)
+              );
+
+              CREATE TABLE builders.request (
+                id VARCHAR(255) NOT NULL,
+                category VARCHAR(255),
+                count INTEGER,
+                created_by VARCHAR(255),
+                created_date DATE,
+                finish_date DATE,
+                fit_id VARCHAR(255),
+                group_name VARCHAR(255),
+                item_name VARCHAR(255),
+                order_type VARCHAR(255),
+                price NUMERIC,
+                priority VARCHAR(255),
+                updated_by VARCHAR(255),
+                updated_date DATE,
+                status VARCHAR(255),
+                is_assembly BOOLEAN DEFAULT true,
+                CONSTRAINT pk_request PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.reservations (
+                id VARCHAR(64) NOT NULL,
+                createdon DATE,
+                qty BIGINT NOT NULL,
+                reserveduntil DATE,
+                reserver_username VARCHAR(64) NOT NULL,
+                status VARCHAR(255) NOT NULL,
+                offer_id VARCHAR(64),
+                request_id VARCHAR(64),
+                CONSTRAINT pk_reservations PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.rewarded_fleet (
+                uid VARCHAR(64) NOT NULL,
+                count_rewarded INTEGER,
+                fleetid INTEGER NOT NULL,
+                hash VARCHAR(255) NOT NULL,
+                is_rewarded BOOLEAN NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_rewarded_fleet PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.role_permissions (
+                role_id BIGINT NOT NULL,
+                permission_id BIGINT NOT NULL,
+                CONSTRAINT pk_role_permissions PRIMARY KEY (role_id, permission_id)
+              );
+
+              CREATE TABLE builders.roles (
+                id BIGSERIAL NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                code VARCHAR(64) NOT NULL,
+                description VARCHAR(255),
+                system_role BOOLEAN DEFAULT false NOT NULL,
+                CONSTRAINT pk_roles PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.trade_orders (
+                id VARCHAR(64) NOT NULL,
+                buyer_username VARCHAR(64) NOT NULL,
+                createdon DATE,
+                priceperunit NUMERIC NOT NULL,
+                qty BIGINT NOT NULL,
+                seller_username VARCHAR(64) NOT NULL,
+                status VARCHAR(255) NOT NULL,
+                totalprice NUMERIC NOT NULL,
+                destination_dest_id VARCHAR(255) NOT NULL,
+                market_item_type_id VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_trade_orders PRIMARY KEY (id)
+              );
+
+              CREATE TABLE builders.user_info (
+                uid VARCHAR(255) NOT NULL,
+                alliance_name VARCHAR(255),
+                character_id VARCHAR(255) NOT NULL,
+                character_info VARCHAR(10000),
+                corp_name VARCHAR(255),
+                is_main_character BOOLEAN,
+                language VARCHAR(255),
+                main_id VARCHAR(255),
+                password VARCHAR(255),
+                roles TEXT[],
+                user_name VARCHAR(255) NOT NULL,
+                theme VARCHAR(255) DEFAULT 'light'::character varying,
+                enabled BOOLEAN DEFAULT true NOT NULL,
+                CONSTRAINT pk_user_info PRIMARY KEY (uid)
+              );
+
+              CREATE TABLE builders.user_permissions (
+                user_id VARCHAR(255) NOT NULL,
+                permission_id BIGINT NOT NULL,
+                CONSTRAINT pk_user_permissions PRIMARY KEY (user_id, permission_id)
+              );
+
+              CREATE TABLE builders.user_roles (
+                user_id VARCHAR(255) NOT NULL,
+                role_id BIGINT NOT NULL,
+                CONSTRAINT pk_user_roles PRIMARY KEY (user_id, role_id)
+              );
+
+              CREATE TABLE builders.user_token (
+                user_id VARCHAR(255) NOT NULL,
+                access_token VARCHAR(5000) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                refresh_token VARCHAR(255) NOT NULL,
+                CONSTRAINT pk_user_token PRIMARY KEY (user_id)
+              );

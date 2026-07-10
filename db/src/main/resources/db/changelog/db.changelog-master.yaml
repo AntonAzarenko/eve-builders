@@ -1,19 +1,5 @@
 databaseChangeLog:
   - include:
+      file: db/changelog/changeset-0-baseline-builders-schema.yaml
+  - include:
       file: db/changelog/changeset-1.yaml
-  - include:
-      file: db/changelog/add_roles.yaml
-  - include:
-      file: db/changelog/changeset-1.5.yaml
-  - include:
-      file: db/changelog/changeset-1.7.yaml
-  - include:
-      file: db/changelog/changeset-2026-06-14-acl.yaml
-  - include:
-      file: db/changelog/changeset-2026-06-17-acl-catalog.yaml
-  - include:
-      file: db/changelog/changeset-2026-06-17-acl-cleanup.yaml
-  - include:
-      file: db/changelog/changeset-2026-06-18-acl-admin.yaml
-  - include:
-      file: db/changelog/changeset-2026-07-04-fit-text-fit.yaml

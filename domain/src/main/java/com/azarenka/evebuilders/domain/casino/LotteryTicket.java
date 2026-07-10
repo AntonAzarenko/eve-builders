@@ -16,5 +16,6 @@ public class LotteryTicket {
     @Column(name = "character_id", unique = true, nullable = false)
     private String characterId;
     private String reward;
+    @Column(name = "createdate")
     private LocalDate createDate;
 }

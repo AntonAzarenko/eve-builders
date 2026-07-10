@@ -89,34 +89,6 @@ databaseChangeLog:
       author: codex
       comment: create-permissions-catalog
       changes:
-        - createTable:
-            schemaName: builders
-            tableName: permissions
-            columns:
-              - column:
-                  name: id
-                  type: BIGSERIAL
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: code
-                  type: VARCHAR(128)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: name
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: description
-                  type: TEXT
-              - column:
-                  name: group_name
-                  type: VARCHAR(128)
-                  constraints:
-                    nullable: false
         - addUniqueConstraint:
             schemaName: builders
             tableName: permissions
@@ -170,25 +142,6 @@ databaseChangeLog:
       author: codex
       comment: create-user-roles-and-backfill-from-legacy-user-info-roles
       changes:
-        - createTable:
-            schemaName: builders
-            tableName: user_roles
-            columns:
-              - column:
-                  name: user_id
-                  type: VARCHAR(64)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: role_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-        - addPrimaryKey:
-            schemaName: builders
-            tableName: user_roles
-            columnNames: user_id, role_id
-            constraintName: pk_user_roles
         - addForeignKeyConstraint:
             baseTableSchemaName: builders
             baseTableName: user_roles
@@ -248,25 +201,6 @@ databaseChangeLog:
       author: codex
       comment: create-role-permissions-and-seed-mappings
       changes:
-        - createTable:
-            schemaName: builders
-            tableName: role_permissions
-            columns:
-              - column:
-                  name: role_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: permission_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-        - addPrimaryKey:
-            schemaName: builders
-            tableName: role_permissions
-            columnNames: role_id, permission_id
-            constraintName: pk_role_permissions
         - addForeignKeyConstraint:
             baseTableSchemaName: builders
             baseTableName: role_permissions
@@ -444,25 +378,6 @@ databaseChangeLog:
       author: codex
       comment: create-user-permissions-direct-grants
       changes:
-        - createTable:
-            schemaName: builders
-            tableName: user_permissions
-            columns:
-              - column:
-                  name: user_id
-                  type: VARCHAR(64)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: permission_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-        - addPrimaryKey:
-            schemaName: builders
-            tableName: user_permissions
-            columnNames: user_id, permission_id
-            constraintName: pk_user_permissions
         - addForeignKeyConstraint:
             baseTableSchemaName: builders
             baseTableName: user_permissions

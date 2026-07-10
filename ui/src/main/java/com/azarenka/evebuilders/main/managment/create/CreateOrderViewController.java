@@ -1,14 +1,26 @@
 package com.azarenka.evebuilders.main.managment.create;
 
-import com.azarenka.evebuilders.domain.db.*;
+import com.azarenka.evebuilders.domain.db.Destination;
+import com.azarenka.evebuilders.domain.db.Fit;
+import com.azarenka.evebuilders.domain.db.ManagedCorporation;
+import com.azarenka.evebuilders.domain.db.Order;
+import com.azarenka.evebuilders.domain.db.Receiver;
+import com.azarenka.evebuilders.domain.db.RequestOrder;
+import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
 import com.azarenka.evebuilders.domain.dto.OrderPresetDefaultsDto;
 import com.azarenka.evebuilders.domain.dto.UserDto;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.managment.api.ICreateOrderController;
-import com.azarenka.evebuilders.service.api.*;
-import com.azarenka.evebuilders.service.util.ImageService;
-import com.vaadin.flow.component.html.Image;
+import com.azarenka.evebuilders.service.api.ICorporationService;
+import com.azarenka.evebuilders.service.api.IEveMailService;
+import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
+import com.azarenka.evebuilders.service.api.IFitLoaderService;
+import com.azarenka.evebuilders.service.api.IOrderPresetDefaultsService;
+import com.azarenka.evebuilders.service.api.IOrderService;
+import com.azarenka.evebuilders.service.api.IRequestOrderService;
+import com.azarenka.evebuilders.service.api.IUserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +33,6 @@ public class CreateOrderViewController implements ICreateOrderController {
 
     @Autowired
     private IEveMaterialDataService dataService;
-    @Autowired
-    private ImageService imageService;
     @Autowired
     private IOrderService orderService;
     @Autowired
@@ -64,18 +74,8 @@ public class CreateOrderViewController implements ICreateOrderController {
     }
 
     @Override
-    public Image getBigImageByParameters(InvType invType, String size) {
-        return imageService.createImage(invType.getTypeID(), size);
-    }
-
-    @Override
     public boolean uploadFit(String text) {
         return fitLoaderService.upload(text);
-    }
-
-    @Override
-    public ImageService getImageProviderService() {
-        return imageService;
     }
 
     @Override

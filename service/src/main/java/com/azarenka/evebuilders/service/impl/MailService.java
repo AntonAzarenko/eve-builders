@@ -11,7 +11,6 @@ import com.azarenka.evebuilders.service.api.IRequestOrderService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.api.integration.IEveMailIntegrationService;
 import com.azarenka.evebuilders.service.impl.auth.eve.SecurityUtils;
-import com.azarenka.evebuilders.service.util.IOrderStatusToStringConverter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class MailService implements IEveMailService, IOrderStatusToStringConverter {
+public class MailService implements IEveMailService {
 
     private static final String COORDINATOR_STATUS_SUBJECT = "Статус Заявки Обновлен";
     private static final String SERVER = "https://industry.scan-stakan.com/login";
@@ -42,7 +41,7 @@ public class MailService implements IEveMailService, IOrderStatusToStringConvert
                 COORDINATOR_STATUS_SUBJECT,
                 String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
                     requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
-                    convertRequestStatus(requestOrder.getRequestStatus())));
+                    requestOrder.getRequestStatus()));
         });
     }
 
@@ -57,7 +56,7 @@ public class MailService implements IEveMailService, IOrderStatusToStringConvert
                 COORDINATOR_STATUS_SUBJECT,
                 String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
                     requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
-                    convertRequestStatus(requestOrder.getRequestStatus())));
+                    requestOrder.getRequestStatus()));
         });
     }
 
@@ -72,7 +71,7 @@ public class MailService implements IEveMailService, IOrderStatusToStringConvert
                 COORDINATOR_STATUS_SUBJECT,
                 String.format(MESSAGE_ADMIN_COORDINATOR_FORMATTER, SERVER, requestOrder.getId(),
                     requestOrder.getItemName(), requestOrder.getPrice(), requestOrder.getCount(),
-                    convertRequestStatus(requestOrder.getRequestStatus())));
+                    requestOrder.getRequestStatus()));
         });
     }
 

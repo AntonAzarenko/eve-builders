@@ -6,7 +6,6 @@ import com.azarenka.evebuilders.service.impl.auth.eve.EveAuthenticationSuccessHa
 import com.azarenka.evebuilders.service.impl.auth.eve.EveOAuth2UserService;
 import com.azarenka.evebuilders.service.impl.auth.eve.LogoutSuccessHandler;
 import com.azarenka.evebuilders.service.impl.auth.eve.ui.JwtAuthFilter;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -30,15 +29,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
 @Configuration
 @EnableMethodSecurity
 @EnableConfigurationProperties(JwtProperties.class)
-public class SecurityConfig extends VaadinWebSecurity {
+public class SecurityConfig {
 
     private final LogoutSuccessHandler logoutSuccessHandler;
     private final EveOAuth2UserService eveOAuth2UserService;
@@ -122,41 +121,6 @@ public class SecurityConfig extends VaadinWebSecurity {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
-   /* @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .cors(Customizer.withDefaults())
-            .addFilterBefore(cookieAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    new AntPathRequestMatcher("/login/oauth2/code/eveonline"),
-                    new AntPathRequestMatcher("/unauthorized"),
-                    new AntPathRequestMatcher("/api/**")
-                ).permitAll()
-
-            );
-        http.oauth2Login(oauth2 -> oauth2
-            .loginPage("/login")
-            .userInfoEndpoint(userInfo -> userInfo
-                .userService(eveOAuth2UserService)
-            )
-            //.failureHandler(customFailureHandler())
-            .successHandler(eveAuthenticationSuccessHandler)
-        );
-        http.logout(logout -> logout
-            .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-            .addLogoutHandler(logoutSuccessHandler)
-            .logoutSuccessUrl("/"));
-        http.csrf(csrf -> csrf
-            .ignoringRequestMatchers(
-                new AntPathRequestMatcher("/api/**"),
-                new AntPathRequestMatcher("/unauthorized")
-            )
-        );
-        super.configure(http);
-    }*/
 
     @Bean
     public AuthenticationFailureHandler customFailureHandler() {

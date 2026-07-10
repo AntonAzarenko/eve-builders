@@ -10,6 +10,7 @@ import com.azarenka.evebuilders.service.api.IAccessControlService;
 import com.azarenka.evebuilders.service.impl.auth.eve.EveAuthService;
 import com.azarenka.evebuilders.service.impl.auth.eve.EveOAuth2UserService;
 import com.azarenka.evebuilders.service.impl.auth.eve.ui.JwtService;
+import com.azarenka.evebuilders.service.impl.auth.eve.TokenRefreshService;
 import com.azarenka.evebuilders.service.impl.intergarion.EveCharacterService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,7 @@ class AuthControllerTest {
     private IUserRepository userRepository;
     private IAccessControlService accessControlService;
     private EveCharacterService eveCharacterService;
+    private TokenRefreshService tokenRefreshService;
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -63,6 +65,7 @@ class AuthControllerTest {
         userRepository = mock(IUserRepository.class);
         accessControlService = mock(IAccessControlService.class);
         eveCharacterService = mock(EveCharacterService.class);
+        tokenRefreshService = mock(TokenRefreshService.class);
 
         when(props.refreshCookieName()).thenReturn("refresh");
         when(jwtService.generateAccessToken(any())).thenReturn("local-access-token");
@@ -79,7 +82,9 @@ class AuthControllerTest {
                 eveOAuth2UserService,
                 userRepository,
                 accessControlService,
-                eveCharacterService
+                eveCharacterService,
+                mock(com.azarenka.evebuilders.service.api.IUserTokenService.class),
+                tokenRefreshService
             ))
             .build();
     }

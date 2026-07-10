@@ -1,0 +1,13 @@
+app:
+  database:
+    mode: ${APP_DATABASE_MODE:legacy}
+    expected-database: ${APP_EXPECTED_DATABASE:builders}
+    expected-schema: ${APP_EXPECTED_SCHEMA:builders}
+    allow-migration: false
+
+spring:
+  liquibase:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: validate

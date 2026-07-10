@@ -21,6 +21,11 @@ app:
     thread:
       order_id: ${APP.DISCORD.THREAD.ORDER.ID:}
       request_id: ${APP.DISCORD.THREAD.REQUEST.ID:}
+  database:
+    mode: ${APP_DATABASE_MODE:legacy}
+    expected-database: ${APP_EXPECTED_DATABASE:builders}
+    expected-schema: ${APP_EXPECTED_SCHEMA:builders}
+    allow-migration: false
 
   jwt:
     issuer: "angular-app"
@@ -38,10 +43,10 @@ spring:
     name: eve-builders
   datasource:
     postgresql:
-      url: ${SPRING.DATASOURCE.POSTGRESQL.URL}
-      driver-class-name: ${SPRING.DATASOURCE.POSTGRESQL.DRIVER-CLASS-NAME}
-      username: ${SPRING.DATASOURCE.POSTGRESQL.USERNAME}
-      password: ${SPRING.DATASOURCE.POSTGRESQL.PASSWORD}
+      url: ${BUILDERS_DB_URL:${SPRING.DATASOURCE.POSTGRESQL.URL:}}
+      driver-class-name: ${BUILDERS_DB_DRIVER_CLASS_NAME:org.postgresql.Driver}
+      username: ${BUILDERS_DB_USERNAME:${SPRING.DATASOURCE.POSTGRESQL.USERNAME:}}
+      password: ${BUILDERS_DB_PASSWORD:${SPRING.DATASOURCE.POSTGRESQL.PASSWORD:}}
     sqlite:
       url: ${SPRING.DATASOURCE.SQLITE.URL}
       driver-class-name: ${SPRING.DATASOURCE.SQLITE.DRIVER-CLASS-NAME}
@@ -57,7 +62,7 @@ spring:
       max-lifetime: 1800000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -65,20 +70,13 @@ spring:
         transaction:
           coordinator_class: jdbc
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        hbm2ddl:
-          auto: update
         jdbc:
           lob:
             non_contextual_creation: true
         boot:
           allow_jdbc_metadata_access: false
   liquibase:
-    url: ${SPRING.LIQUIBASE.URL}
-    user: ${SPRING.LIQUIBASE.USER}
-    password: ${SPRING.LIQUIBASE.PASSWORD}
-    change-log: ${SPRING.LIQUIBASE.CHANGE-LOG}
-    enabled: ${SPRING.LIQUIBASE.ENABLED}
-    driver-class-name: ${SPRING.LIQUIBASE.DRIVER-CLASS-NAME}
+    enabled: false
   defer-datasource-initialization: false
   main:
     allow-circular-references: true

@@ -1,0 +1,87 @@
+app:
+  version: "@app.version@"
+  sqlite:
+    path: ${APP_SQLLITE_PATH:}
+  notifications:
+    provider: ${APP.NOTIFICATIONS.PROVIDER:telegram}
+    telegram:
+      enabled: ${APP.NOTIFICATIONS.TELEGRAM.ENABLED:true}
+    discord:
+      enabled: ${APP.NOTIFICATIONS.DISCORD.ENABLED:false}
+  telegram_bot:
+    token: ${APP.TELEGRAM_BOT.TOKEN:}
+  telegram_chat_id: ${APP.TELEGRAM_CHAT_ID:}
+  telegram_thread_ping_id: ${APP.TELEGRAM_THREAD_PING_ID:}
+  telegram_thread_request_id: ${APP.TELEGRAM_THREAD_REQUEST_ID:}
+  discord:
+    wait_response: ${APP.DISCORD.WAIT_RESPONSE:false}
+    webhook:
+      order_url: ${APP.DISCORD.WEBHOOK.ORDER.URL:}
+      request_url: ${APP.DISCORD.WEBHOOK.REQUEST.URL:}
+    thread:
+      order_id: ${APP.DISCORD.THREAD.ORDER.ID:}
+      request_id: ${APP.DISCORD.THREAD.REQUEST.ID:}
+  jwt:
+    issuer: "angular-app"
+    secret: ${JWT_SECRET:}
+    access-ttl-seconds: 900
+    refresh-ttl-seconds: 1209600
+    refresh-cookie-name: "refresh_token"
+  eve:
+    corporation:
+      id: ${EVE.CORPORATION.ID:}
+  database:
+    mode: migration
+    expected-database: ${APP_EXPECTED_DATABASE:builders_v2}
+    expected-schema: ${APP_EXPECTED_SCHEMA:builders}
+    allow-migration: true
+
+spring:
+  main:
+    web-application-type: none
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - com.vaadin.flow.spring.SpringBootAutoConfiguration
+      - com.vaadin.flow.spring.SpringSecurityAutoConfiguration
+      - com.vaadin.hilla.EndpointController
+      - com.vaadin.hilla.push.PushConfigurer
+      - com.vaadin.hilla.route.RouteUnifyingConfiguration
+      - com.vaadin.hilla.signals.config.SignalsConfiguration
+      - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+  application:
+    name: eve-builders
+  datasource:
+    postgresql:
+      url: ${MIGRATION_DB_URL:${BUILDERS_DB_URL:}}
+      driver-class-name: ${MIGRATION_DB_DRIVER_CLASS_NAME:org.postgresql.Driver}
+      username: ${MIGRATION_DB_USERNAME:${BUILDERS_DB_USERNAME:}}
+      password: ${MIGRATION_DB_PASSWORD:${BUILDERS_DB_PASSWORD:}}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        transaction:
+          coordinator_class: jdbc
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        boot:
+          allow_jdbc_metadata_access: false
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    url: ${MIGRATION_DB_URL:${BUILDERS_DB_URL:}}
+    user: ${MIGRATION_DB_USERNAME:${BUILDERS_DB_USERNAME:}}
+    password: ${MIGRATION_DB_PASSWORD:${BUILDERS_DB_PASSWORD:}}
+    driver-class-name: ${MIGRATION_DB_DRIVER_CLASS_NAME:org.postgresql.Driver}
+  defer-datasource-initialization: false
+  messages:
+    encoding: UTF-8

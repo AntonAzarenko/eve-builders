@@ -1,8 +1,9 @@
 package com.azarenka.evebuilders.config.db;
 
+import com.azarenka.evebuilders.config.database.AppDatabaseProperties;
+import com.azarenka.evebuilders.config.database.PostgresConnectionProperties;
+import com.azarenka.evebuilders.config.database.PostgresDataSourceFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,36 +25,23 @@ import jakarta.persistence.EntityManagerFactory;
 )
 public class DataBasePostgresConfig {
 
-    @Value("${spring.datasource.postgresql.url}")
-    private String url;
-    @Value("${spring.datasource.postgresql.username}")
-    private String username;
-    @Value("${spring.datasource.postgresql.password}")
-    private String password;
-    @Value("${spring.datasource.postgresql.driver-class-name}")
-    private String driver;
-
     @Bean(name = "dbDataSource")
     @Primary
-    public DataSource mysqlDataSource() {
-        return DataSourceBuilder.create()
-            .url(url)
-            .username(username)
-            .password(password)
-            .driverClassName(driver)
-            .build();
+    public DataSource postgresDataSource(PostgresConnectionProperties connectionProperties,
+                                         AppDatabaseProperties databaseProperties) {
+        return PostgresDataSourceFactory.create(connectionProperties, databaseProperties);
     }
 
     @Bean(name = "dbEntityManager")
     @Primary
-    public LocalContainerEntityManagerFactoryBean mysqlEntityManagerFactory(EntityManagerFactoryBuilder builder,
-                                                                            @Qualifier("dbDataSource") DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean postgresEntityManagerFactory(EntityManagerFactoryBuilder builder,
+                                                                               @Qualifier("dbDataSource") DataSource dataSource) {
         return builder
             .dataSource(dataSource)
             .packages(
                 "com.azarenka.evebuilders.domain.db",
                 "com.azarenka.evebuilders.domain.casino",
-                "com/azarenka/evebuilders/domain/acl"
+                "com.azarenka.evebuilders.domain.acl"
             )
             .persistenceUnit("postgres")
             .build();
@@ -61,7 +49,7 @@ public class DataBasePostgresConfig {
 
     @Bean(name = "dbTransactionManager")
     @Primary
-    public PlatformTransactionManager mysqlTransactionManager(
+    public PlatformTransactionManager postgresTransactionManager(
         @Qualifier("dbEntityManager") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }

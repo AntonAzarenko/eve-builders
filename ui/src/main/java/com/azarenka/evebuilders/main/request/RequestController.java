@@ -1,10 +1,10 @@
 package com.azarenka.evebuilders.main.request;
 
-import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.db.Fit;
 import com.azarenka.evebuilders.domain.db.Order;
 import com.azarenka.evebuilders.domain.db.RequestOrder;
 import com.azarenka.evebuilders.domain.db.RequestOrderStatusEnum;
+import com.azarenka.evebuilders.domain.enums.OrderStatusEnum;
 import com.azarenka.evebuilders.domain.sqllite.InvGroup;
 import com.azarenka.evebuilders.domain.sqllite.InvType;
 import com.azarenka.evebuilders.main.request.api.IRequestController;
@@ -12,8 +12,6 @@ import com.azarenka.evebuilders.service.api.IEveMaterialDataService;
 import com.azarenka.evebuilders.service.api.IFitLoaderService;
 import com.azarenka.evebuilders.service.api.IOrderService;
 import com.azarenka.evebuilders.service.api.IRequestOrderService;
-import com.azarenka.evebuilders.service.util.ImageService;
-import com.vaadin.flow.component.html.Image;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,8 +25,6 @@ public class RequestController implements IRequestController {
 
     @Autowired
     private IEveMaterialDataService dataService;
-    @Autowired
-    private ImageService imageService;
     @Autowired
     private IRequestOrderService requestOrderService;
     @Autowired
@@ -59,11 +55,6 @@ public class RequestController implements IRequestController {
     @Override
     public List<InvType> getTypesByGroupId(Integer groupId) {
         return dataService.getTypesByGroupId(groupId);
-    }
-
-    @Override
-    public Image getBigImageByParameters(InvType invType, String size) {
-        return imageService.createImage(invType.getTypeID(), size);
     }
 
     @Override

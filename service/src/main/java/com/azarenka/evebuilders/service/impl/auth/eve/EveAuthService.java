@@ -4,9 +4,7 @@ import com.azarenka.evebuilders.domain.db.TokenResponse;
 import com.azarenka.evebuilders.service.api.IEveAuthService;
 import com.azarenka.evebuilders.service.api.IUserService;
 import com.azarenka.evebuilders.service.converter.JsonConverter;
-import com.azarenka.evebuilders.service.converter.VaadinImageConverter;
 import com.azarenka.evebuilders.service.impl.intergarion.EvePortraitService;
-import com.vaadin.flow.component.html.Image;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -95,26 +92,6 @@ public class EveAuthService implements IEveAuthService {
                 ex.getResponseBodyAsString());
             throw new IllegalStateException(ex);
         }
-    }
-
-    @Override
-    public Image getCharacterPortrait() {
-        String characterId = userService.getCharacterId();
-        if (Objects.nonNull(characterId)) {
-            byte[] portrait = evePortraitService.getPortrait(Long.valueOf(userService.getCharacterId()), 64);
-            return VaadinImageConverter.createImageFromBytes(portrait);
-        }
-        return new Image();
-    }
-
-    @Override
-    public Image getCharacterPortrait128() {
-        String characterId = userService.getCharacterId();
-        if (Objects.nonNull(characterId)) {
-            byte[] portrait = evePortraitService.getPortrait(Long.valueOf(userService.getCharacterId()), 128);
-            return VaadinImageConverter.createImageFromBytes(portrait);
-        }
-        return new Image();
     }
 
     @Override
