@@ -100,12 +100,14 @@ public class DistributedOrderService implements IDistributedOrderService {
     @Override
     @Transactional
     public void update(DistributedOrder distributedOrder, Integer value) {
-        Integer wasReady = distributedOrder.getCountReady();
-        Integer ready = wasReady + value;
+        int wasReady = distributedOrder.getCountReady();
+        int ready = wasReady + value;
         distributedOrder.setCountReady(ready);
-        if (distributedOrder.getCount().equals(ready)) {
+        if (distributedOrder.getCount() <= ready) {
             distributedOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
             distributedOrder.setFinishedDate(LocalDate.now());
+        } else {
+            distributedOrder.setOrderStatus(OrderStatusEnum.IN_PROGRESS);
         }
         distributedOrderRepository.save(distributedOrder);
         updateShipOrder(distributedOrder.getOrderNumber(), value);

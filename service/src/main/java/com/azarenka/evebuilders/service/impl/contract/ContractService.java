@@ -46,39 +46,73 @@ public class ContractService implements IContractService {
 
     public List<ContractValidationReport> getContractReport(DistributedOrder distributedOrder) {
         List<ContractValidationReport> reportList = new ArrayList<>();
-        var userToken = userService.getUserToken();
-        Optional<User> optionalUser = userService.getByUsername(distributedOrder.getUserName());
-        if (optionalUser.isPresent()) {
-            var originalOrder = orderService.getByOrderNumber(distributedOrder.getOrderNumber());
-            var routing = resolveReceiverRouting(originalOrder);
-            LOGGER.info("Find contracts for targetType={}, targetId={}. Searcher={}, ContractFromUser={} ",
-                routing.targetType, routing.targetId,
-                SecurityUtils.getUserName(), optionalUser.get().getUsername());
-            var contracts = findContracts(optionalUser.get(), userToken, distributedOrder.getOrderNumber(), routing);
-            if (!contracts.isEmpty()) {
-                contracts.forEach(contract -> {
-                    var report = new ContractValidationReport();
-                    var order = originalOrder;
-                    var contractItems = getContractItemsForRouting(optionalUser.get(), userToken, routing,
-                        contract.getContractId());
-                    contractValidationService.validateContract(contract, contractItems, order, distributedOrder,
-                        report);
-                    report.setContract(contract);
-                    reportList.add(report);
-                });
-            } else {
-                var report = new ContractValidationReport();
-                report.setValid(false);
-                report.setErrorMessage("No contract found for order number " + distributedOrder.getOrderNumber());
-                reportList.add(report);
-            }
-            LOGGER.info("Found {} contracts", contracts.size());
-        } else {
+        Optional<User> builderUser = userService.getByUsername(distributedOrder.getUserName());
+        if (builderUser.isEmpty()) {
             var report = new ContractValidationReport();
             report.setValid(false);
             report.setErrorMessage("User not found order number " + distributedOrder.getOrderNumber());
             reportList.add(report);
+            return reportList;
         }
+
+        var originalOrder = orderService.getByOrderNumber(distributedOrder.getOrderNumber());
+        if (originalOrder == null) {
+            var report = new ContractValidationReport();
+            report.setValid(false);
+            report.setErrorMessage("Order not found " + distributedOrder.getOrderNumber());
+            reportList.add(report);
+            return reportList;
+        }
+
+        var routing = resolveReceiverRouting(originalOrder);
+        Optional<User> receiverUser = resolveSearchUser(routing);
+        if (receiverUser.isEmpty()) {
+            var report = new ContractValidationReport();
+            report.setValid(false);
+            report.setErrorMessage("Receiver user not found for order number " + distributedOrder.getOrderNumber());
+            reportList.add(report);
+            return reportList;
+        }
+
+        final User searchUser = routing.targetType == ReceiverTargetType.CORPORATION
+            ? builderUser.get()
+            : receiverUser.get();
+
+        var userToken = resolveUserToken(searchUser);
+        if (userToken == null || userToken.isBlank()) {
+            var report = new ContractValidationReport();
+            report.setValid(false);
+            report.setErrorMessage("User token not found for order number " + distributedOrder.getOrderNumber());
+            reportList.add(report);
+            return reportList;
+        }
+
+        LOGGER.info("Find contracts for targetType={}, targetId={}. Searcher={}, ContractFromUser={} ",
+            routing.targetType, routing.targetId,
+            SecurityUtils.getUserName(), searchUser.getUsername());
+        var contracts = findContracts(searchUser, userToken, distributedOrder.getOrderNumber(), routing);
+        if (!contracts.isEmpty()) {
+            contracts.forEach(contract -> {
+                var report = new ContractValidationReport();
+                var contractItems = getContractItemsForRouting(searchUser, userToken, routing,
+                    contract.getContractId());
+                contractValidationService.validateContract(contract, contractItems, originalOrder, distributedOrder,
+                    report);
+                report.setContract(contract);
+                reportList.add(report);
+            });
+        } else {
+            var report = new ContractValidationReport();
+            report.setValid(false);
+            report.setErrorMessage("No contract found for order number " + distributedOrder.getOrderNumber());
+            report.setValidateErrorMessages(List.of(
+                String.format("Receiver : %s", routing.targetType),
+                String.format("Receiver ID : %s", routing.targetId),
+                String.format("Receiver : %s", routing.targetType)
+            ));
+            reportList.add(report);
+        }
+        LOGGER.info("Found {} contracts", contracts.size());
         return reportList;
     }
 
@@ -197,6 +231,22 @@ public class ContractService implements IContractService {
             && order.getReceiverRefId() != null
             && !order.getReceiverRefId().isBlank()
             && !"0".equals(order.getReceiverRefId())) {
+            if (order.getReceiverType() == ReceiverTargetType.USER) {
+                Optional<User> receiverUser = userService.getByUsername(order.getReceiverRefId());
+                if (receiverUser.isPresent() && receiverUser.get().getCharacterId() != null
+                    && !receiverUser.get().getCharacterId().isBlank()) {
+                    try {
+                        return new ReceiverRouting(order.getReceiverType(),
+                            Long.parseLong(receiverUser.get().getCharacterId()));
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn("Invalid character id for receiver user {} in order {}. Use legacy fallback.",
+                            order.getReceiverRefId(), order.getOrderNumber(), e);
+                    }
+                } else {
+                    LOGGER.warn("Receiver user {} not found for order {}. Use legacy fallback.",
+                        order.getReceiverRefId(), order.getOrderNumber());
+                }
+            }
             try {
                 return new ReceiverRouting(order.getReceiverType(), Long.parseLong(order.getReceiverRefId()));
             } catch (NumberFormatException e) {
@@ -206,6 +256,13 @@ public class ContractService implements IContractService {
         }
         LOGGER.warn("Legacy receiver routing fallback is used. Order={}", order == null ? "null" : order.getOrderNumber());
         return new ReceiverRouting(ReceiverTargetType.CORPORATION, legacyCorporationId);
+    }
+
+    private Optional<User> resolveSearchUser(ReceiverRouting routing) {
+        if (routing.targetType == ReceiverTargetType.USER) {
+            return Optional.ofNullable(userService.getByCharacterId(String.valueOf(routing.targetId)));
+        }
+        return Optional.empty();
     }
 
     private String resolveUserToken(User user) {
